@@ -214,7 +214,7 @@ public interface ILayeredFluidHost {
         final int curLayer = getLayers(world, pos, state, fluid),maxLayer = getMaxLayers(world, pos, state, fluid);
         layer = MathHelper.clamp(layer,-curLayer,maxLayer-curLayer);
         if(layer == 0) return;
-        setLayer(world, pos, state, fluid, curLayer+layer, disabledBlockFlags,enabledBlockFlags);
+        setLayer(world, pos, state, fluid, curLayer+layer,nbt, disabledBlockFlags,enabledBlockFlags);
     }
 
     /**

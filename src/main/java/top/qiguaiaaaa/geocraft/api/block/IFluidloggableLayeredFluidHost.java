@@ -30,29 +30,34 @@ package top.qiguaiaaaa.geocraft.api.block;
 import git.jbredwards.fluidlogged_api.api.block.IFluidloggable;
 import git.jbredwards.fluidlogged_api.api.util.FluidState;
 import git.jbredwards.fluidlogged_api.api.util.FluidloggedUtils;
+import git.jbredwards.fluidlogged_api.mod.asm.plugins.forge.PluginBlockFluidBase;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fluids.BlockFluidFinite;
 import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.api.util.QBUtil;
+import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
+import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * 还没写好
+ * 写好了，但还没有测试。<br/>
+ * 一个让含水方块和载流方块兼容的接口，为含水方块实现了载流方块的默认行为。
  * @author QiguaiAAAA
  */
 public interface IFluidloggableLayeredFluidHost extends IFluidloggable, ILayeredFluidHost {
+    int DEFAULT_QUANTA_PER_BLOCK = 8;
 
     @Override
     default boolean isAcceptedFluid(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
-        return isFluidloggable(state,world,pos) && isFluidValid(state,world,pos,fluid);
+        return isFluidValid(state,world,pos,fluid);
     }
 
     @Override
@@ -64,49 +69,59 @@ public interface IFluidloggableLayeredFluidHost extends IFluidloggable, ILayered
 
     @Override
     default int getMaxLayers(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        FluidState fluidState = FluidState.get(world,pos);
-        if(fluidState.isEmpty()) return 8;
-        return fluidState.getQuantaPerBlock();
-    }
-
-    @Override
-    default int getEmptyHeight(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid){
+        final FluidState fluidState = FluidState.get(world,pos);
+        if(fluidState.isEmpty()){
+            if (fluid == null) return DEFAULT_QUANTA_PER_BLOCK;
+            final Block block = fluid.getBlock();
+            if(block instanceof PluginBlockFluidBase.Accessor)
+                return ((PluginBlockFluidBase.Accessor)block).getQuantaPerBlock_Public();
+            return DEFAULT_QUANTA_PER_BLOCK;
+        }else if(fluidState.getFluid() == fluid || fluid == null){
+            return fluidState.getQuantaPerBlock();
+        }
         return 0;
     }
 
     @Override
+    default int getEmptyHeight(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid){
+        return LayeredFluidHostUtil.EMPTY_HEIGHT;
+    }
+
+    @Override
     default int getHeightPerLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state){
-        FluidState fluidState = FluidState.get(world,pos);
+        final FluidState fluidState = FluidState.get(world,pos);
         if(fluidState.isEmpty()) return LayeredFluidHostUtil.EIGHTH_HEIGHT;
-        return LayeredFluidHostUtil.DEFAULT_MAX_HEIGHT/fluidState.getQuantaPerBlock();
+        return LayeredFluidHostUtil.HEIGHTS.get(fluidState.getQuantaPerBlock());
     }
 
     @Override
     default long getAmountInQBPerLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
-        FluidState fluidState = FluidState.get(world,pos);
+        final FluidState fluidState = FluidState.get(world,pos);
         if(fluidState.isEmpty()) return QBUtil.QUANTA_VOLUME;
-        return QBUtil.QUANTA_VOLUME/fluidState.getQuantaPerBlock();
+        if(fluid != fluidState.getFluid()) return 0;
+        return QBUtil.VOLUMES_1_TO_16.get(fluidState.getQuantaPerBlock());
     }
 
     @Override
-    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, @Nullable NBTTagCompound nbt, int disabledBlockFlags,int enabledBlockFlags) {
-        FluidState fluidState = FluidState.get(world,pos);
-        if(layer == 0) return;
-        if(fluidState.isEmpty()){
-            if(!isAcceptedFluid(world,pos,state,fluid)) return;
-            fluidState = FluidState.of(fluid);
-            int flag = Constants.BlockFlags.DEFAULT & ~disabledBlockFlags;
-            FluidloggedUtils.setFluidState(world,pos,state,fluidState.withLevel(-layer),false,flag);
-        }else if(fluid == fluidState.getFluid()){
-            int quanta = fluidState.getQuantaValue();
-            layer = MathHelper.clamp(layer,-quanta,fluidState.getQuantaPerBlock()-quanta);
-            fluidState.addLevel(-layer);
+    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags){
+        if(newLayer == 0){
+            return FluidloggedUtils.setFluidState(world,pos,state,FluidState.EMPTY,false,APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT, disabledBlockFlags,enabledBlockFlags));
         }
+        if(newLayer < 0) return false;
+        world.setBlockState(pos,state);
+        final int quantaPerBlock;
+        final Block block = fluid.getBlock();
+        if(block instanceof PluginBlockFluidBase.Accessor){
+            quantaPerBlock = ((PluginBlockFluidBase.Accessor)block).getQuantaPerBlock_Public();
+        }else quantaPerBlock = DEFAULT_QUANTA_PER_BLOCK;
+        if(newLayer > quantaPerBlock) return false;
+        final boolean isFinite = block instanceof BlockFluidFinite;
+        FluidState newState = isFinite?FluidState.of(fluid).withLevel(newLayer-1):FluidState.of(fluid).withLevel(quantaPerBlock-newLayer);
+        return FluidloggedUtils.setFluidState(world,pos,state,newState,false,APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT, disabledBlockFlags,enabledBlockFlags));
     }
 
     @Override
     default boolean canFill(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, @Nonnull EnumFacing side, @Nullable IBlockState source) {
-        if(!isFluidloggable(state,world,pos)) return false;
         if(!isFluidValid(state,world, pos, fluid)) return false;
         if(isFull(world, pos, state, fluid)) return false;
         return canFluidFlow(world,pos,state,side);
@@ -114,17 +129,22 @@ public interface IFluidloggableLayeredFluidHost extends IFluidloggable, ILayered
 
     @Override
     default boolean canDrain(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, @Nonnull EnumFacing side, @Nullable IBlockState source) {
-        FluidState fluidState = FluidState.get(world,pos);
-        return !fluidState.isEmpty() && fluidState.getFluid() == fluid && fluidState.getQuantaValue()>0;
+        final FluidState fluidState = FluidState.get(world,pos);
+        return !fluidState.isEmpty() && fluidState.getFluid() == fluid;
     }
 
     @Override
     default boolean isFull(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        return fluid != null && !isAcceptedFluid(world, pos, state, fluid) || FluidState.get(world,pos).isSource();
+        final FluidState fluidState = FluidState.get(world,pos);
+        if(fluidState.isEmpty()) return fluid != null && !isFluidValid(state,world,pos,fluid);
+        if(fluid != null && fluid != fluidState.getFluid()) return false;
+        return fluidState.getQuantaPerBlock() == fluidState.getQuantaValue();
     }
 
     @Override
     default boolean isEmpty(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        return FluidState.get(world,pos).isEmpty();
+        final FluidState fluidState = FluidState.get(world,pos);
+        if(fluidState.isEmpty()) return fluid == null || isFluidValid(state,world,pos,fluid);
+        return false;
     }
 }

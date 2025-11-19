@@ -147,7 +147,7 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
                 getMaxStableHumidity(state),averageModeFlowDirections);
 
         if(newHumidity != humidity){
-            setLayer(worldIn,pos,state,FluidRegistry.WATER,newHumidity);
+            long left = 0;
             for(FlowChoice choice:averageModeFlowDirections){ //向四周流动
                 if(choice.getAddedLayers() == 0) continue;
                 BlockPos facingPos = pos.offset(choice.direction);
@@ -157,8 +157,9 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
                     continue;
                 }
                 IBlockState facingState = worldIn.getBlockState(facingPos);
-                choice.apply(worldIn,facingPos,facingState,FluidRegistry.WATER);
+                left += choice.apply(worldIn,facingPos,facingState,FluidRegistry.WATER);
             }
+            setLayer(worldIn,pos,state,FluidRegistry.WATER,newHumidity+QBUtil.toQuanta(left));
         }
 
         averageModeFlowDirections.clear();

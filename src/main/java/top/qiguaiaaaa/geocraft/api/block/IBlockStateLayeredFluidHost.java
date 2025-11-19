@@ -28,9 +28,12 @@
 package top.qiguaiaaaa.geocraft.api.block;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
+import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 
 import javax.annotation.Nonnull;
@@ -89,4 +92,12 @@ public interface IBlockStateLayeredFluidHost extends ILayeredFluidHost{
 
     @Override
     long getAmountInQBPerLayer(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid);
+
+    @Override
+    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags){
+        IBlockState newState = getLayerState(state, fluid,newLayer);
+        if(newState == null) return false;
+        final int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
+        return world.setBlockState(pos,newState,flags);
+    }
 }

@@ -119,8 +119,8 @@ public class FlowChoice {
         this(direction,0);
     }
 
-    public void apply(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
-        host.addLayer(world,pos,state, fluid,addedLayers);
+    public long apply(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
+        return host.addAmountInQB(world,pos,state,fluid,addedAmountInQB,true);
     }
 
     public void addAmountInQB(long amount){

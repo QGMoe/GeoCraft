@@ -106,6 +106,7 @@ public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
                 final int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
                 MoreRealityFluidPhysicsCore.mixSnowWithWater(world,pos,accessor,quantaWater,layer,flags);
             }
+            return;
         }
         if(fluid != getFluid()) return;
         if(layer == 0) return;

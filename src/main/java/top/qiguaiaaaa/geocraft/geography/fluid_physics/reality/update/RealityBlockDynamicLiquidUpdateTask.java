@@ -178,6 +178,18 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
                 return;
             }
 
+            long left = 0;
+            for(@Nonnull FlowChoice choice:averageModeFlowDirections){ //向四周流动
+                if(choice.getAddedLayers() == 0) continue;
+                BlockPos facingPos = pos.offset(choice.direction);
+                if(choice.isAir()){
+                    directlyFlowInto(world,facingPos,world.getBlockState(facingPos),8-choice.getNewLayers());
+                }else{
+                    left += choice.apply(world,facingPos,world.getBlockState(facingPos),fluid);
+                }
+            }
+            newLiquidQuanta += QBUtil.toQuanta(left);
+
             liquidMeta = 8 - newLiquidQuanta;
             if (newLiquidQuanta<=0) world.setBlockState(pos,Blocks.AIR.getDefaultState(),updateFlag); //先更新自身状态
             else {
@@ -188,16 +200,6 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
                     createFluidPressureSearchTask(world,pos,state,FlowingMode.AVERAGE_MODE);
                 }
                 world.notifyNeighborsOfStateChange(pos,block, false);
-            }
-
-            for(@Nonnull FlowChoice choice:averageModeFlowDirections){ //向四周流动
-                if(choice.getAddedLayers() == 0) continue;
-                BlockPos facingPos = pos.offset(choice.direction);
-                if(choice.isAir()){
-                    directlyFlowInto(world,facingPos,world.getBlockState(facingPos),8-choice.getNewLayers());
-                }else{
-                    choice.apply(world,facingPos,world.getBlockState(facingPos),fluid);
-                }
             }
 
             averageModeFlowDirections.clear();
