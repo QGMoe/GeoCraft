@@ -68,7 +68,7 @@ public final class MathUtil {
     }
 
     public static boolean inRange(int a,int b,int c){
-        if(c>b){
+        if(b>c){
             b = (c = (b = b ^ c) ^ c) ^ b;
         }
         return a>=b && a <= c;

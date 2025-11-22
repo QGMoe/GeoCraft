@@ -55,8 +55,9 @@ public class ScheduledTicksData implements INBTSerializable<NBTTagCompound> {
 
     protected Chunk chunk;
 
-    public void setChunk(@Nonnull Chunk chunk) {
+    public ScheduledTicksData setChunk(@Nonnull Chunk chunk) {
         this.chunk = chunk;
+        return this;
     }
 
     public Chunk getChunk() {
@@ -93,6 +94,7 @@ public class ScheduledTicksData implements INBTSerializable<NBTTagCompound> {
 
     @Override
     public void deserializeNBT(NBTTagCompound nbt) {
+        entrySet.clear();
         final NBTTagList updateLists = nbt.getTagList("block_updating_entries", Constants.NBT.TAG_COMPOUND);
         final long savedTime = nbt.getLong("totalWorldTime");
         for(@Nonnull NBTBase base:updateLists){
@@ -105,5 +107,6 @@ public class ScheduledTicksData implements INBTSerializable<NBTTagCompound> {
             ExtendedNextTickListEntry entry = new ExtendedNextTickListEntry(pos,block,savedTime+time);
             entrySet.add(entry);
         }
+        BlockUpdater.scheduleUpdates(chunk.getWorld(),entrySet);
     }
 }

@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.capability;
 
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -49,11 +50,14 @@ public class SavingScheduledTicksCapability {
             @Nullable
             @Override
             public NBTBase writeNBT(Capability<ScheduledTicksData> capability, ScheduledTicksData instance, EnumFacing side) {
-                return null;
+                return instance.serializeNBT();
             }
 
             @Override
             public void readNBT(Capability<ScheduledTicksData> capability, ScheduledTicksData instance, EnumFacing side, NBTBase nbt) {
+                if(nbt instanceof NBTTagCompound){
+                    instance.deserializeNBT((NBTTagCompound) nbt);
+                }
             }
         },ScheduledTicksData::new);
     }

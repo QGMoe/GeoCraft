@@ -27,11 +27,14 @@
 
 package top.qiguaiaaaa.geocraft.handler.event;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.ChunkEvent;
@@ -95,7 +98,18 @@ public final class CommonEventHandler {
     public static void onChunkAttachCapabilities(AttachCapabilitiesEvent<Chunk> event){
         if(event.getObject().getWorld() == null //??? 为什么在逻辑客户端这会是null
                 || event.getObject().getWorld().isRemote) return;
-        event.addCapability(ScheduledTicksData.ID, new ICapabilityProvider() {
+        event.addCapability(ScheduledTicksData.ID, new ICapabilitySerializable<NBTTagCompound>() {
+            private final ScheduledTicksData data = new ScheduledTicksData().setChunk(event.getObject());
+            @Override
+            public NBTTagCompound serializeNBT() {
+                return data.serializeNBT();
+            }
+
+            @Override
+            public void deserializeNBT(NBTTagCompound nbt) {
+                data.deserializeNBT(nbt);
+            }
+
             @Override
             public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
                 return capability == SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA;
@@ -105,8 +119,6 @@ public final class CommonEventHandler {
             @Override
             public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
                 if(hasCapability(capability,facing)){
-                    ScheduledTicksData data = new ScheduledTicksData();
-                    data.setChunk(event.getObject());
                     return SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA.cast(data);
                 }else return null;
             }
