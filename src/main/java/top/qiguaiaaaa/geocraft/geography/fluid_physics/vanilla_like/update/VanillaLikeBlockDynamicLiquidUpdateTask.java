@@ -29,10 +29,15 @@ package top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla_like.update;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;
+import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
+import java.util.Random;
 
 /**
  * @author QiguaiAAAA
@@ -43,6 +48,13 @@ public class VanillaLikeBlockDynamicLiquidUpdateTask extends VanillaLikeFluidBlo
     public VanillaLikeBlockDynamicLiquidUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos,final @Nonnull BlockDynamicLiquid block) {
         super(fluid, pos);
         this.block = block;
+    }
+
+    @Override
+    public void onFailure(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
+        world.setBlockState(pos,
+                BlockLiquid.getStaticBlock(state.getMaterial()).getDefaultState().withProperty(BlockLiquid.LEVEL,state.getValue(BlockLiquid.LEVEL)),
+                Constants.BlockFlags.SEND_TO_CLIENTS);
     }
 
     @Nonnull

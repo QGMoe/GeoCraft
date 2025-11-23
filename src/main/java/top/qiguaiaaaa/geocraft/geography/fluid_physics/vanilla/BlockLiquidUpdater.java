@@ -94,7 +94,7 @@ public class BlockLiquidUpdater {
 
     public void placeStaticBlock(World world, BlockPos pos,IBlockState curState){
         world.setBlockState(pos,
-                BlockLiquid.getStaticBlock(liquid.getDefaultState().getMaterial())
+                BlockLiquid.getStaticBlock(material)
                         .getDefaultState().withProperty(LEVEL, curState.getValue(LEVEL)), Constants.BlockFlags.SEND_TO_CLIENTS);
     }
 

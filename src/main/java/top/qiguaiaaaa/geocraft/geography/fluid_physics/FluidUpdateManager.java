@@ -45,6 +45,7 @@ import static top.qiguaiaaaa.geocraft.util.MiscUtil.getValidWorld;
 /**
  * 流体更新管理器，为保证最佳效果所有流体的更新应该走这个管理器
  * @author QiguaiAAAA
+ * @since 0.1
  */
 public final class FluidUpdateManager {
     private static int MAX_UPDATE_NUM;
@@ -83,13 +84,13 @@ public final class FluidUpdateManager {
         updateTasks(world,queues.getRight());
     }
 
-    static void updateTasks(@Nonnull WorldServer world,@Nonnull PriorityQueue<IFluidUpdateTask> queue){
+    static void updateTasks(@Nonnull final WorldServer world,@Nonnull final PriorityQueue<IFluidUpdateTask> queue){
         final Set<BlockPos> locks = getOrCreateSet(world);
         final long beginTime = System.nanoTime(),maxTime = FluidPhysicsConfig.FLUID_UPDATER_MAX_TIME_USAGE.getValue();
         final int cleanPeriod = FluidPhysicsConfig.FLUID_UPDATER_CLEAN_PERIOD.getValue()-1;
         for(int i=0;i<MAX_UPDATE_NUM;i++){
             if(queue.isEmpty()) break;
-            IFluidUpdateTask task = queue.poll();
+            final IFluidUpdateTask task = queue.poll();
             if(task == null) continue;
             locks.remove(task.getPos());
             if(!world.isBlockLoaded(task.getPos())) continue;
@@ -100,16 +101,34 @@ public final class FluidUpdateManager {
             }catch (Throwable e){
                 GeoCraft.getLogger().warn("When updating fluid {} at {} in world {},",task.getFluid().getUnlocalizedName(),task.getPos(),world.provider.getDimension());
                 GeoCraft.getLogger().warn("FluidUpdateManager caught an error:",e);
+                try {
+                    task.onFailure(world,state,world.rand);
+                }catch (Throwable e2){
+                    GeoCraft.getLogger().error("When restoring failure of fluid {} at {} in world {},",task.getFluid().getUnlocalizedName(),task.getPos(),world.provider.getDimension());
+                    GeoCraft.getLogger().error("FluidUpdateManager caught an error:",e2);
+                }
             }
             if((i & 127) == 0){
                 if(System.nanoTime() - beginTime > maxTime) break;
             }
         }
         if(FluidPhysicsConfig.FLUID_UPDATER_DROP_EXCESS_TASKS.getValue() && (world.getTotalWorldTime() & cleanPeriod) == 0){
-            queue.clear();
+            while (!queue.isEmpty()){
+                final IFluidUpdateTask task = queue.poll();
+                if(task == null) continue;
+                locks.remove(task.getPos());
+                if(!world.isBlockLoaded(task.getPos())) continue;
+                IBlockState state = world.getBlockState(task.getPos());
+                if(state.getBlock() != task.getBlock()) continue;
+                try {
+                    task.onFailure(world,state,world.rand);
+                }catch (Throwable e){
+                    GeoCraft.getLogger().warn("When updating fluid {} at {} in world {},",task.getFluid().getUnlocalizedName(),task.getPos(),world.provider.getDimension());
+                    GeoCraft.getLogger().warn("FluidUpdateManager caught an error:",e);
+                }
+            }
             locks.clear();
         }
-
     }
 
     static Pair<PriorityQueue<IFluidUpdateTask>,PriorityQueue<IFluidUpdateTask>> getOrCreateQueues(@Nonnull WorldServer world){

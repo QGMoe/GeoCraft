@@ -1,0 +1,103 @@
+# GeoCraft
+
+**Switch Language**: [简体中文](https://github.com/qiguaideaaaa/GeoCraft/blob/master/README.md) | **English**
+
+<img src="https://s2.loli.net/2025/10/08/hc1zrUCmfgWTQ4k.png" alt="" width="818"/>
+
+GeoCraft (天圆地方) is a mod that aims to add realistic geo-related elements to Minecraft while maintaining compatibility with vanilla clients.
+
+This mod is in early development now and may contain serious bugs. Therefore, please back up your world before testing. API may also have great changes as the development proceeds.
+
+Currently, GeoCraft has implemented：
+
+- Fluid Physics
+- Atmosphere systems with no visual effects currently
+- Soil water
+
+GeoCraft also has a high-customized configuration and provides API for third-party mods to allow possible better implementation.
+
+## Content
+
+### Fluid Physics
+
+GeoCraft significantly changes how fluids behave in Minecraft, offering two implementation modes. The default mode is MORE_REALITY:
+
+- Each fluid block is finite.
+- Fluid blocks will spread horizontally.
+- Fluid blocks will flow from a high place to low places.
+- When a block replaces fluid, the fluid flows out instead of disappearing.
+- Adds snow-water mixtures.
+- Water will be randomly rained when raining.
+
+![](https://s2.loli.net/2025/10/08/IB6dmE2ZMQb4Uk9.gif)
+
+The VANILLA_LIKE mode can be enabled in the configuration file, with:
+- Fluid blocks will move down if possible.
+- Vanilla flowing function is kept horizontally.
+
+GeoCraft also provides the Fluid Pressure feature, which is currently only available in MORE_REALITY mode. The fluid pressure calculations run asynchronously by default, significantly improving performance.
+
+![](https://s2.loli.net/2025/11/23/ChxwU5g2iQEoPtu.gif)
+
+### Atmosphere
+
+GeoCraft adds atmospheric simulation to Minecraft with three available systems: Vanilla, Close, and Surface.
+
+Surface is a dynamic atmospheric system that uses in-game data and runs concurrent simulations. It only uses biome data for initialisation, then runs independently - allowing player activity to change the climate!
+
+However, the Surface system is in early development and doesn't handle edge cases well, such as floating islands and other scenarios that don't exist in reality. Simulations may also encounter issues sometimes.
+
+### Soil Water
+
+To implement the soil water system, GeoCraft introduces a mechanism called Layered Fluid Host Blocks, which defines a block that can host fluids by layers. Soil blocks, such as dirt and grass blocks, have the mechanism now so they can store water and interact with water and other soil blocks. Moreover, there are some funny small functions added to soil blocks:
+- Water can flow slowly within soil blocks.
+- Some soil blocks will be affected by gravity when saturated with water.
+- You can use water bottle to increase moisture.
+
+This feature is implemented mostly by extending vanilla block states using Mixin,not by adding new blocks.Therefore, removing the mod directly will cause modified blocks to revert to incorrect states.
+
+### Network Communication Modification (Server Side Only)
+
+In order to allow vanilla clients to connect to servers that adds this mod, GeoCraft enables network communication modification by default. This feature will modify all data packets sent to clients, mapping extended states to vanilla equivalents. However it means that players can't read moisture data except Farmland Block, which will increase the difficulty to some extent.
+
+## Requirements
+
+This mod requires [MixinBooter](https://github.com/CleanroomMC/MixinBooter) as the dependency to use Mixin. While GeoCraft can be installed server-side only, installing on both sides can provide best performance.
+
+Installing [Alfheim Lighting Engine](https://github.com/Red-Studio-Ragnarok/Alfheim) or other compatible optimisation mods can greatly improve TPS when lots of fluid blocks are updating, and Optifine can prevent FPS from dropping down in that case, too.
+
+The Fluid Pressure System requires a CPU with better multi-threading performance if async mode is enabled (default) and at least 4 GB memory.
+
+You can also customise the performance by manually configuring.
+
+## Compatibility & Attentions
+
+- Generally, fluids from other mods are supported by GeoCraft's fluid physics unless they have custom flow logic. GeoCraft also has some compatibility logic with IC2 and IE.
+- Specific fluids can be added to the blacklist if you want vanilla logic.
+- Uninstalling this mod directly may cause some blocks to be changed to other blocks. For example, dirt will become podzol and sand will become red sand.
+- The Network Modification feature may be incompatible with anti-Xray plugins and other mods that contains similar functions. If this occurs,you can disable this feature in the configuration file. However, disabling it without using other mods to replace its function will cause incompatibility with clients that doesn't have GeoCraft installed!
+- If async mode causes frequent crashes, you can switch to sync mod or disable the Fluid Pressure System entirely.
+- GeoCraft is incompatible with [Fluidlogged API](https://github.com/jbredwards/Fluidlogged-API), and there is already a plan to solve this problem.
+- GeoCraft currently lacks internationalisation support and the most used language in documents is Chinese. English is not fully supported. If you can help with the translation work, I will appreciate it.
+
+## Q & A
+
+**Q:Are there any plans to support other Minecraft versions?**
+
+A: Not Currently.
+
+**Q:Will there be new blocks or entities?**
+
+A:Yes, but any new content incompatible with vanilla clients will be released as separate add-ons.
+
+**Q:May I put it into my modpack?**
+
+A:Yes! But be careful, because GeoCraft is in early development.
+
+**Q:How  frequently will updates be released?**
+
+A:Due to time constraints, GeoCraft won't receive major feature updates for the foreseeable future.
+
+**Q:Where can I read documents?**
+
+A:Most config items in the configuration file have both Chinese and English comments. For more detailed documents, you should go to [mcmod.cn (MC百科)](https://www.mcmod.cn/class/22470.html), which includes up-to-date documents about GeoCraft. However, they are all written in Chinese. English documents can be read on Github, but they are much older and less currently.

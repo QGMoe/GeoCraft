@@ -163,6 +163,10 @@ public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask impl
         }
     }
 
+    @Override
+    public void onFailure(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
+    }
+
     protected boolean managePressureTask(World world, Random rand){
         if(FluidPressureSearchManager.isTaskRunning(world,pos)){
             BlockUpdater.scheduleUpdate(world,pos,block,block.tickRate(world));

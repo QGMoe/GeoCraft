@@ -233,6 +233,11 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
         }
     }
 
+    @Override
+    public void onFailure(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
+        updater.placeStaticBlock(world,pos,state);
+    }
+
     /**
      * 在下方有相同流体的情况下，流下去
      * @param world 所在世界

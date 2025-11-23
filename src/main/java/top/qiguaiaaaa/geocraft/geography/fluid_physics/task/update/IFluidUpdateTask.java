@@ -42,6 +42,7 @@ import java.util.Random;
  */
 public interface IFluidUpdateTask {
     void onUpdate(@Nonnull World world,@Nonnull IBlockState state,@Nonnull Random rand);
+    void onFailure(@Nonnull World world,@Nonnull IBlockState state,@Nonnull Random rand);
     @Nonnull
     Block getBlock();
     @Nonnull

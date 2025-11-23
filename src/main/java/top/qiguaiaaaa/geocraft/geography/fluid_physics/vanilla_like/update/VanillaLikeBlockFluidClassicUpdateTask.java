@@ -28,11 +28,14 @@
 package top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla_like.update;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
+import java.util.Random;
 
 /**
  * @author QiguaiAAAA
@@ -43,6 +46,10 @@ public class VanillaLikeBlockFluidClassicUpdateTask extends VanillaLikeFluidBloc
     public VanillaLikeBlockFluidClassicUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos, BlockFluidClassic block) {
         super(fluid, pos);
         this.block = block;
+    }
+
+    @Override
+    public void onFailure(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
     }
 
     @Nonnull
