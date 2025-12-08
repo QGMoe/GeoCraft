@@ -41,7 +41,9 @@ public final class RealityPressureTaskBuilder {
     public static IRealityVanillaPressureSearchTask createVanillaTask(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange){
         int maxSearchTimes = IRealityPressureSearchTask.getMaxSearchTimesFromRange(searchRange);
         if(maxSearchTimes<= 小范围物理压强广搜任务.TIMES_PER_SEARCH){
-            return new 小范围原版物理压强单次广搜任务(fluid, beginState, beginPos, searchRange);
+            return new 单次小范围原版物理压强广搜任务(fluid, beginState, beginPos, searchRange);
+        }else if(maxSearchTimes <= 大范围物理压强广搜任务.TIMES_PER_SEARCH){
+            return new 单次大范围原版物理压强广搜任务(fluid,beginState,beginPos,searchRange);
         }
         if(searchRange<5)
             return new 小范围原版物理压强广搜任务(fluid, beginState, beginPos, searchRange);
@@ -59,7 +61,9 @@ public final class RealityPressureTaskBuilder {
     public static IRealityModClassicPressureBFSTask createModClassicTask(@Nonnull Fluid fluid,@Nonnull IBlockState beginState,@Nonnull BlockPos beginPos,int searchRange,int quantaPerBlock){
         int maxSearchTimes = IRealityPressureSearchTask.getMaxSearchTimesFromRange(searchRange);
         if(maxSearchTimes<= 小范围物理压强广搜任务.TIMES_PER_SEARCH){
-            return new 小范围模组Classic物理压强单次广搜任务(fluid, beginState, beginPos, searchRange,quantaPerBlock);
+            return new 单次小范围模组Classic物理压强广搜任务(fluid, beginState, beginPos, searchRange,quantaPerBlock);
+        }else if(maxSearchTimes <= 大范围物理压强广搜任务.TIMES_PER_SEARCH){
+            return new 单次大范围模组Classic物理压强广搜任务(fluid,beginState,beginPos,searchRange,quantaPerBlock);
         }
         if(searchRange<5)
             return new 小范围模组Classic物理压强广搜任务(fluid, beginState, beginPos, searchRange, quantaPerBlock);

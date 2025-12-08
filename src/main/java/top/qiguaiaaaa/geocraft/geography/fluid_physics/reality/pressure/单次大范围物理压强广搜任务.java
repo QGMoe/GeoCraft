@@ -27,9 +27,9 @@
 
 package top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.pressure;
 
-import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
@@ -37,59 +37,58 @@ import net.minecraftforge.fluids.Fluid;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.FluidPressureSearchBaseTask;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.FluidPressureSearchTaskSmallRangeRelativeResult;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.IFluidPressureSearchTaskResult;
-import top.qiguaiaaaa.geocraft.api.util.math.Int10;
+import top.qiguaiaaaa.geocraft.api.util.math.Int21;
 import top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.FluidPressureSearchBaseTask;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.FluidPressureSearchTaskLargeRangeRelativeResult;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.IFluidPressureSearchTaskResult;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 
-import static top.qiguaiaaaa.geocraft.geography.fluid_physics.ThreadLocalHelper.*;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.X_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.Y_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosI.Mutable.MUTABLE;
+import static top.qiguaiaaaa.geocraft.geography.fluid_physics.ThreadLocalHelper.MUTABLE_BLOCK_POS_FOR_QUEUE;
+import static top.qiguaiaaaa.geocraft.geography.fluid_physics.ThreadLocalHelper.MUTABLE_POS_I_FOR_REALITY_BFS_RES;
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.FluidPressureSmallBFSBaseTask.MAX_RELATIVE_POS_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.X_INT_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.Y_INT_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosS.Mutable.MUTABLE;
 
 /**
- * 该类仅单线程使用，不得多线程并发使用
  * @author QiguaiAAAA
  */
-public abstract class 小范围物理压强单次广搜任务 extends FluidPressureSearchBaseTask implements IRealityPressureBFSTask {
-
+public abstract class 单次大范围物理压强广搜任务 extends FluidPressureSearchBaseTask implements IRealityPressureBFSTask {
     @MultiThread(ThreadType.FLUID_PRESSURE_TASKS)
-    private static final ThreadLocal<IntSet> visited =
-            ThreadLocal.withInitial(IntOpenHashSet::new);
+    private static final ThreadLocal<LongSet> visited =
+            ThreadLocal.withInitial(LongOpenHashSet::new);
     @MultiThread(ThreadType.FLUID_PRESSURE_TASKS)
-    private static final ThreadLocal<IntArrayFIFOQueue> queue =
-            ThreadLocal.withInitial(IntArrayFIFOQueue::new);
+    private static final ThreadLocal<LongArrayFIFOQueue> queue =
+            ThreadLocal.withInitial(LongArrayFIFOQueue::new);
 
     //********
     // Object Field
     //********
-    protected final short maxSearchTimes;
-    protected final FluidPressureSearchTaskSmallRangeRelativeResult res;
+    protected final int maxSearchTimes;
+    protected final FluidPressureSearchTaskLargeRangeRelativeResult res;
 
     protected boolean searched = false;
 
-    public 小范围物理压强单次广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
+    public 单次大范围物理压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
         super(fluid, beginState, beginPos);
-        if(searchRange >4) throw new IllegalArgumentException("FluidPressureSmallBFSBaseTask can not handle search range larger than 511 blocks!");
-        else if(searchRange == 4) maxSearchTimes = MAX_RELATIVE_POS_OFFSET;
-        else maxSearchTimes = (short) IRealityPressureSearchTask.getMaxSearchTimesFromRange(searchRange);
-        res = new FluidPressureSearchTaskSmallRangeRelativeResult(beginPos);
+        if(searchRange >15) throw new IllegalArgumentException("FluidPressureLargeBFSBaseTask can not handle search range larger than 1048575 blocks!");
+        else if(searchRange == 15) maxSearchTimes = MAX_RELATIVE_POS_OFFSET;
+        else maxSearchTimes = IRealityPressureSearchTask.getMaxSearchTimesFromRange(searchRange);
+        res = new FluidPressureSearchTaskLargeRangeRelativeResult(beginPos);
     }
 
     @Override
     public boolean isVisited(@Nonnull BlockPos pos) {
-        return visited.get().contains(MUTABLE.get().setPos(beginPos,pos).toInt());
+        return visited.get().contains(MUTABLE.get().setPos(beginPos,pos).toLong());
     }
 
     @Override
     public void markVisited(@Nonnull BlockPos pos) {
-        visited.get().add(MUTABLE.get().setPos(beginPos,pos).toInt());
+        visited.get().add(MUTABLE.get().setPos(beginPos,pos).toLong());
     }
 
     @Override
@@ -104,27 +103,27 @@ public abstract class 小范围物理压强单次广搜任务 extends FluidPress
 
     @Override
     public void queued(@Nonnull BlockPos pos) {
-        queue.get().enqueue(MUTABLE.get().setPos(beginPos,pos).toInt());
+        queue.get().enqueue(MUTABLE.get().setPos(beginPos,pos).toLong());
     }
 
     @Nonnull
     @Override
     public BlockPos pull() {
-        int relativePos = queue.get().dequeueInt();
-        return getPosFromInt(relativePos);
+        long relativePos = queue.get().dequeueLong();
+        return getPosFromLong(relativePos);
     }
 
     @Nonnull
     @Override
     public BlockPos peek() {
-        int relativePos = queue.get().firstInt();
-        return getPosFromInt(relativePos);
+        long relativePos = queue.get().firstLong();
+        return getPosFromLong(relativePos);
     }
 
-    protected BlockPos getPosFromInt(int posInt){
-        final int x = Int10.toInt((posInt&IVec3i.X_INT_MASK)>> X_INT_OFFSET),
-                y = Int10.toInt((posInt&IVec3i.Y_INT_MASK)>> Y_INT_OFFSET),
-                z = Int10.toInt(posInt&IVec3i.Z_INT_MASK);
+    protected BlockPos getPosFromLong(long posLong){
+        final int x = Int21.toInt((posLong& IVec3i.X_LONG_MASK)>> X_LONG_OFFSET),
+                y = Int21.toInt((posLong&IVec3i.Y_LONG_MASK)>> Y_LONG_OFFSET),
+                z = Int21.toInt(posLong&IVec3i.Z_LONG_MASK);
         return MUTABLE_BLOCK_POS_FOR_QUEUE.get().setPos(beginPos.getX()+x,beginPos.getY()+y,beginPos.getZ()+z);
     }
 
@@ -141,7 +140,7 @@ public abstract class 小范围物理压强单次广搜任务 extends FluidPress
 
     @Override
     public void putBlockPosToResults(@Nonnull BlockPos pos) {
-        res.put(MUTABLE_POS_S_FOR_REALITY_BFS_RES.get().setPos(beginPos,pos));
+        res.put(MUTABLE_POS_I_FOR_REALITY_BFS_RES.get().setPos(beginPos,pos));
     }
 
     @Override

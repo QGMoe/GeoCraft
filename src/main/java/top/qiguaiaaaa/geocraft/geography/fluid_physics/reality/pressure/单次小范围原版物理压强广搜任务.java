@@ -37,10 +37,10 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public class 小范围原版物理压强单次广搜任务 extends 小范围物理压强单次广搜任务 implements IRealityVanillaPressureBFSTask{
+public class 单次小范围原版物理压强广搜任务 extends 单次小范围物理压强广搜任务 implements IRealityVanillaPressureBFSTask{
     protected final byte beginQuanta;
 
-    小范围原版物理压强单次广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
+    单次小范围原版物理压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
         super(fluid, beginState, beginPos, searchRange);
         beginQuanta = (byte) (8-beginState.getValue(BlockLiquid.LEVEL));
     }

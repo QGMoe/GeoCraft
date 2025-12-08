@@ -424,7 +424,7 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.1")
     public static final ConfigInteger REALITY_MAX_SEARCH_TIMES_PER_SEARCH_FOR_LARGE_RANGE_TASK = new ConfigInteger(CATEGORY_SIMULATION_MORE_REALITY_PRESSURE,
             "maxSearchTimesPerSearchForLargeRangeTask",512,
-            "大范围流体压强任务在单次更新中，最大的迭代次数。值越大意味着对CPU性能要求更高。\n" +
+            "大范围流体压强任务在单次更新中，最大的迭代次数。若任务的搜索范围小于该值，则该任务会被转换为单次搜寻任务，从而大幅度减少内存开销。值越大意味着对CPU性能要求更高。\n" +
                     "Max iterated times in a single search for Large Range Pressure Search Task. Higher value means more cpu load needed.", true);
 
     // Ended
