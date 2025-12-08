@@ -28,7 +28,8 @@
 package top.qiguaiaaaa.geocraft.geography.atmosphere.info;
 
 import com.google.gson.JsonObject;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemType;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.AtmosphereSystemType;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.CommonAtmosphereSystemInfo;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.system.CloseAtmosphereSystem;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
@@ -39,7 +40,7 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public class CloseAtmosphereSystemInfo extends QiguaiAtmosphereSystemInfo {
+public class CloseAtmosphereSystemInfo extends CommonAtmosphereSystemInfo {
     public static final String FINAL_TEMPERATURE = "final_temperature",
     MAX_WIND_SPEED = "max_wind_speed",
     PRESSURE = "pressure";

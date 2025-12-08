@@ -31,8 +31,8 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemInfo;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemType;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.AtmosphereSystemInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.AtmosphereSystemType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

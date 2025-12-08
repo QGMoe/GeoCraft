@@ -27,7 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.api.setting;
 
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.AtmosphereSystemInfo;
 import top.qiguaiaaaa.geocraft.api.configs.value.map.ConfigurableLinkedHashMap;
 
 import javax.annotation.Nonnull;

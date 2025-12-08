@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.configs.value.geo;
+package top.qiguaiaaaa.geocraft.api.atmosphere.config;
 
 import javax.annotation.Nonnull;
 

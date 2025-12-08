@@ -25,11 +25,9 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.geography.atmosphere.info;
+package top.qiguaiaaaa.geocraft.api.atmosphere.config;
 
 import com.google.gson.JsonObject;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemInfo;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemType;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.JsonUtil;
 
@@ -38,21 +36,22 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public class QiguaiAtmosphereSystemInfo extends AtmosphereSystemInfo {
+public class CommonAtmosphereSystemInfo extends AtmosphereSystemInfo {
     public static final String WORLD_INFO = "world_info",
     WORLD_INFO_CAN_WATER_FREEZE = "can_water_freeze",
     WORLD_INFO_CAN_WATER_EVAPORATE = "can_water_evaporate",
     WORLD_INFO_RAIN_SMOOTHING_CONSTANT = "rain_smoothing_constant",
-    WORLD_INFO_VAPOR_EXCHANGE_RATE = "vapor_exchange_rate";
-    public QiguaiAtmosphereSystemInfo(@Nonnull String jsonStr) {
+    WORLD_INFO_VAPOR_EXCHANGE_RATE = "vapor_exchange_rate",
+    MAX_LOAD_DISTANCE = "max_load_distance";
+    public CommonAtmosphereSystemInfo(@Nonnull String jsonStr) {
         super(jsonStr);
     }
 
-    public QiguaiAtmosphereSystemInfo(@Nonnull JsonObject object) {
+    public CommonAtmosphereSystemInfo(@Nonnull JsonObject object) {
         super(object);
     }
 
-    public QiguaiAtmosphereSystemInfo(@Nonnull JsonObject object, @Nonnull AtmosphereSystemType type) {
+    public CommonAtmosphereSystemInfo(@Nonnull JsonObject object, @Nonnull AtmosphereSystemType type) {
         super(object, type);
     }
 
@@ -77,23 +76,32 @@ public class QiguaiAtmosphereSystemInfo extends AtmosphereSystemInfo {
         return JsonUtil.readDouble(getWorldInfoJson(),WORLD_INFO_VAPOR_EXCHANGE_RATE,1e-6,0,Double.POSITIVE_INFINITY);
     }
 
-    public QiguaiAtmosphereSystemInfo waterFreeze(boolean enable){
+    public int getMaxLoadDistance(){
+        return JsonUtil.readInt(json,MAX_LOAD_DISTANCE,100,1,Integer.MAX_VALUE);
+    }
+
+    public CommonAtmosphereSystemInfo waterFreeze(boolean enable){
         JsonUtil.setBoolean(getWorldInfoJson(),WORLD_INFO_CAN_WATER_FREEZE,enable);
         return this;
     }
 
-    public QiguaiAtmosphereSystemInfo waterEvaporate(boolean enable){
+    public CommonAtmosphereSystemInfo waterEvaporate(boolean enable){
         JsonUtil.setBoolean(getWorldInfoJson(),WORLD_INFO_CAN_WATER_EVAPORATE,enable);
         return this;
     }
 
-    public QiguaiAtmosphereSystemInfo setRainSmoothingConstant(int constant){
+    public CommonAtmosphereSystemInfo setRainSmoothingConstant(int constant){
         JsonUtil.setInt(getWorldInfoJson(),WORLD_INFO_RAIN_SMOOTHING_CONSTANT, BaseUtil.checkAndReturn(constant,1,Integer.MAX_VALUE));
         return this;
     }
 
-    public QiguaiAtmosphereSystemInfo setVaporExchangeRate(double rate){
+    public CommonAtmosphereSystemInfo setVaporExchangeRate(double rate){
         JsonUtil.setDouble(getWorldInfoJson(),WORLD_INFO_VAPOR_EXCHANGE_RATE,BaseUtil.checkAndReturn(rate,0,Double.POSITIVE_INFINITY));
+        return this;
+    }
+
+    public CommonAtmosphereSystemInfo setMaxLoadDistance(int distance){
+        JsonUtil.setInt(json,MAX_LOAD_DISTANCE,BaseUtil.checkAndReturn(distance,1,Integer.MAX_VALUE));
         return this;
     }
 

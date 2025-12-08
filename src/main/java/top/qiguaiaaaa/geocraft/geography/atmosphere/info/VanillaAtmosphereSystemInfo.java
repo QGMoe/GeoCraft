@@ -28,7 +28,8 @@
 package top.qiguaiaaaa.geocraft.geography.atmosphere.info;
 
 import com.google.gson.JsonObject;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemType;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.AtmosphereSystemType;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.CommonAtmosphereSystemInfo;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.JsonUtil;
 
@@ -37,7 +38,7 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public class VanillaAtmosphereSystemInfo extends QiguaiAtmosphereSystemInfo {
+public class VanillaAtmosphereSystemInfo extends CommonAtmosphereSystemInfo {
     public static final String CLOUD_EXPONENT = "cloud_exponent",
     CLOUD_EXPONENT_THUNDERING = "thundering",
     CLOUD_EXPONENT_RAIN = "raining",

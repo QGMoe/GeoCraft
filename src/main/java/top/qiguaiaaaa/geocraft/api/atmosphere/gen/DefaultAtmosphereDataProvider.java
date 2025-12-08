@@ -64,7 +64,7 @@ public class DefaultAtmosphereDataProvider implements IAtmosphereDataProvider {
 
     protected List<EntityPlayerMP> playerList;
 
-    protected int maxLoadDis;
+    protected int maxLoadDis = 100;
 
     /**
      * 创建一个大气数据提供器实例

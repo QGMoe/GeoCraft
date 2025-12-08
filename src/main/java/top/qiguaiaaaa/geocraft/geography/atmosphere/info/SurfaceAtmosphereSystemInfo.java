@@ -28,14 +28,15 @@
 package top.qiguaiaaaa.geocraft.geography.atmosphere.info;
 
 import com.google.gson.JsonObject;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemType;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.AtmosphereSystemType;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.CommonAtmosphereSystemInfo;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
  */
-public class SurfaceAtmosphereSystemInfo extends QiguaiAtmosphereSystemInfo {
+public class SurfaceAtmosphereSystemInfo extends CommonAtmosphereSystemInfo {
     public static SurfaceAtmosphereSystemInfo create(){
         return new SurfaceAtmosphereSystemInfo(new JsonObject());
     }

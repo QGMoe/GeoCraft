@@ -33,7 +33,7 @@ import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.GeoConfig;
 import top.qiguaiaaaa.geocraft.api.configs.item.base.ConfigBoolean;
 import top.qiguaiaaaa.geocraft.api.configs.item.number.ConfigInteger;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.AtmosphereSystemInfo;
 import top.qiguaiaaaa.geocraft.api.configs.value.map.entry.BlockIntegerEntry;
 import top.qiguaiaaaa.geocraft.api.configs.value.map.entry.ConfigEntry;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockProperty;
@@ -66,8 +66,9 @@ public final class AtmosphereConfig {
 
     @Config.RangeInt(min = 1)
     @GeoConfig.Since("0.1")
+    @Deprecated
     public static final ConfigInteger ATMOSPHERE_MAX_LOAD_DISTANCE = new ConfigInteger(CATEGORY_ATMOSPHERE,"maxLoadDistance",100,
-            "大气加载的最大距离，单位为区块。\n" +
+            "[自 0.2.0-beta.1 开始弃用]大气加载的最大距离，单位为区块。\n" +
                     "The max loaded distance for Atmosphere, measured in chunks.");
 
     @GeoConfig.Since("0.1")
@@ -288,8 +289,8 @@ public final class AtmosphereConfig {
                     new BlockIntegerEntry("minecraft:bedrock",0),
                     //沙子、沙砾等颗粒较大物质
                     new BlockIntegerEntry("minecraft:gravel",12),
-                    new BlockIntegerEntry("minecraft:sand",20,new ConfigurableBlockProperty("variant","sand")),
-                    new BlockIntegerEntry("minecraft:sand",23,new ConfigurableBlockProperty("variant","red_sand")),
+                    new BlockIntegerEntry("minecraft:sand",20,new ConfigurableBlockProperty("variant","sand"),new ConfigurableBlockProperty("humidity","*")),
+                    new BlockIntegerEntry("minecraft:sand",23,new ConfigurableBlockProperty("variant","red_sand"),new ConfigurableBlockProperty("humidity","*")),
                     new BlockIntegerEntry("minecraft:sandstone",30),
                     new BlockIntegerEntry("minecraft:red_sandstone",32,new ConfigurableBlockProperty("type","red_sandstone")),
                     new BlockIntegerEntry("minecraft:red_sandstone",28,new ConfigurableBlockProperty("type","chiseled_red_sandstone")),

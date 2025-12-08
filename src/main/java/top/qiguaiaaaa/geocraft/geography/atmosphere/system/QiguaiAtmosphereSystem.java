@@ -50,7 +50,7 @@ import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.setting.GeoAtmosphereSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.QiguaiAtmosphere;
-import top.qiguaiaaaa.geocraft.geography.atmosphere.info.QiguaiAtmosphereSystemInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.config.CommonAtmosphereSystemInfo;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 
@@ -62,7 +62,7 @@ import static top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil.Constants.WATER_ME
 
 public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
     protected final WorldServer world;
-    public QiguaiAtmosphereSystem(WorldServer server, AtmosphereInfo info, QiguaiAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider provider) {
+    public QiguaiAtmosphereSystem(WorldServer server, AtmosphereInfo info, CommonAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider provider) {
         super(info, provider);
         this.world = server;
         worldInfo.setSystem(this);
@@ -70,6 +70,7 @@ public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
         worldInfo.waterEvaporate(systemInfo.canWaterEvaporate());
         worldInfo.setRainSmoothingConstant(systemInfo.getRainSmoothingConstant());
         worldInfo.setVaporExchangeRate(systemInfo.getVaporExchangeRate());
+        provider.setMaxLoadDistance(systemInfo.getMaxLoadDistance());
     }
 
     @Override
