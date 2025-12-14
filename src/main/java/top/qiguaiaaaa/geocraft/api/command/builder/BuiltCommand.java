@@ -32,12 +32,12 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,7 +85,9 @@ public class BuiltCommand extends CommandBase {
     @Override
     public List<String> getTabCompletions(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args, @Nullable BlockPos targetPos) {
         if(node == null) return super.getTabCompletions(server, sender, args, targetPos);
-        final List<String> suggests = node.suggest(server,sender,new LinkedList<>(Arrays.asList(args)),targetPos);
+        final SuggestContext context = new SuggestContext(this,server,sender);
+        context.setTargetPos(targetPos);
+        final List<String> suggests = node.suggest(new LinkedList<>(Arrays.asList(args)),context);
         if(suggests == null) return super.getTabCompletions(server, sender, args, targetPos);
         return suggests;
     }
@@ -93,7 +95,7 @@ public class BuiltCommand extends CommandBase {
     @Override
     public void execute(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args) throws CommandException {
         if(node != null){
-            node.execute(new LinkedList<>(Arrays.asList(args)),new Context(this,server,sender));
+            node.execute(new LinkedList<>(Arrays.asList(args)),new ExecuteContext(this,server,sender));
         }
     }
 }

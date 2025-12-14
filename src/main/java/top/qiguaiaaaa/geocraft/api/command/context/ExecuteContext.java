@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command;
+package top.qiguaiaaaa.geocraft.api.command.context;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -33,7 +33,6 @@ import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -42,16 +41,11 @@ import java.util.Map;
 /**
  * @author QiguaiAAAA
  */
-public final class Context{
-    public final ICommand command;
+public final class ExecuteContext extends CommandContext{
     private final Map<String,Object> contexts = new HashMap<>();
-    private final ICommandSender sender;
-    private final MinecraftServer server;
 
-    public Context(@Nonnull ICommand command,@Nonnull MinecraftServer server,@Nonnull ICommandSender sender) {
-        this.command = command;
-        this.sender = sender;
-        this.server = server;
+    public ExecuteContext(@Nonnull ICommand command, @Nonnull MinecraftServer server, @Nonnull ICommandSender sender) {
+        super(command, server, sender);
     }
 
     public void remove(@Nonnull String key){
@@ -90,25 +84,5 @@ public final class Context{
         } else {
             throw new PlayerNotFoundException("commands.generic.player.unspecified");
         }
-    }
-
-    @Nonnull
-    public World getWorld() {
-        return sender.getEntityWorld();
-    }
-
-    @Nonnull
-    public ICommand getCommand() {
-        return command;
-    }
-
-    @Nonnull
-    public ICommandSender getSender() {
-        return sender;
-    }
-
-    @Nonnull
-    public MinecraftServer getServer() {
-        return server;
     }
 }

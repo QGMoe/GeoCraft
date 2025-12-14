@@ -34,52 +34,53 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
  */
 public class BlockPosNode extends ParameterNode<BlockPos> {
-    public static final DefaultParser<BlockPos> DEFAULT_PARSER = (node, context) -> context.put(node.name, context.getSender().getPosition());
+    public static final DefaultParser<BlockPos> DEFAULT_PARSER = (node, context) -> context.getSender().getPosition();
+
+    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> {
+        final List<String> suggests = Lists.newArrayList("~");
+        final BlockPos pos = context.getTargetPos()==null?context.getPosition():context.getTargetPos();
+        switch (args.size()){
+            case 1:
+                suggests.add(String.valueOf(pos.getX()));
+                break;
+            case 2:
+                suggests.add(String.valueOf(pos.getY()));
+                break;
+            case 3:
+                suggests.add(String.valueOf(pos.getZ()));
+                break;
+        }
+        return suggests;
+    });
 
     public BlockPosNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
+        setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull Context context) throws WrongUsageException {
+    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws WrongUsageException {
         if(args.size()<3 && args.size()>0 || args.size()==0 && !isOptional()) throw new WrongUsageException("Wrong usage!");
         return args.size()>=3;
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void parseParameter(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        final BlockPos pos = CommandBase.parseBlockPos(context.getSender(),args.toArray(new String[0]), 0,false);
-        context.put(name,pos);
-    }
-
-    @Nullable
-    @Override
-    public List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nullable BlockPos targetPos) {
-        final List<String> suggests = Lists.newArrayList("~");
-        switch (args.size()){
-            case 1:
-                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getX()):String.valueOf(targetPos.getX()));
-                break;
-            case 2:
-                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getY()):String.valueOf(targetPos.getY()));
-                break;
-            case 3:
-                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getZ()):String.valueOf(targetPos.getZ()));
-                break;
-        }
-        return suggests;
+    public <T extends List<String> & Deque<String>> BlockPos parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        return CommandBase.parseBlockPos(context.getSender(),args.toArray(new String[0]), 0,false);
     }
 
     @Override

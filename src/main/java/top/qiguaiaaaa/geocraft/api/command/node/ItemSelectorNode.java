@@ -29,19 +29,18 @@ package top.qiguaiaaaa.geocraft.api.command.node;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -49,29 +48,24 @@ import java.util.stream.Collectors;
  */
 public class ItemSelectorNode extends ParameterNode<Item> {
 
-    public static final DefaultParser<Item> DEFAULT_PARSER = (node, context) -> context.put(node.name, Items.AIR);
+    public static final DefaultParser<Item> DEFAULT_PARSER = (node, context) -> Items.AIR;
+    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> Item.REGISTRY.getKeys().stream().map(Objects::toString).collect(Collectors.toList()));
 
     public ItemSelectorNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
+        setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull Context context) throws WrongUsageException {
+    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws WrongUsageException {
         if(!isOptional()&&args.isEmpty()) throw new WrongUsageException("wrong!");
         return args.size()>=1;
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void parseParameter(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        final Item item = CommandBase.getItemByText(context.getSender(),args.getFirst());
-        context.put(name,item);
-    }
-
-    @Nullable
-    @Override
-    public List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nullable BlockPos targetPos) {
-        return Item.REGISTRY.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
+    public <T extends List<String> & Deque<String>> Item parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        return CommandBase.getItemByText(context.getSender(),args.getFirst());
     }
 
     @Override

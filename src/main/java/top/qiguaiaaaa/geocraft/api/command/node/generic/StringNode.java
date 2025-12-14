@@ -27,38 +27,20 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
-import com.google.common.collect.Lists;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.math.MathHelper;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;
 import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class NumberNode<T extends Number> extends ParameterNode<T> {
-    public NumberNode(@Nonnull String name) {
+public class StringNode extends ParameterNode<String> {
+    public StringNode(@Nonnull String name) {
         super(name);
-        setSuggestProvider(new NumberSuggestProvider());
-    }
-
-    protected T minValue;
-    protected T maxValue;
-
-    public void setMinValue(@Nonnull T minValue) {
-        this.minValue = minValue;
-    }
-
-    public void setMaxValue(@Nonnull T maxValue) {
-        this.maxValue = maxValue;
     }
 
     @Override
@@ -66,23 +48,14 @@ public abstract class NumberNode<T extends Number> extends ParameterNode<T> {
         return 1;
     }
 
-    protected abstract T parseNumber(@Nonnull String arg) throws NumberInvalidException;
-
     @Override
-    public <V extends List<String> & Deque<String>> boolean checkValid(@Nonnull V args, @Nonnull ExecuteContext context) throws WrongUsageException {
+    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws WrongUsageException {
         if(args.isEmpty()&&!isOptional()) throw new WrongUsageException("wrong!");
         return !args.isEmpty();
     }
 
     @Override
-    public <T1 extends List<String> & Deque<String>> T parseParameter(@Nonnull T1 args, @Nonnull ExecuteContext context) throws CommandException {
-        return parseNumber(args.get(0));
-    }
-
-    protected class NumberSuggestProvider implements BiFunction<List<String>, SuggestContext,List<String>>{
-        @Override
-        public List<String> apply(List<String> strings, SuggestContext context) {
-            return Lists.newArrayList(String.valueOf(MathHelper.clamp(0,minValue.doubleValue(),maxValue.doubleValue())));
-        }
+    public <T extends List<String> & Deque<String>> String parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) {
+        return args.getFirst();
     }
 }

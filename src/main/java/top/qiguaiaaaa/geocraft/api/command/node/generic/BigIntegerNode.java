@@ -36,7 +36,7 @@ import java.math.BigInteger;
  * @author QiguaiAAAA
  */
 public class BigIntegerNode extends NumberNode<BigInteger> {
-    public static final DefaultParser<BigInteger> DEFAULT_PARSER = (node, context) -> context.put(node.getName(),new BigInteger("0"));
+    public static final DefaultParser<BigInteger> DEFAULT_PARSER = (node, context) -> new BigInteger("0");
 
     public BigIntegerNode(@Nonnull String name) {
         super(name);

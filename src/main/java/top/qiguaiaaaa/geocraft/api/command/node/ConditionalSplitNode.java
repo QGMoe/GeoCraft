@@ -31,7 +31,9 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.function.TriPredicate;
 
 import javax.annotation.Nonnull;
@@ -40,21 +42,22 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
 public class ConditionalSplitNode implements ICommandNode{
-    protected final Map<TriPredicate<MinecraftServer, ICommandSender,List<String>>,ICommandNode> nodeList = new LinkedHashMap<>();
+    protected final Map<BiPredicate<CommandContext,List<String>>,ICommandNode> nodeList = new LinkedHashMap<>();
 
-    public void addCondition(@Nonnull TriPredicate<MinecraftServer, ICommandSender,List<String>> condition,@Nonnull ICommandNode node){
+    public void addCondition(@Nonnull BiPredicate<CommandContext,List<String>> condition,@Nonnull ICommandNode node){
         nodeList.put(condition,node);
     }
 
     @Nullable
-    protected ICommandNode findNextNode(@Nonnull List<String> args,@Nonnull MinecraftServer server,@Nonnull ICommandSender sender){
-        for(Map.Entry<TriPredicate<MinecraftServer, ICommandSender,List<String>>,ICommandNode> entry:nodeList.entrySet()){
-            if(entry.getKey().test(server,sender,args)){
+    protected ICommandNode findNextNode(@Nonnull List<String> args, @Nonnull CommandContext context){
+        for(Map.Entry<BiPredicate<CommandContext,List<String>>,ICommandNode> entry:nodeList.entrySet()){
+            if(entry.getKey().test(context,args)){
                 return entry.getValue();
             }
         }
@@ -62,16 +65,16 @@ public class ConditionalSplitNode implements ICommandNode{
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        ICommandNode node = findNextNode(args, context.getServer(),context.getSender());
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        ICommandNode node = findNextNode(args, context);
         if(node!=null) node.execute(args,context);
     }
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull T args, @Nullable BlockPos targetPos) {
-        ICommandNode node = findNextNode(args,server,sender);
-        if(node != null) return node.suggest(server, sender, args, targetPos);
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
+        ICommandNode node = findNextNode(args,context);
+        if(node != null) return node.suggest(args,context);
         return null;
     }
 }

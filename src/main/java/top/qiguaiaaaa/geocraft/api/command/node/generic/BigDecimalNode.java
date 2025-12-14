@@ -36,7 +36,7 @@ import java.math.BigDecimal;
  * @author QiguaiAAAA
  */
 public class BigDecimalNode extends NumberNode<BigDecimal> {
-    public static final DefaultParser<BigDecimal> DEFAULT_PARSER = (node, context) -> context.put(node.getName(),new BigDecimal("0"));
+    public static final DefaultParser<BigDecimal> DEFAULT_PARSER = (node, context) -> new BigDecimal("0");
 
     public BigDecimalNode(@Nonnull String name) {
         super(name);

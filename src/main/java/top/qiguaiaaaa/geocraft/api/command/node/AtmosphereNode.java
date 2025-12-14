@@ -36,14 +36,16 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
@@ -58,22 +60,40 @@ public class AtmosphereNode extends ParameterNode<IAtmosphereAccessor> {
         notAir = !state.getBlock().isAir(state,world,pos);
         IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(context.getWorld(),pos,notAir);
         if(accessor == null) throw new CommandException("geocraft.command.atmosphere.nonexistent.there");
-        context.put(parameterNode.name, accessor);
+        return accessor;
+    };
+
+    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args,context) -> {
+        final List<String> suggests = args.size()<=3?Lists.newArrayList("~"):Lists.newArrayList("default","false","true");
+        final BlockPos pos = context.getTargetPos()==null?context.getPosition():context.getTargetPos();
+        switch (args.size()){
+            case 1:
+                suggests.add(String.valueOf(pos.getX()));
+                break;
+            case 2:
+                suggests.add(String.valueOf(pos.getY()));
+                break;
+            case 3:
+                suggests.add(String.valueOf(pos.getZ()));
+                break;
+        }
+        return suggests;
     };
 
     public AtmosphereNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
+        setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull Context context) throws WrongUsageException {
+    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws WrongUsageException {
         if(args.size()<4 && args.size()>0 || args.size()==0 && !isOptional()) throw new WrongUsageException("Wrong usage!");
         return args.size()>=4;
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void parseParameter(@Nonnull T args, @Nonnull Context context) throws CommandException{
+    public <T extends List<String> & Deque<String>> IAtmosphereAccessor parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException{
         final BlockPos pos = CommandBase.parseBlockPos(context.getSender(),args.toArray(new String[0]), 0,false);
         final boolean notAir;
         if("default".equals(args.get(3))){
@@ -87,25 +107,7 @@ public class AtmosphereNode extends ParameterNode<IAtmosphereAccessor> {
 
         if(accessor == null) throw new CommandException("geocraft.command.atmosphere.nonexistent.there");
 
-        context.put(name,accessor);
-    }
-
-    @Nullable
-    @Override
-    public List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nullable BlockPos targetPos) {
-        final List<String> suggests = args.size()<=3?Lists.newArrayList("~"):Lists.newArrayList("default","false","true");
-        switch (args.size()){
-            case 1:
-                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getX()):String.valueOf(targetPos.getX()));
-                break;
-            case 2:
-                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getY()):String.valueOf(targetPos.getY()));
-                break;
-            case 3:
-                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getZ()):String.valueOf(targetPos.getZ()));
-                break;
-        }
-        return suggests;
+        return accessor;
     }
 
     @Override

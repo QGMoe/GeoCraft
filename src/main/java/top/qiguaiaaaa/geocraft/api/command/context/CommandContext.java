@@ -25,22 +25,52 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.context;
 
-import net.minecraft.command.CommandException;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNode{
-    @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        ExecuteNode.super.execute(args,context);
-        if(childNode != null) childNode.execute(args,context);
+public class CommandContext {
+    protected final ICommand command;
+    protected final ICommandSender sender;
+    protected final MinecraftServer server;
+
+    public CommandContext(@Nonnull ICommand command,@Nonnull MinecraftServer server,@Nonnull ICommandSender sender) {
+        this.command = command;
+        this.sender = sender;
+        this.server = server;
+    }
+
+    @Nonnull
+    public World getWorld() {
+        return sender.getEntityWorld();
+    }
+
+    @Nonnull
+    public BlockPos getPosition(){
+        return sender.getPosition();
+    }
+
+    @Nonnull
+    public ICommand getCommand() {
+        return command;
+    }
+
+    @Nonnull
+    public ICommandSender getSender() {
+        return sender;
+    }
+
+    @Nonnull
+    public MinecraftServer getServer() {
+        return server;
     }
 }

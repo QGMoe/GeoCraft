@@ -25,22 +25,33 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.context;
 
-import net.minecraft.command.CommandException;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNode{
-    @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        ExecuteNode.super.execute(args,context);
-        if(childNode != null) childNode.execute(args,context);
+public final class SuggestContext extends CommandContext{
+    @Nullable
+    private BlockPos targetPos;
+
+    public SuggestContext(@Nonnull ICommand command, @Nonnull MinecraftServer server, @Nonnull ICommandSender sender) {
+        super(command, server, sender);
+    }
+
+    public void setTargetPos(@Nullable BlockPos targetPos) {
+        this.targetPos = targetPos;
+    }
+
+    @Nullable
+    public BlockPos getTargetPos() {
+        return targetPos;
     }
 }

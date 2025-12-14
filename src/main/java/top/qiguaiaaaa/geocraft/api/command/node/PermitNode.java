@@ -28,42 +28,41 @@
 package top.qiguaiaaaa.geocraft.api.command.node;
 
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
 public class PermitNode extends NoSplitNode{
-    protected BiFunction<MinecraftServer,ICommandSender,Boolean> checker;
+    protected Function<CommandContext,Boolean> checker;
 
-    public void setChecker(@Nonnull BiFunction<MinecraftServer, ICommandSender, Boolean> checker) {
+    public void setChecker(@Nonnull Function<CommandContext, Boolean> checker) {
         this.checker = checker;
     }
 
-    public boolean checkPermission(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender) {
-        return checker != null && checker.apply(server, sender);
+    public boolean checkPermission(@Nonnull CommandContext context) {
+        return checker != null && checker.apply(context);
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        if(!checkPermission(context.getServer(), context.getSender())) throw new WrongUsageException("Permission not enough!");
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        if(!checkPermission(context)) throw new WrongUsageException("Permission not enough!");
         if(childNode != null) childNode.execute(args,context);
     }
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull T args, @Nullable BlockPos targetPos) {
-        if(!checkPermission(server,sender)) return null;
-        return childNode==null?null:childNode.suggest(server, sender, args, targetPos);
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
+        if(!checkPermission(context)) return null;
+        return childNode==null?null:childNode.suggest(args, context);
     }
 }

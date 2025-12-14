@@ -29,16 +29,16 @@ package top.qiguaiaaaa.geocraft.api.command.node;
 
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author QiguaiAAAA
@@ -56,8 +56,8 @@ public class LiteralNode extends PermitNode implements IOptionalNode {
 
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        if(!checkPermission(context.getServer(),context.getSender())) throw new WrongUsageException("Not enough permission!");
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        if(!checkPermission(context)) throw new WrongUsageException("Not enough permission!");
         ICommandNode node;
         if(args.size()>0){
             node = literal2Node.get(args.getFirst());
@@ -75,12 +75,12 @@ public class LiteralNode extends PermitNode implements IOptionalNode {
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull T args, @Nullable BlockPos targetPos) {
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
         if(args.size()>1){
             final String first = args.pollFirst();
             try {
                 ICommandNode nextNode = literal2Node.get(first);
-                return nextNode.suggest(server, sender, args, targetPos);
+                return nextNode.suggest(args, context);
             }finally {
                 args.addFirst(first);
             }

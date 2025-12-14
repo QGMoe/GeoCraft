@@ -28,18 +28,16 @@
 package top.qiguaiaaaa.geocraft.api.command.node;
 
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
-import java.util.Objects;
 import java.util.Stack;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +48,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     protected final String name;
     protected boolean optional;
     protected DefaultParser<P> defaultParser;
+    protected BiFunction<List<String>,SuggestContext,List<String>> suggestProvider;
 
     public ParameterNode(@Nonnull String name) {
         this.name = name;
@@ -57,6 +56,10 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
 
     public void setDefaultParser(DefaultParser<P> defaultParser) {
         this.defaultParser = defaultParser;
+    }
+
+    public void setSuggestProvider(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
+        this.suggestProvider = suggestProvider;
     }
 
     public String getName() {
@@ -74,12 +77,11 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException {
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         final boolean parsed = checkAndParse(args,context);
         final Stack<String> paras = parsed?ParasStack.get():null;
         if(childNode != null){
             if(parsed){
-                paras.clear();
                 for(int i=0;i<getParametersLength();i++){
                     paras.push(args.pollFirst());
                 }
@@ -88,7 +90,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
                 childNode.execute(args,context);
             }finally {
                 if(parsed){
-                    while (!paras.isEmpty()){
+                    for(int i=0;i<getParametersLength();i++){
                         args.addFirst(paras.pop());
                     }
                 }
@@ -99,57 +101,49 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull T args, @Nullable BlockPos targetPos) {
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
         if(args.size()>getParametersLength()){
             final Stack<String> paras = ParasStack.get();
-            paras.clear();
             for(int i=0;i<getParametersLength();i++){
                 paras.push(args.pollFirst());
             }
             try {
-                return childNode.suggest(server, sender, args, targetPos);
+                return childNode.suggest(args, context);
             }finally {
-                while (!paras.isEmpty()){
+                for(int i=0;i<getParametersLength();i++){
                     args.addFirst(paras.pop());
                 }
             }
         }else if(args.size()==0){
             return null;
-        }else {
-            final List<String> suggests = suggestParameter(server,sender,args,targetPos);
+        }else if(suggestProvider!=null){
+            final List<String> suggests = suggestProvider.apply(args,context);
             return suggests==null?null:suggests.stream().filter(s -> s.startsWith(args.getLast()))
                     .map(s -> s.replace(args.get(0),"")).collect(Collectors.toList());
-        }
+        }else return null;
     }
 
-    protected final <T extends List<String> & Deque<String>> boolean checkAndParse(@Nonnull T args, @Nonnull Context context) throws CommandException{
+    protected final <T extends List<String> & Deque<String>> boolean checkAndParse(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException{
+        final P parsedArg;
         if(checkValid(args,context)){
-            parseParameter(args,context);
+            parsedArg = parseParameter(args,context);
+            context.put(name,parsedArg);
             return true;
+        }else if(defaultParser!=null){
+            parsedArg = defaultParser.parser(this,context);
+            context.put(name,parsedArg);
         }
-        if(defaultParser!=null) defaultParser.parser(this,context);
         return false;
     }
 
     public abstract int getParametersLength();
 
-    public abstract <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull Context context) throws WrongUsageException;
+    public abstract <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws WrongUsageException;
 
-    public abstract <T extends List<String> & Deque<String>> void parseParameter(@Nonnull T args, @Nonnull Context context) throws CommandException;
+    public abstract <T extends List<String> & Deque<String>> P parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException;
 
-    @Nullable
-    public abstract List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender,@Nonnull List<String> args,@Nullable BlockPos targetPos);
-
+    @FunctionalInterface
     public interface DefaultParser<T>{
-        void parser(@Nonnull ParameterNode<T> node,@Nonnull Context context) throws CommandException;
-
-        default DefaultParser<T> andThen(@Nonnull DefaultParser<T> after) {
-            Objects.requireNonNull(after);
-
-            return (l, r) -> {
-                parser(l, r);
-                after.parser(l, r);
-            };
-        }
+        T parser(@Nonnull ParameterNode<T> node,@Nonnull ExecuteContext context) throws CommandException;
     }
 }

@@ -36,7 +36,7 @@ import javax.annotation.Nonnull;
  * @author QiguaiAAAA
  */
 public class LongNode extends NumberNode<Long>{
-    public static final DefaultParser<Long> DEFAULT_PARSER = (node, context) -> context.put(node.getName(),0L);
+    public static final DefaultParser<Long> DEFAULT_PARSER = (node, context) -> 0L;
     public LongNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);

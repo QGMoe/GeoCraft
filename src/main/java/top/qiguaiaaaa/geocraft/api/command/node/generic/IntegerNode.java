@@ -36,7 +36,7 @@ import javax.annotation.Nonnull;
  * @author QiguaiAAAA
  */
 public class IntegerNode extends NumberNode<Integer>{
-    public static final DefaultParser<Integer> DEFAULT_PARSER = (node, context) -> context.put(node.getName(),0);
+    public static final DefaultParser<Integer> DEFAULT_PARSER = (node, context) -> 0;
 
     public IntegerNode(@Nonnull String name) {
         super(name);

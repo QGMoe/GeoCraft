@@ -30,26 +30,27 @@ package top.qiguaiaaaa.geocraft.api.command.node.generic;
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
  */
 public class BooleanNode extends ParameterNode<Boolean> {
-    public static final DefaultParser<Boolean> DEFAULT_PARSER = (node, context) -> context.put(node.getName(),Boolean.FALSE);
+    public static final DefaultParser<Boolean> DEFAULT_PARSER = (node, context) -> Boolean.FALSE;
+
+    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args, context) -> Lists.newArrayList(Boolean.TRUE.toString(),Boolean.FALSE.toString());
     public BooleanNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
+        setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Override
@@ -58,19 +59,13 @@ public class BooleanNode extends ParameterNode<Boolean> {
     }
 
     @Override
-    public <V extends List<String> & Deque<String>> boolean checkValid(@Nonnull V args, @Nonnull Context context) throws WrongUsageException {
+    public <V extends List<String> & Deque<String>> boolean checkValid(@Nonnull V args, @Nonnull ExecuteContext context) throws WrongUsageException {
         if(args.isEmpty()&&!isOptional()) throw new WrongUsageException("wrong!");
         return !args.isEmpty();
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void parseParameter(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        context.put(name, CommandBase.parseBoolean(args.get(0)));
-    }
-
-    @Nullable
-    @Override
-    public List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nullable BlockPos targetPos) {
-        return Lists.newArrayList(Boolean.FALSE.toString());
+    public <T extends List<String> & Deque<String>> Boolean parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        return CommandBase.parseBoolean(args.get(0));
     }
 }

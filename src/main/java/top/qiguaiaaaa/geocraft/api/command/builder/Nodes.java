@@ -31,23 +31,25 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.item.Item;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.*;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.BooleanNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.DoubleNode;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
-import top.qiguaiaaaa.geocraft.api.function.TriPredicate;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.StringNode;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 /**
@@ -91,6 +93,11 @@ public final class Nodes {
     }
 
     @Nonnull
+    public static ParameterNodeBuilder<String, StringNode> string(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,StringNode::new);
+    }
+
+    @Nonnull
     public static ParameterNodeBuilder<BlockPos,BlockPosNode> blockPos(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,BlockPosNode::new);
     }
@@ -116,6 +123,7 @@ public final class Nodes {
         protected ICommandNode bakedChildNode;
         protected boolean optional;
         protected ParameterNode.DefaultParser<P> parser;
+        protected BiFunction<List<String>, SuggestContext,List<String>> suggestProvider;
 
         protected ParameterNodeBuilder(@Nonnull String name) {
             this.name = name;
@@ -128,13 +136,7 @@ public final class Nodes {
         }
 
         @Nonnull
-        public ParameterNodeBuilder<P,T> defaultAs(@Nonnull DefaultSupplier<P> supplier){
-            this.parser = (node, context) -> context.put(node.getName(),supplier.supply(context));
-            return this;
-        }
-
-        @Nonnull
-        public ParameterNodeBuilder<P,T> defaultCalc(ParameterNode.DefaultParser<P> parser){
+        public ParameterNodeBuilder<P,T> defaultAs(@Nullable ParameterNode.DefaultParser<P> parser){
             this.parser = parser;
             return this;
         }
@@ -152,22 +154,24 @@ public final class Nodes {
         }
 
         @Nonnull
+        public ParameterNodeBuilder<P,T> suggest(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
+            this.suggestProvider = suggestProvider;
+            return this;
+        }
+
+        @Nonnull
         @Override
         public T build() {
             final T instance = buildInstance();
             instance.setChildNode(bakedChildNode!=null?bakedChildNode:childNode.build());
             instance.setDefaultParser(parser);
             instance.setOptional(optional);
+            instance.setSuggestProvider(suggestProvider);
             return instance;
         }
 
         @Nonnull
         protected abstract T buildInstance();
-
-        @FunctionalInterface
-        public interface DefaultSupplier<P>{
-            P supply(@Nonnull Context context);
-        }
     }
 
     public static class FastParameterNodeBuilder<P,T extends ParameterNode<P>> extends ParameterNodeBuilder<P,T>{
@@ -213,14 +217,8 @@ public final class Nodes {
 
         @Nonnull
         @Override
-        public NumberNodeBuilder<N, T> defaultAs(@Nonnull DefaultSupplier<N> supplier) {
-            return (NumberNodeBuilder<N, T>) super.defaultAs(supplier);
-        }
-
-        @Nonnull
-        @Override
-        public NumberNodeBuilder<N, T> defaultCalc(ParameterNode.DefaultParser<N> parser) {
-            return (NumberNodeBuilder<N, T>) super.defaultCalc(parser);
+        public NumberNodeBuilder<N, T> defaultAs(@Nullable ParameterNode.DefaultParser<N> parser) {
+            return (NumberNodeBuilder<N, T>) super.defaultAs(parser);
         }
 
         @Nonnull
@@ -233,6 +231,12 @@ public final class Nodes {
         @Override
         public NumberNodeBuilder<N, T> then(@Nonnull ICommandNode childNode) {
             return (NumberNodeBuilder<N, T>) super.then(childNode);
+        }
+
+        @Nonnull
+        @Override
+        public NumberNodeBuilder<N, T> suggest(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
+            return (NumberNodeBuilder<N, T>) super.suggest(suggestProvider);
         }
 
         @Nonnull
@@ -263,7 +267,7 @@ public final class Nodes {
     }
 
     public static class PermitNodeBuilder implements INodeBuilder<PermitNode>{
-        private BiFunction<MinecraftServer, ICommandSender,Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
+        private Function<CommandContext,Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
 
         private INodeBuilder<?> childNode;
         private ICommandNode bakedChildNode;
@@ -283,7 +287,7 @@ public final class Nodes {
         }
 
         @Nonnull
-        public PermitNodeBuilder passIf(@Nonnull BiFunction<MinecraftServer, ICommandSender,Boolean> funcCheckPermission){
+        public PermitNodeBuilder passIf(@Nonnull Function<CommandContext,Boolean> funcCheckPermission){
             this.funcCheckPermission = funcCheckPermission;
             return this;
         }
@@ -319,12 +323,12 @@ public final class Nodes {
 
         @FunctionalInterface
         public interface CommandRunFunction{
-            void run(@Nonnull World world, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nonnull Context context) throws CommandException;
+            void run(@Nonnull World world, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nonnull ExecuteContext context) throws CommandException;
 
-            static void notifyCommandListener(@Nonnull Context context, String translationKey, Object... translationArgs) {
+            static void notifyCommandListener(@Nonnull ExecuteContext context, String translationKey, Object... translationArgs) {
                 CommandBase.notifyCommandListener(context.getSender(), context.getCommand(), translationKey, translationArgs);
             }
-            static void notifyCommandListener(@Nonnull Context context, String translationKey,final int flags, Object... translationArgs) {
+            static void notifyCommandListener(@Nonnull ExecuteContext context, String translationKey, final int flags, Object... translationArgs) {
                 CommandBase.notifyCommandListener(context.getSender(), context.getCommand(),flags, translationKey, translationArgs);
             }
         }
@@ -359,7 +363,7 @@ public final class Nodes {
         public RelayExecuteNode build() {
             final RelayExecuteNode node = new RelayExecuteNode() {
                 @Override
-                public void run(@Nonnull Context context, @Nonnull List<String> args) throws CommandException {
+                public void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException {
                     funcExecute.run(context.getWorld(),context.getSender(),args,context);
                 }
             };
@@ -373,7 +377,7 @@ public final class Nodes {
         private ICommandNode bakedDefaultChild = null;
         private INodeBuilder<?> defaultChild = null;
         private boolean optional = false;
-        private BiFunction<MinecraftServer, ICommandSender,Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
+        private Function<CommandContext,Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
 
         private LiteralNodeBuilder(){}
 
@@ -417,7 +421,7 @@ public final class Nodes {
         }
 
         @Nonnull
-        public LiteralNodeBuilder permitIf(@Nonnull BiFunction<MinecraftServer, ICommandSender,Boolean> funcCheckPermission){
+        public LiteralNodeBuilder permitIf(@Nonnull Function<CommandContext,Boolean> funcCheckPermission){
             this.funcCheckPermission = funcCheckPermission;
             return this;
         }
@@ -442,7 +446,7 @@ public final class Nodes {
         protected List<ConditionBuilder> conditions = new ArrayList<>();
 
         @Nonnull
-        public ConditionBuilder as(@Nonnull TriPredicate<MinecraftServer, ICommandSender,List<String>> condition){
+        public ConditionBuilder as(@Nonnull BiPredicate<CommandContext,List<String>> condition){
             final ConditionBuilder builder =new ConditionBuilder(condition);
             conditions.add(builder);
             return builder;
@@ -457,11 +461,11 @@ public final class Nodes {
         }
 
         public class ConditionBuilder{
-            final TriPredicate<MinecraftServer, ICommandSender,List<String>> predicate;
+            final BiPredicate<CommandContext,List<String>> predicate;
             INodeBuilder<?> child;
             ICommandNode bakedChild;
 
-            public ConditionBuilder(@Nonnull TriPredicate<MinecraftServer, ICommandSender,List<String>> predicate) {
+            public ConditionBuilder(@Nonnull BiPredicate<CommandContext,List<String>> predicate) {
                 this.predicate = predicate;
             }
 

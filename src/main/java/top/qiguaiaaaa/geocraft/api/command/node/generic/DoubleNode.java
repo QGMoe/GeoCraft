@@ -36,7 +36,7 @@ import javax.annotation.Nonnull;
  * @author QiguaiAAAA
  */
 public class DoubleNode extends NumberNode<Double>{
-    public static final DefaultParser<Double> DEFAULT_PARSER = (node, context) -> context.put(node.getName(),0d);
+    public static final DefaultParser<Double> DEFAULT_PARSER = (node, context) -> 0d;
     public DoubleNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);

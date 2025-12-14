@@ -30,6 +30,7 @@ package top.qiguaiaaaa.geocraft.api.command.builder;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 
 import javax.annotation.Nonnull;
@@ -37,14 +38,15 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * @since 0.2.0
  * @author QiguaiAAAA
  */
 public class CommandBuilder {
-    public static final BiFunction<MinecraftServer,ICommandSender,Boolean> PERMIT_ALL = (server, sender) -> Boolean.TRUE,
-    REJECT_ALL = ((server, sender) -> Boolean.FALSE);
+    public static final Function<CommandContext,Boolean> PERMIT_ALL = context -> Boolean.TRUE,
+    REJECT_ALL = context -> Boolean.FALSE;
 
     public CommandBuilder(@Nonnull String name){
         this.name = name;
