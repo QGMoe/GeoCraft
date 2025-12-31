@@ -39,8 +39,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidUpdateManager;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.update.RealityBlockIEConcreteUpdateTask;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.update.RealityBlockIEConcreteUpdateTask;
 
 import java.util.Random;
 

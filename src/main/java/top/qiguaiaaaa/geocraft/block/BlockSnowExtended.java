@@ -50,7 +50,7 @@ import java.util.Random;
 
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.MIXTURE;
 import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.FLUID_PHYSICS_INFO;
-import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo.CREATE_INFO_FUNC;
+import static top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPhysicsInfo.CREATE_INFO_FUNC;
 
 /**
  * @since 0.2.0-beta.2

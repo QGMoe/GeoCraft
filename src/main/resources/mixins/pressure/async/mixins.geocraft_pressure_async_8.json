@@ -1,0 +1,11 @@
+{
+  "package": "top.qiguaiaaaa.geocraft.mixin.pressure.async",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "ChunkProviderServerMixin8"
+  ],
+  "client": [
+  ]
+}

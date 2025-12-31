@@ -52,7 +52,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
@@ -62,7 +61,7 @@ import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.block.IBlockSnow;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealitySnowUpdater;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.RealitySnowUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
 import javax.annotation.Nonnull;

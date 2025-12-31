@@ -84,7 +84,9 @@ public class MixinEarlyInit implements IFMLLoadingPlugin, IEarlyMixinLoader {
         }
 
         if(FluidPhysicsConfig.PAUSE_PRESSURE_SYSTEM_WHILE_CHUNK_SAVING.getValue()){
-            mixinList.add("mixins/pressure/async/mixins.geocraft_pressure_async.json");
+            if(FluidPhysicsConfig.WRAP_MODIFIED_CHUNK_SAVING_METHOD.getValue()){
+                mixinList.add("mixins/pressure/async/mixins.geocraft_pressure_async_8.json");
+            }else mixinList.add("mixins/pressure/async/mixins.geocraft_pressure_async.json");
         }
         mixinList.add("mixins/ground_water/mixins.geocraft_ground_water.json");
         mixinList.add("mixins.geocraft_atmosphere.json");

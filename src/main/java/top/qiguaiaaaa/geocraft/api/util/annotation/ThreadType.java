@@ -35,11 +35,11 @@ public enum ThreadType {
     MINECRAFT_SERVER,
     MINECRAFT_CLIENT,
     /**
-     * @see top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager
+     * @see top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager
      */
     FLUID_PRESSURE_MANAGER,
     /**
-     * @see top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager
+     * @see top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager
      */
     FLUID_PRESSURE_TASKS,
     /**

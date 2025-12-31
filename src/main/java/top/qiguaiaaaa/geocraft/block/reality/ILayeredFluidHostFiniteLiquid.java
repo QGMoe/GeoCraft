@@ -44,7 +44,7 @@ import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.MoreRealityFluidPhysicsCore;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.MoreRealityFluidPhysicsCore;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

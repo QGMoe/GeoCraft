@@ -49,7 +49,7 @@ import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.block.StaticLiquidUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.VanillaFluidPhysicsCore;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFluidPhysicsCore;
 import top.qiguaiaaaa.geocraft.mixin.common.entity.EntityFallingBlockAccessor;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidMixinUtil;

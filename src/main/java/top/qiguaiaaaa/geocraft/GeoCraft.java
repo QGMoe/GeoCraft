@@ -37,8 +37,8 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemRunner;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereRegionFileCache;
 import top.qiguaiaaaa.geocraft.command.CommandAtmosphere;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidUpdateManager;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.world.gen.GeoCraftPostPopulatingGenerator;
 
@@ -46,7 +46,7 @@ import top.qiguaiaaaa.geocraft.world.gen.GeoCraftPostPopulatingGenerator;
 public class GeoCraft {
     public static final String MODID = "geocraft";
     public static final String NAME = "Geo Craft";
-    public static final String VERSION = "0.2.0-beta.3";
+    public static final String VERSION = "0.2.0-beta.4";
     @SidedProxy(clientSide = "top.qiguaiaaaa.geocraft.ClientProxy",serverSide = "top.qiguaiaaaa.geocraft.CommonProxy")
     private static CommonProxy proxy;
     private static Logger logger;

@@ -47,8 +47,8 @@ import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.block.StaticLiquidUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.VanillaFluidPhysicsCore;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla_like.VanillaLikeFluidPhysicsCore;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFluidPhysicsCore;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla_like.VanillaLikeFluidPhysicsCore;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 

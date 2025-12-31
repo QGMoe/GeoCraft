@@ -50,7 +50,7 @@ import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealitySnowUpdater;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.RealitySnowUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
 import javax.annotation.Nonnull;

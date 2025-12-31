@@ -28,17 +28,26 @@
 package top.qiguaiaaaa.geocraft.mixin.pressure.async;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.ForgeChunkManager;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
@@ -49,24 +58,69 @@ import java.util.Iterator;
  */
 @Mixin(value = ChunkProviderServer.class)
 public abstract class ChunkProviderServerMixin implements IChunkProvider {
+    @Shadow @Final public Long2ObjectMap<Chunk> loadedChunks;
+
+    @Shadow protected abstract void saveChunkData(Chunk chunkIn);
+
+    @Shadow protected abstract void saveChunkExtraData(Chunk chunkIn);
+
+    @Shadow @Final public WorldServer world;
+
+    @Shadow @Final public IChunkLoader chunkLoader;
+
     @Inject(method = "tick",
             at =@At(value = "INVOKE_ASSIGN",target = "Ljava/util/Set;iterator()Ljava/util/Iterator;",ordinal = 0),
-    locals = LocalCapture.CAPTURE_FAILEXCEPTION)
-    private void preTick(CallbackInfoReturnable<Boolean> ci, @Nonnull @Local Iterator<Long> iterator){
-        if(!iterator.hasNext()) return;
-        long beginTime = System.currentTimeMillis();
+    locals = LocalCapture.CAPTURE_FAILEXCEPTION,cancellable = true)
+    private void 天圆地方$tickLock(@Nonnull final CallbackInfoReturnable<Boolean> ci, @Nonnull @Local final Iterator<Long> iterator){
+        if(!iterator.hasNext()) return; //不会卸载区块
+        boolean locked = false;
         try {
-            FluidPressureSearchManager.requestInterrupt(FluidPhysicsConfig.PAUSE_TIME_FOR_PRESSURE_PRE_CHUNK_SAVING.getValue());
-            long diff = System.currentTimeMillis()-beginTime;
-            if(diff>= FluidPhysicsConfig.PAUSE_TIME_FOR_PRESSURE_PRE_CHUNK_SAVING.getValue()){
-                GeoCraft.getLogger().warn("Is there any wrong with Pressure System? Server thread wait time exceeded {} ms.",diff);
-            }
-        }catch (InterruptedException ignored){
-        }
-    }
 
-    @Inject(method = "tick",at = @At("TAIL"))
-    private void postTick(CallbackInfoReturnable<Boolean> ci){
-        FluidPressureSearchManager.resume();
+            try {
+                final long begin = System.nanoTime();
+
+                locked = FluidPressureSearchManager.tryLockWorldRead(FluidPhysicsConfig.PAUSE_TIME_FOR_PRESSURE_PRE_CHUNK_SAVING.getValue());
+                if(locked){
+                    GeoCraft.getLogger().debug("Server successfully locked World Read Lock.");
+                }else {
+                    GeoCraft.getLogger().warn("Is there any wrong with Pressure System? Server thread wait time exceeded {} ms.",FluidPhysicsConfig.PAUSE_TIME_FOR_PRESSURE_PRE_CHUNK_SAVING.getValue());
+                }
+
+                final long end = System.nanoTime();
+                GeoCraft.getLogger().debug("Server Thread spent {} ms in trying acquiring lock before chunk saving.",(end-begin)/1000000d);
+            }catch (InterruptedException ignored){
+            }
+
+            if(!locked && FluidPhysicsConfig.DO_NOT_DROP_CHUNKS_WHEN_FAILING_PAUSING_PRESSURE_SYSTEM.getValue()){
+                GeoCraft.getLogger().warn("Failed to pause PressureSystem, dropping chunks is cancelled for stability.");
+                ci.setReturnValue(false);
+                return;
+            }
+
+            for (int i = 0; i < 100 && iterator.hasNext(); iterator.remove()) {
+                final Long chunkId = iterator.next();
+                final Chunk chunk = loadedChunks.get(chunkId);
+
+                if (chunk != null && chunk.unloadQueued) {
+                    chunk.onUnload();
+                    ForgeChunkManager.putDormantChunk(ChunkPos.asLong(chunk.x, chunk.z), chunk);
+                    this.saveChunkData(chunk);
+                    this.saveChunkExtraData(chunk);
+                    this.loadedChunks.remove(chunkId);
+                    i++;
+                }
+            }
+        }finally {
+            if(locked) FluidPressureSearchManager.releaseWorldReadLock();
+        }
+
+        if(!iterator.hasNext()) { //之后的卸载区块不会执行了，先返回吧
+            return;
+        }
+        ci.setReturnValue(false);
+
+        if (this.loadedChunks.isEmpty()) DimensionManager.unloadWorld(this.world.provider.getDimension());
+
+        this.chunkLoader.chunkTick();
     }
 }

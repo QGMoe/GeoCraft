@@ -33,8 +33,8 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import top.qiguaiaaaa.geocraft.GeoCraft;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidUpdateManager;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 

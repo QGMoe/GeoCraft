@@ -35,7 +35,7 @@ import top.qiguaiaaaa.geocraft.api.util.APIUtil;
  * @author QiguaiAAAA
  */
 public final class GeoCraftAPI {
-    public final static String VERSION = "0.2.0-beta.3";
+    public final static String VERSION = "0.2.0-beta.4";
     public final static String MODID = "geocraft";
     public final static String PROVIDERS = "GeoCraftAPI";
     public final static Logger LOGGER = APIUtil.LOGGER;

@@ -47,8 +47,8 @@ import top.qiguaiaaaa.geocraft.api.configs.item.collection.list.ConfigIntegerWei
 import top.qiguaiaaaa.geocraft.api.configs.item.collection.list.ConfigList;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.exception.ConfigParseError;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPhysicsInfo;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
 import top.qiguaiaaaa.geocraft.api.util.math.Int10;
 import top.qiguaiaaaa.geocraft.api.util.math.Int21;
 
@@ -175,6 +175,13 @@ public final class FluidPhysicsConfig {
                     "The number of threads in the thread pool is generally set to the number of CPU cores. \n" +
                 "However, please note that if the pressure system runs too fast, it may cause the Minecraft server thread to be unable to keep up, resulting in lag due to a large number of fluids being updated too quickly.");
 
+    @Config.RangeInt(min = 1,max = 1024)
+    @GeoConfig.Since("0.2.0-beta.4")
+    public static final ConfigInteger MINIMUM_GRANULARITY_OF_TASK_EXECUTION_VOLUME_WHEN_POOLS = new ConfigInteger(CATEGORY_FLUID_PRESSURE_SYSTEM_THREAD_POOL,
+            "minimumGranularityOfTaskExecutionVolume",Math.min(1024,Runtime.getRuntime().availableProcessors()*10),"使用线程池压强系统时，压强系统在获取一次锁时可更新的最大任务数。\n" +
+            "该值过小可能会因为频繁释放丢弃锁而影响压强系统的性能，但能让服务器线程及时获取锁以保存区块。该值过大可能会导致服务器线程不能及时获取锁以保存区块，导致服务器线程浪费大量的时间在获取锁上。\n" +
+            "应随numberOfThreadsInTheThreadPool的大小而变化。");
+
     // Ended
     //**********************
 
@@ -239,8 +246,40 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.1")
     public static final ConfigBoolean PAUSE_PRESSURE_SYSTEM_WHILE_CHUNK_SAVING = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
             "pausePressureSystemWhileChunkSaving",true,
-            "当压强系统异步加载的时候，在区块保存时停止压强系统运行，以防止可能的多线程竞争导致的崩溃问题。\n" +
+            "当压强系统异步加载的时候，在区块保存（严格来说是卸载时）时停止压强系统运行，以防止可能的多线程竞争导致的崩溃问题。\n" +
                     "Pause Async Pressure System while chunk is saving to prevent potential crash.",true);
+
+    @Config.RequiresMcRestart
+    @GeoConfig.Since("0.2.0-beta.4")
+    public static final ConfigBoolean WRAP_MODIFIED_CHUNK_SAVING_METHOD = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
+            "wrapModifiedChunkSavingMethod",false,
+            "当启用 pausePressureSystemWhileChunkSaving 时，使用 MixinExtras 提供的 WrapMethod 功能保证区块保存的整个方法执行时都持有锁。\n" +
+                    "相比于默认的 Mixin 实现，WrapMethod 的实现可能会导致服务器线程获取锁的频率增加，略微降低游戏性能，但好处是侵入性更低，兼容性更好。\n" +
+                    "请注意该功能需要确保你的游戏环境支持 MixinExtras。",true);
+
+    @GeoConfig.Since("0.2.0-beta.4")
+    public static final ConfigBoolean DO_NOT_DROP_CHUNKS_WHEN_FAILING_PAUSING_PRESSURE_SYSTEM = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
+            "doNotDropChunksWhenFailingPausingPressureSystem",true,
+            "当服务器线程无法阻止压强系统停止运行时，取消区块卸载操作，以避免可能的多线程竞争导致的崩溃。\n" +
+                    "请注意，如果服务器线程无法及时在一游戏刻内保存，那么下一游戏刻也会尝试保存操作，这样子下去直到保存成功。");
+
+    @GeoConfig.Since("0.2.0-beta.4")
+    public static final ConfigBoolean DO_NOT_RUN_TASKS_WHEN_FAILING_GETTING_READ_LOCK = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
+            "doNotRunTasksWhenFailingGettingReadLock",true,
+            "当压强线程无法及时获取世界的读取锁，也就是等待服务器保存超时时，跳过当前压强任务的执行，以避免可能的多线程竞争导致的崩溃");
+
+    @GeoConfig.Since("0.2.0-beta.4")
+    @Config.RequiresMcRestart
+    public static final ConfigBoolean USE_FAIR_LOCK_FOR_PRESSURE_SYSTEM = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
+            "useFairLock",true,
+            "控制压强系统暂停机制使用的锁是否公平。默认为 true，因为使用公平锁能够保证服务器线程能够及时阻止压强系统运行。",true);
+
+    @Config.RangeInt(min = 1)
+    @GeoConfig.Since("0.2.0-beta.4")
+    public static final ConfigInteger MINIMUM_GRANULARITY_OF_TASK_EXECUTION_VOLUME = new ConfigInteger(CATEGORY_FLUID_PRESSURE_SYSTEM,
+            "minimumGranularityOfTaskExecutionVolume",25,"使用非线程池压强系统时，压强系统在获取一次锁时一次性可更新的最大任务数。\n" +
+            "请注意该配置项在单线程压强系统下尽管也有作用，但对于控制锁被持有的时长没有作用，因为单线程没有锁的问题。\n" +
+            "该值过小可能会因为频繁释放丢弃锁而影响压强系统的性能，但能让服务器线程及时获取锁以保存区块。该值过大可能会导致服务器线程不能及时获取锁以保存区块，导致服务器线程浪费大量的时间在获取锁上。");
 
     @Config.RangeInt(min = 0)
     @GeoConfig.Since("0.1")
@@ -252,7 +291,7 @@ public final class FluidPhysicsConfig {
     @Config.RangeInt(min = 0)
     @GeoConfig.Since("0.1")
     public static final ConfigInteger PAUSE_TIME_FOR_PRESSURE_SYSTEM = new ConfigInteger(CATEGORY_FLUID_PRESSURE_SYSTEM,
-            "maxPauseTimeForPressureSystem",200,
+            "maxPauseTimeForPressureSystem",500,
             "压强系统暂停运行的最长时间，单位为毫秒。将此值设置为0则允许压强系统一直等待下去，直到被其他线程唤醒。\n" +
                     "Max pause time for the pressure system (ms). A value of 0 means it will wait indefinitely until another thread resumes it.");
 
