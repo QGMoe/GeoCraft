@@ -46,6 +46,7 @@ import top.qiguaiaaaa.geocraft.handler.network.NetworkFakeStateManager;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.MixinUtil;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 
 import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.FLUID_PHYSICS_MODE;
@@ -75,7 +76,8 @@ public class CommonProxy {
         RegistryHandler.registerEventHandler();
     }
 
-    public void postInit(FMLPostInitializationEvent event) {
+    public void postInit(@Nonnull FMLPostInitializationEvent event) {
+        ConfigInit.verifyConfigValidity();
         MixinUtil.linkLiquidWithFluid();
         FluidHandler.initRegisteredFluids();
         FluidPhysicsMode.VANILLA_LIKE.setChecker(new VanillaFluidOperationChecker());

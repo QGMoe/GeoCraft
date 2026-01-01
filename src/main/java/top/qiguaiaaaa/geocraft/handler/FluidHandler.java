@@ -27,14 +27,11 @@
 
 package top.qiguaiaaaa.geocraft.handler;
 
-import com.google.common.collect.Sets;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.fluid.FluidCarbonDioxide;
 import top.qiguaiaaaa.geocraft.fluid.FluidSnow;
-
-import java.util.Collections;
 
 public final class FluidHandler {
     public static void initRegisteredFluids(){

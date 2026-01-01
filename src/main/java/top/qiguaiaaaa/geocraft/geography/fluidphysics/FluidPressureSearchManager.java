@@ -391,6 +391,7 @@ public final class FluidPressureSearchManager implements Runnable{
         final Deque<IFluidPressureSearchTask> queue = info.getRunningTasks();
         final int 颗粒度 = FluidPhysicsConfig.MINIMUM_GRANULARITY_OF_TASK_EXECUTION_VOLUME.getValue();
         for(int i=0;i<MAX_UPDATE_TASKS;){
+            if(queue.isEmpty()) break;
             boolean locked = false;
             try { //在 try-finish 内保证锁被正确释放
                 if(isRunningAsync()){

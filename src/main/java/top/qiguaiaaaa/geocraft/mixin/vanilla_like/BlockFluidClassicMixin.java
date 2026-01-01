@@ -52,8 +52,10 @@ import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla_like.mixin.IVanillaLikeFluidBlock;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla_like.update.VanillaLikeBlockFluidClassicUpdateTask;
 import top.qiguaiaaaa.geocraft.mixin.common.block.BlockFluidBaseAccessor;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidSearchUtil;
+import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -82,14 +84,21 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();
         if(world.isRemote) return;
+        if(!GeoFluidSetting.hasGravity(world)){
+            return;
+        }
         FluidUpdateManager.addTask(world,new VanillaLikeBlockFluidClassicUpdateTask(getFluid(),pos,(BlockFluidClassic) (Block)this));
     }
 
     @Override
     @Unique
     public void 天圆地方$onFlowingTask(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand) {
+        final int modifiedTickRate = MiscUtil.modifyTickRateByGravity(world,tickRate);
+        if(modifiedTickRate<=0) return; //无重力
+
         int quantaRemaining = quantaPerBlock - state.getValue(LEVEL);
         int newQuanta;
+
 
         //是否能够往下流
         Optional<BlockPos> sourcePosOption = Optional.empty();
@@ -111,7 +120,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                     findSourceMaxSameLevelIterationsWhenHorizontalFlowing.getValue());
             if(sourcePosOption.isPresent()){
                 FluidOperationUtil.moveFluidSource(world,sourcePosOption.get(),pos);
-                world.scheduleUpdate(pos, this, tickRate);
+                BlockUpdater.scheduleUpdate(world,pos,this,modifiedTickRate);
                 return;
             }
         }
@@ -143,7 +152,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                     world.setBlockToAir(pos);
                 } else {
                     world.setBlockState(pos, state.withProperty(LEVEL, quantaPerBlock - newQuanta), Constants.BlockFlags.SEND_TO_CLIENTS);
-                    world.scheduleUpdate(pos, this, tickRate);
+                    BlockUpdater.scheduleUpdate(world,pos,this,modifiedTickRate);
                     world.notifyNeighborsOfStateChange(pos, this, false);
                 }
             }
@@ -164,6 +173,20 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
             for (int i = 0; i < 4; i++)
                 if (flowTo[i]) flowIntoBlock(world, pos.offset(SIDES.get(i)), flowMeta);
         }
+    }
+
+    @Override
+    public void onBlockAdded(@Nonnull final World world, @Nonnull final BlockPos pos, @Nonnull final IBlockState state) {
+        MiscUtil.scheduleFluidBlockUpdate(world,pos,this,tickRate);
+    }
+
+    @Override
+    public void neighborChanged(@Nonnull final IBlockState state,
+                                @Nonnull final World world,
+                                @Nonnull final BlockPos pos,
+                                @Nonnull final Block neighborBlock,
+                                @Nonnull final BlockPos neighbourPos) {
+        MiscUtil.scheduleFluidBlockUpdate(world,pos,this,tickRate);
     }
 
     @Unique

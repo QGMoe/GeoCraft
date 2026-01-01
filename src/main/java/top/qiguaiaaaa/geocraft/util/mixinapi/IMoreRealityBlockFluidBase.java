@@ -39,6 +39,7 @@ import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.mixin.common.block.BlockFluidBaseAccessor;
+import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -59,7 +60,7 @@ public interface IMoreRealityBlockFluidBase<BlockType extends BlockFluidBase> {
         }else{
             int remain = totalQuanta-quantaPerBlock;
             worldIn.setBlockState(currentPos,thisState.withProperty(LEVEL, quantaPerBlock - remain),Constants.BlockFlags.DEFAULT);
-            worldIn.scheduleUpdate(currentPos,getThis(),getTickRate());
+            BlockUpdater.scheduleUpdate(worldIn,currentPos,getThis(),getTickRate());
             worldIn.setBlockState(downPos,downState.withProperty(LEVEL,0), Constants.BlockFlags.DEFAULT);
         }
     }

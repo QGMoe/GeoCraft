@@ -34,11 +34,12 @@ import top.qiguaiaaaa.geocraft.api.configs.GeoConfig;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 import top.qiguaiaaaa.geocraft.api.configs.item.collection.IConfigIntCollection;
 import top.qiguaiaaaa.geocraft.api.configs.item.collection.list.ConfigDoubleList;
-import top.qiguaiaaaa.geocraft.api.configs.item.collection.list.ConfigIntegerList;
 import top.qiguaiaaaa.geocraft.api.configs.item.collection.list.ConfigList;
 import top.qiguaiaaaa.geocraft.api.configs.item.number.ConfigDouble;
 import top.qiguaiaaaa.geocraft.api.configs.item.number.ConfigInteger;
 import top.qiguaiaaaa.geocraft.api.configs.item.number.ConfigLong;
+import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
+import top.qiguaiaaaa.geocraft.api.util.exception.ConfigParseError;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,6 +59,13 @@ public final class ConfigInit {
         initConfigClass(AtmosphereConfig.class);
         initConfigClass(SoilConfig.class);
         hasLoaded = true;
+    }
+
+    public static void verifyConfigValidity(){
+        FluidPhysicsConfig.FLUID_PHYSICS_INFO.forEach((dim,infoWrapper)->{
+            if(infoWrapper.getGravity().relativeGravitySize<0) throw new ConfigParseError("Gravity "+infoWrapper.getGravity().relativeGravitySize+" for dimension "+dim+" in "+FluidPhysicsConfig.FLUID_PHYSICS_INFO.getPath()+" can't be negative!");
+            GeoFluidSetting.setGravity(dim,infoWrapper.getGravity().relativeGravitySize);
+        });
     }
 
     private static void initConfigClass(Class<?> configClass){

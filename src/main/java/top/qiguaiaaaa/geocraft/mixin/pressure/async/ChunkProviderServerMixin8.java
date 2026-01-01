@@ -62,6 +62,7 @@ public abstract class ChunkProviderServerMixin8 {
 
     @Shadow @Final public IChunkLoader chunkLoader;
 
+    @SuppressWarnings("unused")
     @WrapMethod(method = "tick")
     private boolean 天圆地方$tick(@Nonnull final Operation<Boolean> original){
 

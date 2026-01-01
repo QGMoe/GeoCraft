@@ -41,6 +41,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.update.RealityBlockIEConcreteUpdateTask;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 
 import java.util.Random;
 
@@ -56,6 +57,6 @@ public class BlockIEFluidConcreteMixin extends BlockIEFluid {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();
         if(world.isRemote) return;
-        FluidUpdateManager.addTask(world,new RealityBlockIEConcreteUpdateTask(pos,quantaPerBlock,tickRate,densityDir));
+        FluidUpdateManager.addTask(world,new RealityBlockIEConcreteUpdateTask(pos,quantaPerBlock,MiscUtil.modifyTickRateByGravity(world,this.tickRate),densityDir));
     }
 }

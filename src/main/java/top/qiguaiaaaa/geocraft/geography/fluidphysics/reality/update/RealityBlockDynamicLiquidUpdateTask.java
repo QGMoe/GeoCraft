@@ -53,6 +53,7 @@ import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.pressure.RealityPr
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.update.FluidUpdateBaseTask;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.BlockLiquidUpdater;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
@@ -92,7 +93,12 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
             return;
         }
         int liquidQuanta = 8-liquidMeta;
-        int updateRate = block.tickRate(world);
+        int updateRate = MiscUtil.modifyTickRateByGravity(world,block.tickRate(world));
+
+        if(updateRate <= 0){//无重力
+            updater.placeStaticBlock(world,pos,curState);
+            return;
+        }
 
         final @Nonnull BlockPos downPos = pos.down();
         final @Nonnull IBlockState stateBelow = world.getBlockState(downPos);

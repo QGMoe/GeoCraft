@@ -60,24 +60,26 @@ import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.slopeModeForMod
  */
 public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask implements IMoreRealityBlockFluidBase<BlockFluidClassic> {
     protected final BlockFluidClassic block;
-    protected final byte quantaPerBlock,tickRate,densityDir;
+    protected final byte quantaPerBlock,densityDir;
+    protected final int tickRate;
     protected IBlockState state;
     public RealityBlockFluidClassicUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos, @Nonnull BlockFluidClassic block, int quantaPerBlock, int tickRate, int densityDir) {
         super(fluid, pos);
         this.block = block;
         this.quantaPerBlock = (byte) quantaPerBlock;
-        this.tickRate = (byte) tickRate;
+        this.tickRate = tickRate;
         this.densityDir = (byte) densityDir;
     }
 
     @Override
     public void onUpdate(@Nonnull World world, @Nonnull IBlockState curState, @Nonnull Random rand) {
+        if(this.tickRate <= 0) return;//无重力
         this.state = curState;
         int meta = state.getValue(LEVEL);
         int quanta = quantaPerBlock-meta;
-        BlockPos downPos = pos.up(densityDir);
+        final BlockPos downPos = pos.up(densityDir);
 
-        IBlockState stateBelow = world.getBlockState(downPos);
+        final IBlockState stateBelow = world.getBlockState(downPos);
         boolean canMoveDown = this.canMoveDownTo(world, downPos);
         if(canMoveDown){
             if(isSameLiquid(stateBelow)){
@@ -92,12 +94,12 @@ public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask impl
         //坡度流动模式
         if(quanta == 1){
             if(!slopeModeForModsWhenOnFluidsAndQuantaIs1.getValue() && isSameLiquid(stateBelow)){
-                if(!managePressureTask(world,rand)) updateUp(world,rand);
+//                if(!managePressureTask(world,rand)) updateUp(world,rand);
                 return;
             }
             Set<EnumFacing> directions = this.getPossibleFlowDirections(world, pos,densityDir,quantaPerBlock);
             if(directions.isEmpty()){
-                if(!managePressureTask(world,rand)) updateUp(world,rand);
+//                if(!managePressureTask(world,rand)) updateUp(world,rand);
                 return;
             }
             EnumFacing randomFacing = (EnumFacing) directions.toArray()[rand.nextInt(directions.size())];
@@ -159,7 +161,7 @@ public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask impl
             //移动至新位置
             world.setBlockState(pos.offset(randomFacing), state.withProperty(LEVEL, meta), Constants.BlockFlags.SEND_TO_CLIENTS);
         }else {
-            if(!managePressureTask(world,rand)) updateUp(world,rand);
+//            if(!managePressureTask(world,rand)) updateUp(world,rand);
         }
     }
 
@@ -169,7 +171,7 @@ public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask impl
 
     protected boolean managePressureTask(World world, Random rand){
         if(FluidPressureSearchManager.isTaskRunning(world,pos)){
-            BlockUpdater.scheduleUpdate(world,pos,block,block.tickRate(world));
+            BlockUpdater.scheduleUpdate(world,pos,block,this.tickRate);
             return false;
         }
         IFluidPressureSearchTaskResult res =FluidPressureSearchManager.getTaskResult(world,pos);
@@ -193,6 +195,7 @@ public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask impl
         return true;
     }
 
+    @Deprecated
     protected void updateUp(World world,Random random){
         if(random.nextInt(3)<2) return;
         BlockPos upPos = pos.down(densityDir);

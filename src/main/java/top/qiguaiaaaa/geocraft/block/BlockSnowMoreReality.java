@@ -51,6 +51,7 @@ import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.RealitySnowUpdater;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
 import javax.annotation.Nonnull;
@@ -87,7 +88,7 @@ public class BlockSnowMoreReality extends BlockSnowExtended implements IBlockSta
 
     protected boolean checkAndFallBlock(final @Nonnull World worldIn, final @Nonnull BlockPos pos, final @Nonnull IBlockState state) {
         if (!this.canPlaceBlockAt(worldIn, pos)) {
-            worldIn.scheduleUpdate(pos,this,tickRate(worldIn));
+            MiscUtil.scheduleFluidBlockUpdate(worldIn,pos,this,tickRate(worldIn));
             return false;
         } else {
             return true;
@@ -257,7 +258,7 @@ public class BlockSnowMoreReality extends BlockSnowExtended implements IBlockSta
             FluidOperationUtil.triggerDestroyBlockEffectByFluid(world,downPos,downState, GeoFluids.SNOW);
             world.setBlockToAir(pos);
             world.setBlockState(downPos,state);
-            world.scheduleUpdate(downPos,this,tickRate(world));
+            MiscUtil.scheduleFluidBlockUpdate(world,downPos,this,tickRate(world));
         }
         return true;
     }

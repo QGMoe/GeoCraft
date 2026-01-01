@@ -35,6 +35,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -45,12 +46,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
+import top.qiguaiaaaa.geocraft.block.reality.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
-import top.qiguaiaaaa.geocraft.block.reality.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.RealityBlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.update.RealityBlockDynamicLiquidUpdateTask;
-import top.qiguaiaaaa.geocraft.world.BlockUpdater;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.mixinapi.FluidSettable;
 import top.qiguaiaaaa.geocraft.util.mixinapi.IVanillaFlowChecker;
 
@@ -71,11 +72,29 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
         super(materialIn);
     }
 
+    @Override
+    public void neighborChanged(@Nonnull final IBlockState state,
+                                @Nonnull final World worldIn,
+                                @Nonnull final BlockPos pos,
+                                @Nonnull final Block blockIn,
+                                @Nonnull final BlockPos fromPos) {
+        if(!FluidPhysicsConfig.ALLOW_DYNAMIC_LIQUID_NEIGHBOR_UPDATE.getValue()){
+            super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
+            return;
+        }
+        MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
+    }
+
     @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true)
     public void 天圆地方$updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
         if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid)) return;
         ci.cancel();
         if (!worldIn.isBlockLoaded(pos)){
+            return;
+        }
+        if(!GeoFluidSetting.hasGravity(worldIn)){
+            //变成静态方块
+            worldIn.setBlockState(pos, getStaticBlock(this.material).getDefaultState().withProperty(LEVEL, state.getValue(LEVEL)), Constants.BlockFlags.SEND_TO_CLIENTS);
             return;
         }
         FluidUpdateManager.addTask(worldIn,new RealityBlockDynamicLiquidUpdateTask(天圆地方$thisFluid,pos, 天圆地方$updater));
@@ -85,7 +104,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
     public void 天圆地方$onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull CallbackInfo ci) {
         ci.cancel();
         if (!this.checkForMixing(worldIn, pos, state)) {
-            BlockUpdater.scheduleUpdate(worldIn,pos, this, this.tickRate(worldIn));
+            MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
         }
     }
 

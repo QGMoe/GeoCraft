@@ -48,7 +48,9 @@ import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.update.RealityBlockFluidClassicUpdateTask;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 
+import javax.annotation.Nonnull;
 import java.util.Random;
 
 /**
@@ -73,7 +75,14 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();
         if(world.isRemote) return;
-        FluidUpdateManager.addTask(world,new RealityBlockFluidClassicUpdateTask(this.getFluid(),pos,(BlockFluidClassic)(Block) this,quantaPerBlock,tickRate,densityDir));
+        if(!GeoFluidSetting.hasGravity(world)){
+            return;
+        }
+        FluidUpdateManager.addTask(world,new RealityBlockFluidClassicUpdateTask(this.getFluid(),
+                pos,
+                (BlockFluidClassic)(Block) this,quantaPerBlock,
+                MiscUtil.modifyTickRateByGravity(world,this.tickRate),
+                densityDir));
     }
 
     @Inject(method = "drain",at = @At("HEAD"),cancellable = true,remap = false)
@@ -127,5 +136,19 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         cir.setReturnValue(true);
         cir.cancel();
+    }
+
+    @Override
+    public void onBlockAdded(@Nonnull final World world, @Nonnull final BlockPos pos, @Nonnull final IBlockState state) {
+        MiscUtil.scheduleFluidBlockUpdate(world,pos,this,tickRate);
+    }
+
+    @Override
+    public void neighborChanged(@Nonnull final IBlockState state,
+                                @Nonnull final World world,
+                                @Nonnull final BlockPos pos,
+                                @Nonnull final Block neighborBlock,
+                                @Nonnull final BlockPos neighbourPos) {
+        MiscUtil.scheduleFluidBlockUpdate(world,pos,this,tickRate);
     }
 }

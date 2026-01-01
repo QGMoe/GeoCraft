@@ -27,8 +27,12 @@
 
 package top.qiguaiaaaa.geocraft.util;
 
+import net.minecraft.block.Block;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
+import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,5 +45,28 @@ public class MiscUtil {
     public static WorldServer getValidWorld(@Nonnull World world){
         if(world.isRemote) return null;
         return (world instanceof WorldServer)?(WorldServer) world:null;
+    }
+
+    /**
+     * 流体方块的计划刻更新。最终计划时间会根据重力进行修饰。如果没有重力就不会计划。
+     * @since 0.2.0-beta.4
+     * @param world 世界
+     * @param pos 位置
+     * @param block 流体方块
+     * @param tickRate 计划更新时间
+     */
+    public static void scheduleFluidBlockUpdate(final @Nonnull World world,
+                                                final @Nonnull BlockPos pos,
+                                                final @Nonnull Block block,
+                                                final int tickRate){
+        final double gravity = GeoFluidSetting.getGravity(world);
+        if(gravity == 0d) return;
+        final int modifiedTickRate = Math.max((int) (tickRate*gravity),1);
+        BlockUpdater.scheduleUpdate(world,pos,block,modifiedTickRate);
+    }
+
+    public static int modifyTickRateByGravity(final @Nonnull World world,final int tickRate){
+        final double gravity = GeoFluidSetting.getGravity(world);
+        return gravity == 0d?0:Math.max((int) (tickRate*gravity),1);
     }
 }

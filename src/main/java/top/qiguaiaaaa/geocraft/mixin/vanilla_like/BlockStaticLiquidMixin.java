@@ -27,6 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.mixin.vanilla_like;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockStaticLiquid;
 import net.minecraft.block.material.Material;
@@ -38,9 +39,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.mixinapi.FluidSettable;
 
 import javax.annotation.Nonnull;
@@ -76,6 +79,15 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable
         if(newState != null){
             worldIn.setBlockState(pos,newState);
         }
+    }
+
+    /**
+     * 保证流体流动受重力影响，且使用 BlockUpdater
+     */
+    @Redirect(method = "updateLiquid",
+            at = @At(value = "INVOKE",target = "Lnet/minecraft/world/World;scheduleUpdate(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V"))
+    private void 天圆地方$scheduleLiquidUpdate(@Nonnull final World instance, final BlockPos pos, final Block blockIn, final int delay){
+        MiscUtil.scheduleFluidBlockUpdate(instance, pos, blockIn, delay);
     }
 
     @Override

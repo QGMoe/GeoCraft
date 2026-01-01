@@ -45,16 +45,26 @@ public final class FluidPhysicsInfo {
     @Expose
     SkyLight skyLight = new SkyLight();
 
+    @SerializedName("gravity")
+    @Expose
+    Gravity gravity = new Gravity();
+
     @SerializedName("version")
     @Expose(deserialize = false)
-    int version = 1;
+    int version = 2;
 
+    @Nonnull
     public SkyLight getSkyLight() {
         return skyLight;
     }
 
     public FluidPhysicsInfo setSkyLight(@Nonnull SkyLight skyLight) {
         this.skyLight = skyLight;
+        return this;
+    }
+
+    public FluidPhysicsInfo setGravity(@Nonnull Gravity gravity) {
+        this.gravity = gravity;
         return this;
     }
 
@@ -93,6 +103,27 @@ public final class FluidPhysicsInfo {
         }
     }
 
+    /**
+     * 维度重力相关配置。见 Issue #3
+     * @since 0.2.0
+     * @author QiguaiAAAA
+     */
+    public static final class Gravity{
+
+        /**
+         * 表示维度的重力大小
+         * @since 0.2.0-beta.4
+         */
+        @SerializedName("relativeGravitySize")
+        @Expose
+        public double relativeGravitySize = 1d;
+
+        public Gravity setRelativeGravitySize(final double relativeGravitySize) {
+            this.relativeGravitySize = relativeGravitySize;
+            return this;
+        }
+    }
+
     public static final class FluidPhysicsInfoJSONWrapper extends ConfigurableJSON<FluidPhysicsInfo>{
 
         public FluidPhysicsInfoJSONWrapper(@Nonnull String jsonStr) {
@@ -116,6 +147,11 @@ public final class FluidPhysicsInfo {
         @Nonnull
         public SkyLight getSkyLight(){
             return json.skyLight;
+        }
+
+        @Nonnull
+        public Gravity getGravity(){
+            return json.gravity;
         }
     }
 }

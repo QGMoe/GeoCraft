@@ -43,6 +43,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
@@ -56,6 +57,7 @@ import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressu
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.BlockLiquidUpdater;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 import top.qiguaiaaaa.geocraft.util.mixinapi.FluidSettable;
 import top.qiguaiaaaa.geocraft.util.mixinapi.IVanillaFlowChecker;
@@ -100,7 +102,7 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
         if(!天圆地方$isValidState(worldIn,pos,state)) return;
         if(!天圆地方$canFlow(worldIn,pos,state,rand)){
             if(FluidPhysicsConfig.PRESSURE_SYSTEM_FOR_REALITY.getValue()){
-                IFluidPressureSearchTaskResult res = FluidPressureSearchManager.getTaskResult(worldIn,pos);
+                final IFluidPressureSearchTaskResult res = FluidPressureSearchManager.getTaskResult(worldIn,pos);
 
                 if(res == null || res.isEmpty()){
                     天圆地方$sendPressureQuery(worldIn,pos,state,rand,false);
@@ -109,7 +111,7 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
                     IBlockState nowState =state;
                     if(天圆地方$debug) GeoCraft.getLogger().info("{}: has res :",pos);
                     while (res.hasNext()) {
-                        BlockPos toPos = res.next();
+                        final BlockPos toPos = res.next();
                         if(!nowState.getMaterial().isLiquid()) break;
                         if(天圆地方$tryMoveInto(worldIn,toPos,pos,nowState)) break;
                         nowState = worldIn.getBlockState(pos);
@@ -125,7 +127,7 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
                     if(nowState!=state) return;
                 }
             }
-            IBlockState newState = EventFactory.afterBlockLiquidStaticUpdate(天圆地方$thisFluid,worldIn,pos,state, 天圆地方$curRandomTick.get());
+            final IBlockState newState = EventFactory.afterBlockLiquidStaticUpdate(天圆地方$thisFluid,worldIn,pos,state, 天圆地方$curRandomTick.get());
             if(newState != null){
                 worldIn.setBlockState(pos,newState);
                 return;
@@ -133,6 +135,15 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
             return;
         }
         updateLiquid(worldIn,pos,state);
+    }
+
+    /**
+     * 保证流体流动受重力影响，且使用 BlockUpdater
+     */
+    @Redirect(method = "updateLiquid",
+            at = @At(value = "INVOKE",target = "Lnet/minecraft/world/World;scheduleUpdate(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V"))
+    private void 天圆地方$scheduleLiquidUpdate(@Nonnull final World instance,final BlockPos pos,final Block blockIn,final int delay){
+        MiscUtil.scheduleFluidBlockUpdate(instance, pos, blockIn, delay);
     }
 
     @Override

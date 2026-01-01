@@ -36,6 +36,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.IFluidBlock;
@@ -47,9 +48,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla_like.mixin.IVanillaLikeFluidBlock;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla_like.update.VanillaLikeBlockDynamicLiquidUpdateTask;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidSearchUtil;
@@ -82,7 +85,33 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
         if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid)) return;
         ci.cancel();
         if(worldIn.isRemote) return;
+        if(!GeoFluidSetting.hasGravity(worldIn)){
+            //变成静态方块
+            worldIn.setBlockState(pos, getStaticBlock(this.material).getDefaultState().withProperty(LEVEL, state.getValue(LEVEL)), Constants.BlockFlags.SEND_TO_CLIENTS);
+            return;
+        }
         FluidUpdateManager.addTask(worldIn,new VanillaLikeBlockDynamicLiquidUpdateTask(天圆地方$thisFluid,pos,(BlockDynamicLiquid) (Block)this));
+    }
+
+    @Inject(method = "onBlockAdded",at = @At("HEAD"),cancellable = true)
+    public void 天圆地方$onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull CallbackInfo ci) {
+        ci.cancel();
+        if (!this.checkForMixing(worldIn, pos, state)) {
+            MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
+        }
+    }
+
+    @Override
+    public void neighborChanged(@Nonnull final IBlockState state,
+                                @Nonnull final World worldIn,
+                                @Nonnull final BlockPos pos,
+                                @Nonnull final Block blockIn,
+                                @Nonnull final BlockPos fromPos) {
+        if(!FluidPhysicsConfig.ALLOW_DYNAMIC_LIQUID_NEIGHBOR_UPDATE.getValue()){
+            super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
+            return;
+        }
+        MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
     }
 
     @Override
@@ -92,9 +121,14 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
         int liquidMeta = state.getValue(LEVEL);
         int spreadLevel = 天圆地方$getSpreadLevel(world);
 
-        int updateRate = this.tickRate(world);
+        int updateRate = MiscUtil.modifyTickRateByGravity(world,this.tickRate(world));
 
-        BlockPos downPos = pos.down();
+        if(updateRate <= 0){//无重力
+            placeStaticBlock(world,pos,state);
+            return;
+        }
+
+        final BlockPos downPos = pos.down();
         IBlockState stateBelow = world.getBlockState(downPos);
 
         //是否能够往下流

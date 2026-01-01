@@ -70,6 +70,14 @@ public final class FluidPhysicsConfig {
             new ConfigInteger(CATEGORY_FLUID_PHYSICS,"leastTemperatureForFluidToCompletelyDestroyBlock",1237,
                     "在流体流动过程中，完全摧毁可摧毁方块（即不会留下掉落物）的最低流体温度，单位为开尔文（K）。");
 
+    @GeoConfig.Since("0.2.0-beta.4")
+    public static final ConfigBoolean ALLOW_DYNAMIC_LIQUID_NEIGHBOR_UPDATE =
+            new ConfigBoolean(CATEGORY_FLUID_PHYSICS,"allowDynamicLiquidNeighborUpdate",false,
+                    "允许原版的动态流体被邻居更新，在 VANILLA 模式下无效。当启用时，浮空水或岩浆方块可以通过邻居更新而恢复正常，但这可能会降低大规模流体流动时的性能。");
+
+    /**
+     * @see ConfigInit#verifyConfigValidity()
+     */
     @GeoConfig.Since("0.2.0")
     public static final ConfigMap<Integer, FluidPhysicsInfo.FluidPhysicsInfoJSONWrapper> FLUID_PHYSICS_INFO = new ConfigMap<>(CATEGORY_FLUID_PHYSICS,"fluidPhysicsInfoForEachWorld",
             "每个维度的全局单独流体物理配置，注意某些配置目前不会在所有物理模式生效。",Integer::parseInt, FluidPhysicsInfo.FluidPhysicsInfoJSONWrapper::new,
