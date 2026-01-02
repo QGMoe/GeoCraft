@@ -36,7 +36,10 @@ import javax.annotation.Nonnull;
  * @author QiguaiAAAA
  */
 public abstract class ConfigurableJSON<T> {
-    protected static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    protected static final Gson GSON = new GsonBuilder()
+            .excludeFieldsWithoutExposeAnnotation()
+            .setPrettyPrinting()
+            .create();
 
     protected final T json;
 
