@@ -42,5 +42,9 @@ public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNod
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         ExecuteNode.super.execute(args,context);
         if(childNode != null) childNode.execute(args,context);
+        onFinal(context,args);
+    }
+
+    public void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException{
     }
 }

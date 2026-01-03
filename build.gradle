@@ -23,7 +23,7 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '0.2.0-beta.4'
+version = '0.2.0'
 group = 'top.qiguaiaaaa.geocraft' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'geocraft'
 

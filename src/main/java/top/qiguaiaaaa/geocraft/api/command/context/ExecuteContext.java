@@ -37,11 +37,16 @@ import net.minecraft.util.math.BlockPos;
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
 public final class ExecuteContext extends CommandContext{
+    private static final Function<String,String> OnNoContextFound = k->{
+        throw new IllegalArgumentException("Context "+k+" doesn't exist!");
+    };
+
     private final Map<String,Object> contexts = new HashMap<>();
 
     public ExecuteContext(@Nonnull ICommand command, @Nonnull MinecraftServer server, @Nonnull ICommandSender sender) {
@@ -58,7 +63,7 @@ public final class ExecuteContext extends CommandContext{
 
     @SuppressWarnings("unchecked")
     public <T> T get(@Nonnull String key){
-        return (T) contexts.get(key);
+        return (T) contexts.computeIfAbsent(key, OnNoContextFound);
     }
 
     public float getFloat(@Nonnull String key){

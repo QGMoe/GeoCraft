@@ -25,34 +25,29 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.builder.execute;
 
-import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.world.World;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.BiPredicate;
 
 /**
- * 智能节点，可以实现智能分支。
  * @author QiguaiAAAA
  */
-public interface ISmartNode extends ICommandNode{
-    /**
-     * 当前提供的参数是否与该节点匹配，如果匹配则会走当前节点。
-     * @implSpec  不应当有副作用。
-     * @param args 当前命令尚未解析的参数。
-     * @param context 当前命令的上下文。
-     * @return 是否匹配。
-     */
-    boolean match(@Nonnull List<String> args, @Nonnull CommandContext context);
+@FunctionalInterface
+public interface CommandRunFunction {
+    void run(@Nonnull List<String> args, @Nonnull ExecuteContext context) throws CommandException;
 
-    /**
-     * 设置匹配器，用于自定义节点匹配。
-     * @see #match(List, CommandContext)
-     * @param checker 一个匹配器，是一个传入了{@link List<String>}和{@link CommandContext}并返回{@link Boolean}的函数，相当于一个{@link #match(List, CommandContext)}函数。
-     * @throws UnsupportedOperationException 若不支持设置自定义的匹配器则抛出。
-     */
-    void setMatcher(@Nullable BiPredicate<List<String>,CommandContext> checker);
+    static void notifyCommandListener(@Nonnull ExecuteContext context, String translationKey, Object... translationArgs) {
+        CommandBase.notifyCommandListener(context.getSender(), context.getCommand(), translationKey, translationArgs);
+    }
+
+    static void notifyCommandListener(@Nonnull ExecuteContext context, String translationKey, final int flags, Object... translationArgs) {
+        CommandBase.notifyCommandListener(context.getSender(), context.getCommand(), flags, translationKey, translationArgs);
+    }
 }

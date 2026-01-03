@@ -56,7 +56,7 @@ public class CommandBuilder {
     protected String name;
     protected final List<String> aliases = new ArrayList<>();
     protected ICommandNode rootNode;
-    protected Nodes.INodeBuilder<?> rootNodeBuilder;
+    protected INodeBuilder<?> rootNodeBuilder;
     protected BiFunction<MinecraftServer, ICommandSender,Boolean> funcPermissionCheck;
     protected int requiredPermissionLevel = 0;
 
@@ -68,13 +68,13 @@ public class CommandBuilder {
     }
 
     @Nonnull
-    public CommandBuilder setRootNode(@Nonnull ICommandNode rootNode) {
+    public CommandBuilder then(@Nonnull ICommandNode rootNode) {
         this.rootNode = rootNode;
         return this;
     }
 
     @Nonnull
-    public CommandBuilder setRootNode(@Nonnull Nodes.INodeBuilder<?> rootNodeBuilder){
+    public CommandBuilder then(@Nonnull INodeBuilder<?> rootNodeBuilder){
         this.rootNodeBuilder = rootNodeBuilder;
         return this;
     }

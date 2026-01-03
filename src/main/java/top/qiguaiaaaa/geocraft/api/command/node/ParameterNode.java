@@ -118,8 +118,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
             return null;
         }else if(suggestProvider!=null){
             final List<String> suggests = suggestProvider.apply(args,context);
-            return suggests==null?null:suggests.stream().filter(s -> s.startsWith(args.getLast()))
-                    .map(s -> s.replace(args.getLast(),"")).collect(Collectors.toList());
+            return suggests==null?null:suggests.stream().filter(s -> s.startsWith(args.getLast().trim())).collect(Collectors.toList());
         }else return null;
     }
 

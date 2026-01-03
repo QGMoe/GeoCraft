@@ -25,34 +25,31 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.builder.parameter.num;
 
-import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 /**
- * 智能节点，可以实现智能分支。
  * @author QiguaiAAAA
  */
-public interface ISmartNode extends ICommandNode{
-    /**
-     * 当前提供的参数是否与该节点匹配，如果匹配则会走当前节点。
-     * @implSpec  不应当有副作用。
-     * @param args 当前命令尚未解析的参数。
-     * @param context 当前命令的上下文。
-     * @return 是否匹配。
-     */
-    boolean match(@Nonnull List<String> args, @Nonnull CommandContext context);
+public class ComparableNumberNodeBuilder<N extends Number & Comparable<N>, T extends NumberNode<N>> extends NumberNodeBuilder<N, T> {
 
-    /**
-     * 设置匹配器，用于自定义节点匹配。
-     * @see #match(List, CommandContext)
-     * @param checker 一个匹配器，是一个传入了{@link List<String>}和{@link CommandContext}并返回{@link Boolean}的函数，相当于一个{@link #match(List, CommandContext)}函数。
-     * @throws UnsupportedOperationException 若不支持设置自定义的匹配器则抛出。
-     */
-    void setMatcher(@Nullable BiPredicate<List<String>,CommandContext> checker);
+    public ComparableNumberNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+        super(name, builder);
+    }
+
+    @Nonnull
+    @Override
+    public T build() {
+        final T instance = super.build();
+        if (maxValue != null && minValue != null && maxValue.compareTo(minValue) < 0)
+            throw new IllegalArgumentException(String.valueOf(maxValue.compareTo(minValue)));
+        if (maxValue != null) instance.setMaxValue(maxValue);
+        if (minValue != null) instance.setMinValue(minValue);
+        return instance;
+    }
 }

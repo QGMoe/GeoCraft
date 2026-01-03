@@ -25,34 +25,34 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.builder;
+package top.qiguaiaaaa.geocraft.api.command.builder.execute;
 
-import top.qiguaiaaaa.geocraft.api.command.node.generic.*;
+import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.node.ExecuteNode;
 
 import javax.annotation.Nonnull;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
-public final class NumberType<N extends Number> {
+public class ExecuteNodeBuilder implements INodeBuilder<ExecuteNode> {
+    public static final CommandRunFunction DO_NOTHING = (args, serializedArgs) -> {};
+    protected CommandRunFunction funcExecute = DO_NOTHING;
 
-    public static final NumberType<Double> DOUBLE = new NumberType<>(s -> new Nodes.ComparableNumberNodeBuilder<>(s, DoubleNode::new));
-    public static final NumberType<Long> LONG = new NumberType<>(s -> new Nodes.ComparableNumberNodeBuilder<>(s, LongNode::new));
-    public static final NumberType<Integer> INTEGER = new NumberType<>(s -> new Nodes.ComparableNumberNodeBuilder<>(s, IntegerNode::new));
-    public static final NumberType<BigInteger> BIG_INTEGER = new NumberType<>(s -> new Nodes.ComparableNumberNodeBuilder<>(s, BigIntegerNode::new));
-    public static final NumberType<BigDecimal> BIG_DECIMAL = new NumberType<>(s -> new Nodes.ComparableNumberNodeBuilder<>(s,BigDecimalNode::new));
-
-    private final Function<String, Nodes.NumberNodeBuilder<N, NumberNode<N>>> factory;
-
-    public NumberType(@Nonnull Function<String, Nodes.NumberNodeBuilder<N,NumberNode<N>>> factory) {
-        this.factory = factory;
+    public ExecuteNodeBuilder() {
     }
 
     @Nonnull
-    public Nodes.NumberNodeBuilder<N,NumberNode<N>> create(@Nonnull String name){
-        return factory.apply(name);
+    public ExecuteNodeBuilder run(@Nonnull CommandRunFunction runFunc) {
+        this.funcExecute = runFunc;
+        return this;
     }
+
+    @Nonnull
+    @Override
+    public ExecuteNode build() {
+        final ExecuteNode node = (context, args) -> funcExecute.run(args, context);
+        return node;
+    }
+
 }
