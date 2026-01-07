@@ -25,12 +25,17 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
 import net.minecraft.client.resources.I18n;
+import net.minecraft.command.InvalidBlockStateException;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
+import top.qiguaiaaaa.geocraft.api.command.node.functional.SmartSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,6 +73,11 @@ public abstract class SmartParameterNode<P> extends ParameterNode<P> implements 
     }
 
     @Override
+    public final <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+        return checkValid(args,(CommandContext) context);
+    }
+
+    @Override
     public void setMatcher(@Nullable BiPredicate<List<String>, CommandContext> matcher) {
         this.matchChecker = matcher;
     }
@@ -77,15 +87,10 @@ public abstract class SmartParameterNode<P> extends ParameterNode<P> implements 
         if(matchChecker==null){
             try {
                 return checkValid(args,context);
-            }catch (WrongUsageException ignore){
+            }catch (SyntaxErrorException | NumberInvalidException | InvalidBlockStateException ignore){
                 return false;
             }
         }else return matchChecker.test(args,context);
-    }
-
-    @Override
-    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws WrongUsageException {
-        return checkValid(args,(CommandContext) context);
     }
 
     /**
@@ -93,12 +98,16 @@ public abstract class SmartParameterNode<P> extends ParameterNode<P> implements 
      * @param args 未解析的参数列表
      * @param context 命令通用上下文
      * @return 为 true 表示可以解析，为 false 表示不能解析，但可以用默认值，仅当 {@link #isOptional()} 为 true 时使用。
-     * @throws WrongUsageException 当{@link #isOptional()} 为 false 时，且语法错误，则抛出该错误表示无法解析。
+     * @throws SyntaxErrorException 当{@link #isOptional()} 为 false 时，且语法错误，则抛出该错误表示无法解析。
+     * @throws NumberInvalidException 同上
+     * @throws InvalidBlockStateException 同上
      * 请注意，当在 {@link #match(List, CommandContext)} 时，抛出错误不会终止命令执行，而是会返回匹配失败，继续匹配下一个智能节点。
      */
-    public abstract boolean checkValid(@Nonnull List<String> args,@Nonnull CommandContext context) throws WrongUsageException;
+    public abstract boolean checkValid(@Nonnull List<String> args,@Nonnull CommandContext context)
+            throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException;
 
     public interface ValidChecker{
-        boolean check(@Nonnull SmartParameterNode<?> self,@Nonnull List<String> args,@Nonnull CommandContext context) throws WrongUsageException;
+        boolean check(@Nonnull SmartParameterNode<?> self,@Nonnull List<String> args,@Nonnull CommandContext context)
+                throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException;
     }
 }

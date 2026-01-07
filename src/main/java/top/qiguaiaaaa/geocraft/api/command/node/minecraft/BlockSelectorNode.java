@@ -28,14 +28,12 @@
 package top.qiguaiaaaa.geocraft.api.command.node.minecraft;
 
 import net.minecraft.block.Block;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.command.*;
 import net.minecraft.init.Blocks;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;
@@ -81,7 +79,7 @@ public class BlockSelectorNode extends SmartParameterNode<Block> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
         return MATCH_ONE_PARAMETER.check(this,args,context);
     }
 }

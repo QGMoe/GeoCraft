@@ -28,25 +28,38 @@
 package top.qiguaiaaaa.geocraft.api.command.node.minecraft;
 
 import com.google.common.collect.Lists;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.command.*;
 import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
 public class BlockPosNode extends SmartParameterNode<BlockPos> {
     public static final DefaultParser<BlockPos> DEFAULT_PARSER = (node, context) -> context.getSender().getPosition();
+
+    /**
+     *  若第一个参数为数字，则说明为坐标。不会检查参数长度是否满足条件，因为若检查则会导致歧义。
+     */
+    public static final BiPredicate<List<String>,CommandContext> DEFAULT_MATCHER = (args, context) ->{
+        if(args.size()<=0) return false;
+        final @Nonnull String arg = args.get(0);
+        try {
+            CommandBase.parseDouble(0d,arg,false);
+        }catch (NumberInvalidException e) {
+            return false;
+        }
+        return true;
+    };
 
     public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> {
         final List<String> suggests = Lists.newArrayList("~");
@@ -69,15 +82,18 @@ public class BlockPosNode extends SmartParameterNode<BlockPos> {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
+        setMatcher(DEFAULT_MATCHER);
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
-        return MATCH_THREE_PARAMETER.check(this,args,context);
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+        if(!MATCH_THREE_PARAMETER.check(this,args,context)) return false;
+        CommandBase.parseBlockPos(context.getSender(),args.toArray(new String[0]), 0,false);
+        return true;
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> BlockPos parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+    public <T extends List<String> & Deque<String>> BlockPos parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws NumberInvalidException {
         return CommandBase.parseBlockPos(context.getSender(),args.toArray(new String[0]), 0,false);
     }
 

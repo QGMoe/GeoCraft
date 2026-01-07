@@ -33,7 +33,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuil
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
-import top.qiguaiaaaa.geocraft.api.command.node.LiteralNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.LiteralNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

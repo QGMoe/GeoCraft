@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
@@ -33,6 +33,10 @@ import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.IOptionalNode;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
+import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,7 +49,7 @@ import java.util.function.BiPredicate;
 /**
  * @author QiguaiAAAA
  */
-public class LiteralsNode extends PermitNode implements IOptionalNode,ISmartNode {
+public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNode {
     protected final Map<String, ICommandNode> literal2Node = new LinkedHashMap<>();
 
     protected boolean optional;

@@ -25,13 +25,14 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.functional;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -42,7 +43,7 @@ import java.util.function.Function;
 /**
  * @author QiguaiAAAA
  */
-public class PermitNode extends NoSplitNode{
+public class PermitNode extends NoSplitNode {
     protected Function<CommandContext,Boolean> checker;
 
     public void setChecker(@Nonnull Function<CommandContext, Boolean> checker) {

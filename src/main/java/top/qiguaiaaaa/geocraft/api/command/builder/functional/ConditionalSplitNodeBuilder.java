@@ -29,7 +29,7 @@ package top.qiguaiaaaa.geocraft.api.command.builder.functional;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ConditionalSplitNode;
+import top.qiguaiaaaa.geocraft.api.command.node.functional.ConditionalSplitNode;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 
 import javax.annotation.Nonnull;

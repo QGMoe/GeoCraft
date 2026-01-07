@@ -28,15 +28,16 @@
 package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
 import com.google.common.collect.Lists;
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.command.InvalidBlockStateException;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -47,7 +48,8 @@ import java.util.function.BiPredicate;
  */
 public class BooleanNode extends SmartParameterNode<Boolean> {
     public static final DefaultParser<Boolean> DEFAULT_PARSER = (node, context) -> Boolean.FALSE;
-    public static final BiPredicate<List<String>,CommandContext> DEFAULT_MATCHER = (args,context) -> args.size()>0 && ("true".equals(args.get(0))) || "false".equals(args.get(0));
+    public static final BiPredicate<List<String>,CommandContext> DEFAULT_MATCHER = (args,context) -> args.size()>0
+            && ("true".equals(args.get(0))) || "false".equals(args.get(0)) || "1".equals(args.get(0)) || "0".equals(args.get(0));
 
     public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args, context) -> Lists.newArrayList(Boolean.TRUE.toString(),Boolean.FALSE.toString());
     public BooleanNode(@Nonnull String name) {
@@ -75,12 +77,26 @@ public class BooleanNode extends SmartParameterNode<Boolean> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
-        return MATCH_ONE_PARAMETER.check(this,args,context);
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+        if(!MATCH_ONE_PARAMETER.check(this,args,context)){
+            return false;
+        }
+        parseBoolean(args.get(0));
+        return true;
     }
 
     @Override
     public <T extends List<String> & Deque<String>> Boolean parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return CommandBase.parseBoolean(args.get(0));
+        return parseBoolean(args.getFirst());
+    }
+
+    public static boolean parseBoolean(final @Nullable String input) throws SyntaxErrorException{
+        if("true".equals(input) || "1".equals(input)){
+            return true;
+        }
+        if("false".equals(input) || "0".equals(input)){
+            return false;
+        }
+        throw new SyntaxErrorException("commands.generic.boolean.invalid",input==null?"":input);
     }
 }

@@ -28,7 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.command.builder.execute;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.ExecuteNode;
+import top.qiguaiaaaa.geocraft.api.command.node.execute.ExecuteNode;
 
 import javax.annotation.Nonnull;
 

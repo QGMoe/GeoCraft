@@ -33,6 +33,8 @@ import top.qiguaiaaaa.geocraft.api.command.builder.execute.ExecuteNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.*;
+import top.qiguaiaaaa.geocraft.api.command.node.functional.SmartSplitNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.LiteralNode;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -57,7 +59,7 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
      * 向{@link SmartSplitNode}添加下一个智能节点
      * @param builder 智能节点的构建器
      * @return 一个 {@link SmartNodeInnerBuilder}。
-     * 该构建器没有实现 {@link INodeBuilder<LiteralNode>}，以防止不小心将该构建器直接连接到父构建器的下方。也就是说，下方的写法是不允许的：
+     * 该构建器没有实现 {@link INodeBuilder< LiteralNode >}，以防止不小心将该构建器直接连接到父构建器的下方。也就是说，下方的写法是不允许的：
      * <blockquote><pre> then(smart().then(一个构建器)) </pre></blockquote>
      * 请在构建完这个子节点后调用 {@link SmartNodeInnerBuilder#done()} 方法以返回 {@link SmartSplitNodeBuilder}。即：
      * <blockquote><pre> then(smart().then(一个构建器).done()) </pre></blockquote>

@@ -27,7 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
-import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.function.Function;

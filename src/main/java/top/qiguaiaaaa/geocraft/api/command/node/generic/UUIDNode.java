@@ -27,12 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.command.*;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
@@ -76,22 +74,22 @@ public class UUIDNode extends SmartParameterNode<UUID> {
 
     @Override
     public <T extends List<String> & Deque<String>> UUID parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        try {
-            return UUID.fromString(args.getFirst());
-        }catch (IllegalArgumentException e){
-            throw new WrongUsageException("wrong uuid!");
-        }
-
+        return parseUUID(args);
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
         if(!MATCH_ONE_PARAMETER.check(this,args,context)) return false;
-        try {
-            UUID.fromString(args.get(0));
-        }catch (IllegalArgumentException e){
-            return false;
-        }
+        parseUUID(args);
         return true;
+    }
+
+    @Nonnull
+    protected UUID parseUUID(@Nonnull List<String> args) throws WrongUsageException{
+        try {
+            return UUID.fromString(args.get(0));
+        }catch (IllegalArgumentException e){
+            throw new WrongUsageException("wrong uuid!");
+        }
     }
 }

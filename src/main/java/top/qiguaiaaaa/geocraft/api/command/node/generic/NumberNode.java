@@ -29,14 +29,13 @@ package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.math.MathHelper;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
-import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;
@@ -71,8 +70,15 @@ public abstract class NumberNode<T extends Number> extends SmartParameterNode<T>
     protected abstract T parseNumber(@Nonnull String arg) throws NumberInvalidException;
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
-        return MATCH_ONE_PARAMETER.check(this,args,context);
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+        if(!MATCH_ONE_PARAMETER.check(this,args,context)){ //前提条件：需要满足有一个参数，没有提供参数则返回 false 使用默认值，或抛出错误
+            return false;
+        }
+
+        final String arg = args.get(0);
+        parseNumber(arg); //如果失败这里会炸
+
+        return true;
     }
 
     @Override

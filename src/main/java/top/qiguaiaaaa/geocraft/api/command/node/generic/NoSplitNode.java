@@ -25,29 +25,17 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
-import net.minecraft.command.CommandException;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-
-import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
+import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNode{
-    @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        try {
-            ExecuteNode.super.execute(args,context);
-            if(childNode != null) childNode.execute(args,context);
-        }finally {
-            onFinal(context,args);
-        }
-    }
+public abstract class NoSplitNode implements ICommandNode {
+    protected ICommandNode childNode;
 
-    public void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException{
+    public void setChildNode(ICommandNode child){
+        childNode = child;
     }
 }

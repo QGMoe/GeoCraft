@@ -31,7 +31,7 @@ import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
-import top.qiguaiaaaa.geocraft.api.command.node.RelayExecuteNode;
+import top.qiguaiaaaa.geocraft.api.command.node.execute.RelayExecuteNode;
 
 import javax.annotation.Nonnull;
 import java.util.List;

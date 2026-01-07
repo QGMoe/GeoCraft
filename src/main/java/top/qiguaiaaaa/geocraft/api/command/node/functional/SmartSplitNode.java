@@ -25,12 +25,15 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.functional;
 
 import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,7 +48,7 @@ import java.util.stream.Collectors;
  * @see ISmartNode
  * @author QiguaiAAAA
  */
-public class SmartSplitNode extends NoSplitNode{
+public class SmartSplitNode extends NoSplitNode {
     protected final List<ISmartNode> nodeList = new ArrayList<>();
 
     /**

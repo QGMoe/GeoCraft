@@ -28,14 +28,12 @@
 package top.qiguaiaaaa.geocraft.api.command.node.minecraft;
 
 import com.google.common.reflect.TypeToken;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.command.*;
 import net.minecraft.entity.Entity;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
@@ -119,7 +117,7 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
         if(!MATCH_ONE_PARAMETER.check(this,args,context)) return false;
         if(isPlayerNameAllowed()) return true;
 

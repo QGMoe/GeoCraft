@@ -27,10 +27,11 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.command.InvalidBlockStateException;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
@@ -63,7 +64,7 @@ public class StringNode extends SmartParameterNode<String> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
         return MATCH_ONE_PARAMETER.check(this,args,context);
     }
 

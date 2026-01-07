@@ -25,56 +25,57 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
+import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.function.TriPredicate;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
+import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
-public class ConditionalSplitNode implements ICommandNode{
-    protected final Map<BiPredicate<CommandContext,List<String>>,ICommandNode> nodeList = new LinkedHashMap<>();
+public class LiteralNode extends PermitNode implements ISmartNode {
 
-    public void addCondition(@Nonnull BiPredicate<CommandContext,List<String>> condition,@Nonnull ICommandNode node){
-        nodeList.put(condition,node);
+    protected final @Nonnull String literal;
+
+    protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
+
+    public LiteralNode(@Nonnull String literal){
+        this.literal= literal;
     }
 
-    @Nullable
-    protected ICommandNode findNextNode(@Nonnull List<String> args, @Nonnull CommandContext context){
-        for(Map.Entry<BiPredicate<CommandContext,List<String>>,ICommandNode> entry:nodeList.entrySet()){
-            if(entry.getKey().test(context,args)){
-                return entry.getValue();
-            }
-        }
-        return null;
+    @Override
+    public boolean match(@Nonnull List<String> args, @Nonnull CommandContext context) {
+        if(matchChecker!=null) return matchChecker.test(args,context);
+        return args.size()>0 && literal.equals(args.get(0));
+    }
+
+    @Override
+    public void setMatcher(@Nullable BiPredicate<List<String>, CommandContext> checker) {
+        this.matchChecker = checker;
     }
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        ICommandNode node = findNextNode(args, context);
-        if(node!=null) node.execute(args,context);
+        if(!checkPermission(context)) throw new WrongUsageException("Permission not enough!");
+        if(!match(args,context)) throw new WrongUsageException("Wrong");
+        if(childNode != null) childNode.execute(args,context);
     }
 
     @Nullable
     @Override
     public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
-        ICommandNode node = findNextNode(args,context);
-        if(node != null) return node.suggest(args,context);
-        return null;
+        return Lists.newArrayList(literal);
     }
 }

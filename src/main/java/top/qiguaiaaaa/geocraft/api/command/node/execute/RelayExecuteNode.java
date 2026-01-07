@@ -25,32 +25,30 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.execute;
 
 import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.NoSplitNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-@FunctionalInterface
-public interface ExecuteNode extends ICommandNode {
+public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNode {
     @Override
-    default <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException{
-        run(context,args);
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        try {
+            ExecuteNode.super.execute(args,context);
+            if(childNode != null) childNode.execute(args,context);
+        }finally {
+            onFinal(context,args);
+        }
     }
 
-    @Nullable
-    @Override
-    default <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context){
-        return null;
+    public void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException{
     }
-
-    void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException;
 }

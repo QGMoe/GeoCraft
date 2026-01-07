@@ -31,7 +31,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
-import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
