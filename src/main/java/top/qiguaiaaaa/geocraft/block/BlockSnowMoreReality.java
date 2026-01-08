@@ -42,6 +42,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
@@ -289,7 +290,7 @@ public class BlockSnowMoreReality extends BlockSnowExtended implements IBlockSta
     public int getMaxLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
         if(fluid == null) return 16;
         if(!isAcceptedFluid(world, pos, state, fluid)) return 0;
-        boolean mixture = state.getValue(MIXTURE);
+        final boolean mixture = state.getValue(MIXTURE);
         final int layer = state.getValue(LAYERS);
         if(mixture) return 16-layer;
         return fluid == GeoFluids.SNOW?16:16-2*layer; //不是混合物

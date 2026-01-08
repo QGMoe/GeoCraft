@@ -114,6 +114,9 @@ public final class MoreRealityEventHandler {
             if(playerIn.capabilities.isCreativeMode || (allowBucketToDrainFluidWhenAmountIsSmallerThan1000mB.getValue() && stack.amount>0 && stack.amount<Fluid.BUCKET_VOLUME)){
                 FluidOperationUtil.tryDrainFluid(worldIn,pos,Fluid.BUCKET_VOLUME,bucketFindFluidMaxDistance.getValue(),true);
                 playerIn.playSound(SoundEvents.ITEM_BUCKET_FILL, 1.0F, 1.0F);
+                event.setResult(Event.Result.ALLOW);
+                playerIn.addStat(Objects.requireNonNull(StatList.getObjectUseStats(item)));
+                event.setFilledBucket(event.getEmptyBucket());
                 return;
             }else{
                 if(stack.amount < Fluid.BUCKET_VOLUME) return;
@@ -132,7 +135,7 @@ public final class MoreRealityEventHandler {
                 playerIn.playSound(SoundEvents.ITEM_BUCKET_FILL, 1.0F, 1.0F);
                 filledBucket = net.minecraftforge.fluids.FluidUtil.getFilledBucket(stack);
             }
-            if(stack.amount == Fluid.BUCKET_VOLUME){
+            if(stack.amount >= Fluid.BUCKET_VOLUME){
                 event.setFilledBucket(filledBucket);
             }
             return;

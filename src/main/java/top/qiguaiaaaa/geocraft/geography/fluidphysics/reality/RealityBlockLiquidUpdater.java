@@ -42,6 +42,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
@@ -179,8 +180,9 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
     public boolean canMoveDownTo(@Nonnull World world,@Nonnull BlockPos downPos,@Nonnull IBlockState downState,int curQuanta,IBlockState fromState){
         if(canMoveDownTo(downState)) return true;
         if(downState.getBlock() instanceof ILayeredFluidHost){
-            if(!((ILayeredFluidHost)downState.getBlock()).canFill(world,downPos,downState, fluid,EnumFacing.UP,fromState)) return false;
-            return ((ILayeredFluidHost)downState.getBlock()).addLayer(world,downPos,downState,fluid,curQuanta,false)>0;
+            final ILayeredFluidHost host = (ILayeredFluidHost) downState.getBlock();
+            if(!host.canFill(world,downPos,downState, fluid,EnumFacing.UP,fromState)) return false;
+            return host.addAmountInQB(world,downPos,downState,fluid, QBUtil.toQBFromQuanta(curQuanta),false)>0;
         }
         return false;
     }

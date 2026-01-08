@@ -168,15 +168,15 @@ public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
         boolean doRain = BaseUtil.getRandomResult(world.rand,rainPossibility);
 
         if(doRain && state.getBlock() instanceof ILayeredFluidHost){
-            int filled = 0;
+            long filled = 0;
             ILayeredFluidHost block = (ILayeredFluidHost) state.getBlock();
             Fluid fluidToFill = FluidRegistry.WATER;
             if(accessor.getTemperature(false)<= TemperatureProperty.ICE_POINT) fluidToFill = GeoFluids.SNOW;
             if(block.canFill(world,pos,state, fluidToFill, EnumFacing.UP,Blocks.AIR.getDefaultState())){
-                int drained = atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false);
+                final int drained = atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false);
                 if(drained>=FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME){
                     atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,true);
-                    filled = block.addLayer(world,pos,state,fluidToFill,1,true);
+                    filled = block.addAmountInQB(world,pos,state,fluidToFill,drained,true);
                 }
             }
             if(filled>0){

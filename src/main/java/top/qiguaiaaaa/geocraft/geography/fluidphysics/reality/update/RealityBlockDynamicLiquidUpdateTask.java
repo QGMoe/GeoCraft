@@ -41,22 +41,23 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.IFluidBlock;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
+import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
+import top.qiguaiaaaa.geocraft.block.reality.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
-import top.qiguaiaaaa.geocraft.block.reality.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.RealityBlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.pressure.RealityPressureTaskBuilder;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.update.FluidUpdateBaseTask;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.BlockLiquidUpdater;
-import top.qiguaiaaaa.geocraft.util.MiscUtil;
-import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
+import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
+import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -120,9 +121,10 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
                 world.setBlockState(downPos, ForgeEventFactory.fireFluidPlaceBlockEvent(world, downPos, pos, Blocks.STONE.getDefaultState()));
                 FluidOperationUtil.triggerFluidMixEffects(world,downPos);
             }else if(stateBelow.getBlock() instanceof ILayeredFluidHost){
-                ILayeredFluidHost permeable = (ILayeredFluidHost) stateBelow.getBlock();
-                int quantaToFill = permeable.addLayer(world,downPos,stateBelow,fluid,liquidQuanta,true);
-                liquidQuanta -= quantaToFill;
+                final ILayeredFluidHost host = (ILayeredFluidHost) stateBelow.getBlock();
+                final long qbToFill = QBUtil.toQBFromQuanta(liquidQuanta);
+                final long qbFilled = host.addAmountInQB(world,downPos,stateBelow,fluid,qbToFill,true);
+                liquidQuanta = QBUtil.toQuanta(APIMathUtil.clamp(qbToFill-qbFilled,0,qbToFill));
                 liquidMeta = 8 -liquidQuanta;
                 if(liquidQuanta <=0) world.setBlockState(pos,Blocks.AIR.getDefaultState(),updateFlag); //先更新自身状态
                 else {
