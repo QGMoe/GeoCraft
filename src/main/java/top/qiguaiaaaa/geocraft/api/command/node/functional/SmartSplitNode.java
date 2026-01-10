@@ -86,8 +86,7 @@ public class SmartSplitNode extends NoSplitNode {
             return Collections.emptyList();
         }
 
-        return Stream.concat(nodeList.stream(),Stream.of(childNode))
-                .filter(Objects::nonNull)
+        return (childNode==null?nodeList.stream():Stream.concat(nodeList.stream(),Stream.of(childNode)))
                 .map(node -> node.suggest(args,context))
                 .filter(Objects::nonNull)
                 .flatMap(List::stream)

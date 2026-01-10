@@ -25,40 +25,44 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic;
+package top.qiguaiaaaa.geocraft.api.command.node.forge;
 
-import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
+import net.minecraftforge.oredict.OreDictionary;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 /**
  * @author QiguaiAAAA
  */
-public class BooleanNode extends SmartParameterNode<Boolean> {
-    public static final DefaultParser<Boolean> DEFAULT_PARSER = (node, context) -> Boolean.FALSE;
-    public static final BiPredicate<List<String>,CommandContext> DEFAULT_MATCHER = (args,context) -> args.size()>0
-            && ("true".equals(args.get(0))) || "false".equals(args.get(0)) || "1".equals(args.get(0)) || "0".equals(args.get(0));
+public class OreSelectorNode extends SmartParameterNode<NonNullList<ItemStack>> {
 
-    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args, context) -> Lists.newArrayList(Boolean.TRUE.toString(),Boolean.FALSE.toString());
-    public BooleanNode(@Nonnull String name) {
+    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args,context) -> Arrays.stream(OreDictionary.getOreNames()).collect(Collectors.toList());
+
+    public OreSelectorNode(@Nonnull String name) {
         super(name);
-        setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
-        setMatcher(DEFAULT_MATCHER);
     }
+
+    protected static final TypeToken<NonNullList<ItemStack>> Token = new TypeToken<NonNullList<ItemStack>>(NonNullList.class) {};
 
     @Override
     public int getParametersLength() {
@@ -67,37 +71,45 @@ public class BooleanNode extends SmartParameterNode<Boolean> {
 
     @Nonnull
     @Override
-    public Class<Boolean> getType() {
-        return Boolean.class;
+    public Type getType() {
+        return Token.getType();
     }
 
     @Nonnull
     @Override
     public String getLocalizedType() {
-        return "api.geo.command.parameter.generic.boolean";
+        return "api.geo.command.parameter.forge.oreDirectory";
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)){
-            return false;
-        }
-        parseBoolean(args.get(0));
-        return true;
+    public <T extends List<String> & Deque<String>> NonNullList<ItemStack> parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        if(!OreDictionary.doesOreNameExist(args.getFirst())) throw new InvalidOreDirectoryException(args.getFirst());
+        return OreDictionary.getOres(args.getFirst());
     }
 
+    /**
+     * @see OreDictionary#registerOreImpl(String, ItemStack)
+     */
     @Override
-    public <T extends List<String> & Deque<String>> Boolean parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return parseBoolean(args.getFirst());
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
+        return !"Unknown".equals(args.get(0));
     }
 
-    public static boolean parseBoolean(final @Nullable String input) throws SyntaxErrorException{
-        if("true".equals(input) || "1".equals(input)){
-            return true;
+    public class InvalidOreDirectoryException extends CommandException{
+
+        public InvalidOreDirectoryException(@Nullable final String invalidOre){
+            super("api.geo.command.parameter.oreDirectory.invalid",invalidOre,OreSelectorNode.this.getLocalizedParameter());
         }
-        if("false".equals(input) || "0".equals(input)){
-            return false;
+
+        public InvalidOreDirectoryException(String message, Object... objects) {
+            super(message, objects);
         }
-        throw new SyntaxErrorException("commands.generic.boolean.invalid",input==null?"":input);
+
+        @Nonnull
+        @Override
+        public synchronized Throwable fillInStackTrace() {
+            return this;
+        }
     }
 }

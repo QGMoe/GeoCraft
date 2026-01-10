@@ -32,6 +32,7 @@ import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
@@ -65,7 +66,7 @@ public class StringNode extends SmartParameterNode<String> {
 
     @Override
     public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        return MATCH_ONE_PARAMETER.check(this,args,context);
+        return ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context);
     }
 
     @Override

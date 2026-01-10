@@ -38,7 +38,8 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
-import top.qiguaiaaaa.geocraft.api.command.node.minecraft.BlockPosNode;
+import top.qiguaiaaaa.geocraft.api.command.node.minecraft.Vec3dNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;
@@ -82,12 +83,12 @@ public class AtmosphereAccessorNode extends SmartParameterNode<IAtmosphereAccess
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
-        setMatcher(BlockPosNode.DEFAULT_MATCHER);
+        setMatcher(Vec3dNode.DEFAULT_MATCHER);
     }
 
     @Override
     public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        return MATCH_FOUR_PARAMETER.check(this,args,context);
+        return ValidChecker.MATCH_FOUR_PARAMETER.check(this,args,context);
     }
 
     @Override

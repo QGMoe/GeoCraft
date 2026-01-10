@@ -25,20 +25,20 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.minecraft;
+package top.qiguaiaaaa.geocraft.api.command.node.forge;
 
-import net.minecraft.block.Block;
-import net.minecraft.command.*;
-import net.minecraft.init.Blocks;
+import net.minecraft.command.InvalidBlockStateException;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.util.registry.IRegistry;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.forge.ForgeRegistryEntryNode;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -47,30 +47,34 @@ import java.util.stream.Collectors;
 /**
  * @author QiguaiAAAA
  */
-public class BlockSelectorNode extends ForgeRegistryEntryNode<Block> {
-    public static final DefaultParser<Block> DEFAULT_PARSER = (node, context) -> Blocks.AIR;
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(Block.REGISTRY);
-
-    public BlockSelectorNode(@Nonnull String name) {
+public abstract class ForgeRegistryEntryNode<E extends IForgeRegistryEntry<E>> extends SmartParameterNode<E> {
+    public ForgeRegistryEntryNode(@Nonnull String name) {
         super(name);
-        setDefaultParser(DEFAULT_PARSER);
-        setSuggestProvider(DEFAULT_SUGGESTOR);
+    }
+
+    @Override
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+        return ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context);
+    }
+
+    @Override
+    public int getParametersLength() {
+        return 1;
     }
 
     @Nonnull
     @Override
-    public Class<Block> getType() {
-        return Block.class;
+    public abstract Class<E> getType();
+
+    @Nonnull
+    public static <E extends IForgeRegistryEntry<E>> BiFunction<List<String>, SuggestContext,List<String>> createSuggestProviderFromRegistry(@Nonnull final IForgeRegistry<E> registry){
+        final List<String> entries = registry.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
+        return (args,context)-> entries;
     }
 
     @Nonnull
-    @Override
-    public String getLocalizedType() {
-        return "api.geo.command.parameter.minecraft.block";
-    }
-
-    @Override
-    public <T extends List<String> & Deque<String>> Block parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return CommandBase.getBlockByText(context.getSender(), args.getFirst());
+    public static <K,E extends IForgeRegistryEntry<E>> BiFunction<List<String>, SuggestContext,List<String>> createSuggestProviderFromRegistry(@Nonnull final IRegistry<K,E> registry){
+        final List<String> entries = registry.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
+        return (args,context)-> entries;
     }
 }

@@ -25,12 +25,15 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
+package top.qiguaiaaaa.geocraft.api.command.node.forge;
 
+import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
@@ -38,7 +41,7 @@ import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -46,21 +49,14 @@ import java.util.function.BiFunction;
 /**
  * @author QiguaiAAAA
  */
-public abstract class NumberNode<T extends Number> extends SmartParameterNode<T> {
-    public NumberNode(@Nonnull String name) {
+public class FluidSelectorNode extends SmartParameterNode<Fluid> {
+
+    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR =
+            ((args, context) -> Lists.newArrayList(FluidRegistry.getRegisteredFluids().keySet()));
+
+    public FluidSelectorNode(@Nonnull String name) {
         super(name);
-        setSuggestProvider(new NumberSuggestProvider());
-    }
-
-    protected T minValue;
-    protected T maxValue;
-
-    public void setMinValue(@Nonnull T minValue) {
-        this.minValue = minValue;
-    }
-
-    public void setMaxValue(@Nonnull T maxValue) {
-        this.maxValue = maxValue;
+        setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Override
@@ -68,29 +64,44 @@ public abstract class NumberNode<T extends Number> extends SmartParameterNode<T>
         return 1;
     }
 
-    protected abstract T parseNumber(@Nonnull String arg) throws NumberInvalidException;
+    @Nonnull
+    @Override
+    public Class<Fluid> getType() {
+        return Fluid.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.forge.fluid";
+    }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)){ //前提条件：需要满足有一个参数，没有提供参数则返回 false 使用默认值，或抛出错误
-            return false;
+    public <T extends List<String> & Deque<String>> Fluid parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        final Fluid fluid = FluidRegistry.getFluid(args.getFirst());
+        if(fluid == null) throw new InvalidFluidException(args.getFirst());
+        return fluid;
+    }
+
+    @Override
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+        return ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context);
+    }
+
+    public class InvalidFluidException extends CommandException{
+
+        public InvalidFluidException(@Nullable final String fluidName){
+            super("api.geo.command.parameter.fluid.invalid",fluidName,FluidSelectorNode.this.getLocalizedParameter());
         }
 
-        final String arg = args.get(0);
-        parseNumber(arg); //如果失败这里会炸
+        public InvalidFluidException(String message, Object... objects) {
+            super(message, objects);
+        }
 
-        return true;
-    }
-
-    @Override
-    public <T1 extends List<String> & Deque<String>> T parseParameter(@Nonnull T1 args, @Nonnull ExecuteContext context) throws CommandException {
-        return parseNumber(args.get(0));
-    }
-
-    protected class NumberSuggestProvider implements BiFunction<List<String>, SuggestContext,List<String>>{
+        @Nonnull
         @Override
-        public List<String> apply(List<String> strings, SuggestContext context) {
-            return Collections.singletonList(String.valueOf(0));
+        public synchronized Throwable fillInStackTrace() {
+            return this;
         }
     }
 }

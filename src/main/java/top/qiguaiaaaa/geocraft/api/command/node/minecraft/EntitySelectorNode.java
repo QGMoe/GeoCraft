@@ -34,6 +34,7 @@ import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
@@ -118,7 +119,7 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
 
     @Override
     public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        if(!MATCH_ONE_PARAMETER.check(this,args,context)) return false;
+        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
         if(isPlayerNameAllowed()) return true;
 
         final String arg = args.get(0);

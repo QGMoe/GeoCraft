@@ -40,9 +40,13 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiPredicate;
 
 /**
+ * 单字面量节点，可以通过匹配对应的字面量来确定下一步的执行节点，该节点不是一个可选节点。
+ * 其作为智能节点时，可以通过 {@link #setMatcher(BiPredicate)} 设置自己的匹配逻辑。其默认逻辑就是检查传入的参数长度是否大于 0，且第一个参数是否等于字面量。
+ * @see LiteralsNode
  * @author QiguaiAAAA
  */
 public class LiteralNode extends PermitNode implements ISmartNode {
@@ -51,8 +55,8 @@ public class LiteralNode extends PermitNode implements ISmartNode {
 
     protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
 
-    public LiteralNode(@Nonnull String literal){
-        this.literal= literal;
+    public LiteralNode(@Nonnull final String literal){
+        this.literal= Objects.requireNonNull(literal);
     }
 
     @Override
@@ -82,7 +86,7 @@ public class LiteralNode extends PermitNode implements ISmartNode {
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context) {
         if(args.size()>1){
             final String first = args.getFirst();
             try {
@@ -91,6 +95,9 @@ public class LiteralNode extends PermitNode implements ISmartNode {
             }finally {
                 args.addFirst(first);
             }
+        }
+        if(args.size()==1){
+            return literal.startsWith(args.getFirst())?Collections.singletonList(literal):null;
         }
         return Collections.singletonList(literal);
     }

@@ -33,24 +33,21 @@ import net.minecraft.item.Item;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.forge.ForgeRegistryEntryNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Type;
 import java.util.Deque;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 /**
  * @author QiguaiAAAA
  */
-public class ItemSelectorNode extends SmartParameterNode<Item> {
+public class ItemSelectorNode extends ForgeRegistryEntryNode<Item> {
 
     public static final DefaultParser<Item> DEFAULT_PARSER = (node, context) -> Items.AIR;
-    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> Item.REGISTRY.getKeys().stream().map(Objects::toString).collect(Collectors.toList()));
-
+    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(Item.REGISTRY);
     public ItemSelectorNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
@@ -58,23 +55,13 @@ public class ItemSelectorNode extends SmartParameterNode<Item> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        return MATCH_ONE_PARAMETER.check(this,args,context);
-    }
-
-    @Override
     public <T extends List<String> & Deque<String>> Item parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         return CommandBase.getItemByText(context.getSender(),args.getFirst());
     }
 
-    @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
     @Nonnull
     @Override
-    public Type getType() {
+    public Class<Item> getType() {
         return Item.class;
     }
 

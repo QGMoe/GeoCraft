@@ -31,6 +31,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
@@ -39,11 +40,10 @@ import top.qiguaiaaaa.geocraft.api.function.TriPredicate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -51,12 +51,12 @@ import java.util.function.BiPredicate;
 public class ConditionalSplitNode implements ICommandNode {
     protected final Map<BiPredicate<CommandContext,List<String>>,ICommandNode> nodeList = new LinkedHashMap<>();
 
-    public void addCondition(@Nonnull BiPredicate<CommandContext,List<String>> condition,@Nonnull ICommandNode node){
-        nodeList.put(condition,node);
+    public void addCondition(@Nonnull final BiPredicate<CommandContext,List<String>> condition,@Nonnull final ICommandNode node){
+        nodeList.put(Objects.requireNonNull(condition),Objects.requireNonNull(node));
     }
 
     @Nullable
-    protected ICommandNode findNextNode(@Nonnull List<String> args, @Nonnull CommandContext context){
+    protected ICommandNode findNextNode(@Nonnull final List<String> args, @Nonnull final CommandContext context){
         for(Map.Entry<BiPredicate<CommandContext,List<String>>,ICommandNode> entry:nodeList.entrySet()){
             if(entry.getKey().test(context,args)){
                 return entry.getValue();
@@ -66,16 +66,29 @@ public class ConditionalSplitNode implements ICommandNode {
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        ICommandNode node = findNextNode(args, context);
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
+        final ICommandNode node = findNextNode(args, context);
         if(node!=null) node.execute(args,context);
     }
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
-        ICommandNode node = findNextNode(args,context);
-        if(node != null) return node.suggest(args,context);
-        return null;
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context) {
+        GeoCraft.getLogger().info("[Conditional] Provide Suggest For [len={}] : {}",args.size(),String.join(" ",args));
+        if(args.size()>1){ //Conditional 的位置不需要建议，只要分支
+            final ICommandNode node = findNextNode(args, context);
+            if (node != null) return node.suggest(args, context);
+            return Collections.emptyList();
+        }
+        return nodeList.entrySet().stream()
+                .filter(entry -> entry.getKey() != null && entry.getValue() != null)
+                .map(entry -> entry.getValue().suggest(args, context))
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .map(String::trim)
+                .distinct() //去重
+                .filter(s->s.startsWith(args.isEmpty()?"":args.getLast().trim()))
+                .sorted()
+                .collect(Collectors.toList());
     }
 }

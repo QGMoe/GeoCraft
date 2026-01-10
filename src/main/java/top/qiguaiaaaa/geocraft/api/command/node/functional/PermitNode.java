@@ -56,7 +56,7 @@ public class PermitNode extends NoSplitNode {
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(!checkPermission(context)) throw new WrongUsageException("Permission not enough!");
+        if(!checkPermission(context)) throw new WrongUsageException("Permission not enough!"); //TO DO
         if(childNode != null) childNode.execute(args,context);
     }
 

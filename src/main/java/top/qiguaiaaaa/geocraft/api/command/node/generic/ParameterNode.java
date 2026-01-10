@@ -194,6 +194,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
 
     /**
      * 检查当前的命令参数是否符合当前参数的语法格式。
+     * 请注意，最好仅检查语法以保证命令的确定性。例如，物品参数应当只检查是否有至少一个参数，至于参数内写的 ID 对应的物品是否存在，应在 {@link #parseParameter(List, ExecuteContext)} 中检查。
      * @param args 提供的未解析参数
      * @param context 执行时上下文
      * @return 返回 true 表示参数合法，可以解析。返回 false 表示参数非法，但可以使用默认值，仅当 {@link #isOptional()} 为 true 时使用。

@@ -10,11 +10,16 @@ api.geo.command.parameter.minecraft.blockPos=BlockPos
 api.geo.command.parameter.minecraft.block=Block
 api.geo.command.parameter.minecraft.entitySelector=TargetSelector
 api.geo.command.parameter.minecraft.item=Item
+api.geo.command.parameter.forge.fluid=Fluid
+api.geo.command.parameter.forge.oreDirectory=Ore Directory
+api.geo.command.parameter.forge.entityEntry=Entity Entry
 api.geo.command.parameter.geocraft.atmosphereAccessor=AtmosphereAccessor
 
 api.geo.command.parameter.smart.checker1=Parameter %s is required to accepted one argument.
-api.geo.command.parameter.smart.checker3=Parameter %s is required to accepted at least three arguments.
-api.geo.command.parameter.smart.checker4=Parameter %s is required to accepted at least four arguments.
+api.geo.command.parameter.smart.checkers=Parameter %s is required to accepted at least %s arguments.
+api.geo.command.parameter.fluid.invalid=Invalid fluid %s for parameter %s
+api.geo.command.parameter.oreDirectory.invalid=Invalid Ore Directory %s for parameter %s
+api.geo.command.parameter.entityEntry.invalid=Invalid Entity Entry %s for parameter %s
 
 geocraft.command.io_error=An IO Exception Occurred (%s), command couldn't be processed.
 geocraft.command.chunk_error.unloaded=Location (%s,%s) is unloaded

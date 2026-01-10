@@ -27,11 +27,9 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
-import net.minecraft.client.resources.I18n;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
-import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
@@ -48,23 +46,6 @@ import java.util.function.BiPredicate;
  * 该智能参数节点默认使用 {@link this#checkValid(List, CommandContext)} 作为 {@link this#match(List, CommandContext)} 方法的逻辑。
  */
 public abstract class SmartParameterNode<P> extends ParameterNode<P> implements ISmartNode {
-    public static final ValidChecker MATCH_ONE_PARAMETER = (self,args,context) -> {
-        if(args.size()>=1) return true;
-        else if(self.isOptional()) return false;
-        else throw new WrongUsageException("api.geo.command.parameter.smart.checker1", self.getLocalizedParameter());
-    };
-    public static final ValidChecker MATCH_THREE_PARAMETER = ((self, args, context) -> {
-        if(args.size()>=3) return true;
-        else if(args.size()>=1) throw new WrongUsageException("api.geo.command.parameter.smart.checker3",I18n.format(self.getLocalizedName())); //只有一到两个参数，填了一半，不能用默认值
-        else if(self.isOptional()) return false; //可以用默认值
-        else throw new WrongUsageException("api.geo.command.parameter.smart.checker3",self.getLocalizedParameter());
-    });
-    public static final ValidChecker MATCH_FOUR_PARAMETER = ((self, args, context) -> {
-        if(args.size()>=4) return true;
-        else if(args.size()>=1) throw new WrongUsageException("api.geo.command.parameter.smart.checker4",I18n.format(self.getLocalizedName())); //只有一到三个参数，填了一半，不能用默认值
-        else if(self.isOptional()) return false; //可以用默认值
-        else throw new WrongUsageException("api.geo.command.parameter.smart.checker4",self.getLocalizedParameter());
-    });
 
     protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
 
@@ -106,8 +87,4 @@ public abstract class SmartParameterNode<P> extends ParameterNode<P> implements 
     public abstract boolean checkValid(@Nonnull List<String> args,@Nonnull CommandContext context)
             throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException;
 
-    public interface ValidChecker{
-        boolean check(@Nonnull SmartParameterNode<?> self,@Nonnull List<String> args,@Nonnull CommandContext context)
-                throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException;
-    }
 }
