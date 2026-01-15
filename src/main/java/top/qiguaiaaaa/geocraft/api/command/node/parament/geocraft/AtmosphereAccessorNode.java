@@ -38,6 +38,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.MinecraftVec3Node;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.Vec3dNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
@@ -49,7 +50,7 @@ import java.util.function.BiFunction;
 /**
  * @author QiguaiAAAA
  */
-public class AtmosphereAccessorNode extends SmartParameterNode<IAtmosphereAccessor> {
+public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccessor> {
     public static final DefaultParser<IAtmosphereAccessor> DEFAULT_PARSER = (parameterNode, context) -> {
         final BlockPos pos = context.getSender().getPosition();
         final boolean notAir;
@@ -75,6 +76,7 @@ public class AtmosphereAccessorNode extends SmartParameterNode<IAtmosphereAccess
             case 3:
                 suggests.add(String.valueOf(pos.getZ()));
                 break;
+            default: return null;
         }
         return suggests;
     };
@@ -93,7 +95,7 @@ public class AtmosphereAccessorNode extends SmartParameterNode<IAtmosphereAccess
 
     @Override
     public <T extends List<String> & Deque<String>> IAtmosphereAccessor parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException{
-        final BlockPos pos = CommandBase.parseBlockPos(context.getSender(),args.toArray(new String[0]), 0,false);
+        final BlockPos pos = CommandBase.parseBlockPos(context.getSender(),args.toArray(new String[0]), 0,doCenterBlock);
         final boolean notAir;
         if("default".equals(args.get(3))){
             final World world = context.getWorld();
@@ -102,7 +104,7 @@ public class AtmosphereAccessorNode extends SmartParameterNode<IAtmosphereAccess
             notAir = !state.getBlock().isAir(state,world,pos);
         }else notAir = CommandBase.parseBoolean(args.get(3));
 
-        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(context.getWorld(),pos,notAir);
+        final IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(context.getWorld(),pos,notAir);
 
         if(accessor == null) throw new CommandException("geocraft.command.atmosphere.nonexistent.there");
 

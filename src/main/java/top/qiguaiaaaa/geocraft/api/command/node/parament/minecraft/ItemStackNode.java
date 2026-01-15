@@ -27,15 +27,18 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
-import com.google.common.collect.Lists;
 import net.minecraft.command.*;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -43,47 +46,26 @@ import java.util.function.BiFunction;
 /**
  * @author QiguaiAAAA
  */
-public class BlockPosNode extends MinecraftVec3Node<BlockPos> {
-    public static final DefaultParser<BlockPos> DEFAULT_PARSER = (node, context) -> context.getSender().getPosition();
+public class ItemStackNode extends SmartParameterNode<ItemStack> {
+    public static final DefaultParser<ItemStack> DEFAULT_PARSER = (node, context) -> new ItemStack(Items.AIR,1);
 
-    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> {
-        final List<String> suggests = Lists.newArrayList("~");
-        final BlockPos pos = context.getTargetPos()==null?context.getPosition():context.getTargetPos();
+    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> {
         switch (args.size()){
             case 0:
             case 1:
-                suggests.add(String.valueOf(pos.getX()));
-                break;
+                return ItemSelectorNode.DEFAULT_SUGGESTOR.apply(args,context);
             case 2:
-                suggests.add(String.valueOf(pos.getY()));
-                break;
+                return Collections.singletonList("1");
             case 3:
-                suggests.add(String.valueOf(pos.getZ()));
-                break;
+                return Collections.singletonList("0");
             default: return null;
         }
-        return suggests;
     });
 
-    protected static final String[] EmptyStringArr = new String[0];
-
-    public BlockPosNode(@Nonnull String name) {
+    public ItemStackNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
-        setMatcher(Vec3dNode.DEFAULT_MATCHER);
-    }
-
-    @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        if(!ValidChecker.MATCH_THREE_PARAMETER.check(this,args,context)) return false;
-        CommandBase.parseBlockPos(context.getSender(),args.toArray(EmptyStringArr), 0,doCenterBlock);
-        return true;
-    }
-
-    @Override
-    public <T extends List<String> & Deque<String>> BlockPos parseParameter(@Nonnull final T args, @Nonnull final ExecuteContext context) throws NumberInvalidException {
-        return CommandBase.parseBlockPos(context.getSender(),args.toArray(EmptyStringArr), 0,doCenterBlock);
     }
 
     @Override
@@ -93,13 +75,21 @@ public class BlockPosNode extends MinecraftVec3Node<BlockPos> {
 
     @Nonnull
     @Override
-    public Class<BlockPos> getType() {
-        return BlockPos.class;
+    public Class<ItemStack> getType() {
+        return ItemStack.class;
     }
 
-    @Nonnull
     @Override
-    public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.minecraft.blockPos";
+    public <T extends List<String> & Deque<String>> ItemStack parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        final int count = CommandBase.parseInt(args.get(1),0,Integer.MAX_VALUE);
+        final int meta = CommandBase.parseInt(args.get(2),-1,Integer.MAX_VALUE);
+        final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),args.getFirst());
+        return new ItemStack(item,count,meta);
+    }
+
+    @Override
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+        if(!ValidChecker.MATCH_THREE_PARAMETER.check(this,args,context)) return false;
+        return ValidChecker.MATCH_RESOURCE_LOCATION.check(this, args, context); //数字是否正确就在运行时检查
     }
 }

@@ -27,6 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
@@ -48,5 +49,25 @@ public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>,SELF e
     @Override
     protected T buildInstance() {
         return builder.apply(name);
+    }
+
+    /**
+     * @author QiguaiAAAA
+     */
+    public static class FunctionalSmart<P, T extends ParameterNode<P> & ISmartNode,SELF extends FunctionalSmart<P,T,SELF>>
+            extends SmartParameterNodeBuilder<P, T,SELF> {
+
+        protected final Function<String, T> builder;
+
+        public FunctionalSmart(@Nonnull String name, @Nonnull Function<String, T> builder) {
+            super(name);
+            this.builder = builder;
+        }
+
+        @Nonnull
+        @Override
+        protected T buildInstance() {
+            return builder.apply(name);
+        }
     }
 }

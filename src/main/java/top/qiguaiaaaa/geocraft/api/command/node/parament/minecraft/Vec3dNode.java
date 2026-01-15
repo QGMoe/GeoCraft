@@ -34,7 +34,6 @@ import net.minecraft.util.math.Vec3i;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.Matchers;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
@@ -47,7 +46,7 @@ import java.util.function.BiPredicate;
 /**
  * @author QiguaiAAAA
  */
-public class Vec3dNode extends SmartParameterNode<Vec3d> {
+public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
     public static final DefaultParser<Vec3d> DEFAULT_PARSER = (node, context) -> context.getSender().getPositionVector();
     /**
      *  若第一个参数为数字，则说明为坐标。不会检查参数长度是否满足条件，因为若检查则会导致歧义。
@@ -142,7 +141,7 @@ public class Vec3dNode extends SmartParameterNode<Vec3d> {
                 default:
                     base = pos.z;
             }
-            coors[i] = CommandBase.parseCoordinate(base,args.get(i),false);
+            coors[i] = CommandBase.parseCoordinate(base,args.get(i),doCenterBlock);
         }
         return new Vec3d(coors[0].getResult(),coors[1].getResult(),coors[2].getResult());
     }

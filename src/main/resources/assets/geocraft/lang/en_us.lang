@@ -27,6 +27,7 @@ api.geo.command.parameter.oreDirectory.invalid=Invalid Ore Directory %s for para
 api.geo.command.parameter.entityEntry.invalid=Invalid Entity Entry %s for parameter %s
 
 api.geo.command.functional.permit.denied=Permission denied.
+api.geo.command.functional.literal.non_match=Expect literal %s, but found %s
 
 geocraft.command.io_error=An IO Exception Occurred (%s), command couldn't be processed.
 geocraft.command.chunk_error.unloaded=Location (%s,%s) is unloaded

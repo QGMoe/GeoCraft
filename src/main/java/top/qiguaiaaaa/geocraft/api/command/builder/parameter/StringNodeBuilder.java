@@ -33,6 +33,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -87,8 +88,7 @@ public class StringNodeBuilder extends SmartParameterNodeBuilder<String, StringN
     @Nonnull
     public StringNodeBuilder deny(@Nonnull final String... values){
         for (@Nullable String value : values) {
-            if(value == null) throw new NullPointerException();
-            deny(value);
+            deny(Objects.requireNonNull(value));
         }
         return this;
     }

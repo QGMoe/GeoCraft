@@ -27,23 +27,21 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.parament.forge;
 
-import com.google.common.reflect.TypeToken;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
 import net.minecraftforge.oredict.OreDictionary;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
+import top.qiguaiaaaa.geocraft.api.util.oredict.OreDictionaryEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
@@ -53,7 +51,7 @@ import java.util.stream.Collectors;
 /**
  * @author QiguaiAAAA
  */
-public class OreSelectorNode extends SmartParameterNode<NonNullList<ItemStack>> {
+public class OreSelectorNode extends SmartParameterNode<OreDictionaryEntry> {
 
     public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args,context) -> Arrays.stream(OreDictionary.getOreNames()).collect(Collectors.toList());
 
@@ -62,8 +60,6 @@ public class OreSelectorNode extends SmartParameterNode<NonNullList<ItemStack>> 
         setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
-    protected static final TypeToken<NonNullList<ItemStack>> Token = new TypeToken<NonNullList<ItemStack>>(NonNullList.class) {};
-
     @Override
     public int getParametersLength() {
         return 1;
@@ -71,8 +67,8 @@ public class OreSelectorNode extends SmartParameterNode<NonNullList<ItemStack>> 
 
     @Nonnull
     @Override
-    public Type getType() {
-        return Token.getType();
+    public Class<OreDictionaryEntry> getType() {
+        return OreDictionaryEntry.class;
     }
 
     @Nonnull
@@ -82,9 +78,10 @@ public class OreSelectorNode extends SmartParameterNode<NonNullList<ItemStack>> 
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> NonNullList<ItemStack> parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(!OreDictionary.doesOreNameExist(args.getFirst())) throw new InvalidOreDirectoryException(args.getFirst());
-        return OreDictionary.getOres(args.getFirst());
+    public <T extends List<String> & Deque<String>> OreDictionaryEntry parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        final OreDictionaryEntry entry = OreDictionaryEntry.get(args.getFirst());
+        if(entry == null) throw new InvalidOreDirectoryException(args.getFirst());
+        return entry;
     }
 
     /**
@@ -93,7 +90,8 @@ public class OreSelectorNode extends SmartParameterNode<NonNullList<ItemStack>> 
     @Override
     public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
         if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
-        return !"Unknown".equals(args.get(0));
+        if("Unknown".equals(args.get(0))) throw new SyntaxErrorException("api.geo.command.parameter.oreDirectory.invalid",args.get(0));
+        return true;
     }
 
     public class InvalidOreDirectoryException extends CommandException{

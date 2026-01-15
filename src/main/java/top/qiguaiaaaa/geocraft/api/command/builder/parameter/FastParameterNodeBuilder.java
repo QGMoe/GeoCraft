@@ -42,9 +42,9 @@ public final class FastParameterNodeBuilder<P, T extends ParameterNode<P>> exten
         super(name, builder);
     }
 
-    public final static class Smart<P, T extends ParameterNode<P> & ISmartNode> extends FunctionalSmartParameterNodeBuilder<P,T,Smart<P,T>>{
+    public final static class FastSmart<P, T extends ParameterNode<P> & ISmartNode> extends FunctionalSmart<P,T, FastSmart<P,T>> {
 
-        public Smart(@Nonnull String name, @Nonnull Function<String, T> builder) {
+        public FastSmart(@Nonnull String name, @Nonnull Function<String, T> builder) {
             super(name, builder);
         }
     }

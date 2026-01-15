@@ -27,7 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter.num;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FunctionalSmartParameterNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FunctionalParameterNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
 
 import javax.annotation.Nonnull;
@@ -36,7 +36,7 @@ import java.util.function.Function;
 /**
  * @author QiguaiAAAA
  */
-public class NumberNodeBuilder<N extends Number, T extends NumberNode<N>> extends FunctionalSmartParameterNodeBuilder<N, T,NumberNodeBuilder<N,T>> {
+public class NumberNodeBuilder<N extends Number, T extends NumberNode<N>> extends FunctionalParameterNodeBuilder.FunctionalSmart<N, T,NumberNodeBuilder<N,T>> {
     protected N minValue, maxValue;
 
     public NumberNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {

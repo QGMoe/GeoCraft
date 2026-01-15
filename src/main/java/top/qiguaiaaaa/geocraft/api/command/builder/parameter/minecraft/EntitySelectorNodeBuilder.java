@@ -25,9 +25,10 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
+package top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft;
 
 import net.minecraft.entity.Entity;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.SmartParameterNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.EntitySelectorNode;
 
 import javax.annotation.Nonnull;

@@ -28,7 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.command.node.literal;
 
 import net.minecraft.command.CommandException;
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
@@ -73,7 +73,7 @@ public class LiteralNode extends PermitNode implements ISmartNode {
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         if(!checkPermission(context)) throw new CommandException("api.geo.command.functional.permit.denied");
-        if(!match(args,context)) throw new WrongUsageException("Wrong");
+        if(!match(args,context)) throw new SyntaxErrorException("api.geo.command.functional.literal.non_match",this.literal,args.getFirst());
         final String first = args.getFirst();
         try {
             args.pop();
@@ -81,7 +81,6 @@ public class LiteralNode extends PermitNode implements ISmartNode {
         }finally {
             args.addFirst(first);
         }
-
     }
 
     @Nullable

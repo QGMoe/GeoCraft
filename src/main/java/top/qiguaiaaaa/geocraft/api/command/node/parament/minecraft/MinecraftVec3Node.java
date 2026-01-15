@@ -25,30 +25,23 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
-import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 
 import javax.annotation.Nonnull;
-import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
-public class FunctionalSmartParameterNodeBuilder<P, T extends ParameterNode<P> & ISmartNode,SELF extends FunctionalSmartParameterNodeBuilder<P,T,SELF>>
-        extends SmartParameterNodeBuilder<P, T,SELF> {
-
-    protected final Function<String, T> builder;
-
-    public FunctionalSmartParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+public abstract class MinecraftVec3Node<T> extends SmartParameterNode<T> {
+    public MinecraftVec3Node(@Nonnull String name) {
         super(name);
-        this.builder = builder;
     }
 
-    @Nonnull
-    @Override
-    protected T buildInstance() {
-        return builder.apply(name);
+    protected boolean doCenterBlock = false;
+
+    public void setDoCenterBlock(final boolean doCenterBlock) {
+        this.doCenterBlock = doCenterBlock;
     }
 }
