@@ -48,6 +48,7 @@ import net.minecraft.world.storage.WorldInfo;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
@@ -111,10 +112,6 @@ public final class CommandAtmosphere {
     static final Map<String, BiConsumer<AtmosphereCommandContext,Double>> AddConsumer = new HashMap<>();
     static final Map<String, Consumer<AtmosphereCommandContext>> QueryConsumer = new HashMap<>();
     static boolean inited = false;
-
-    public String getUsage(ICommandSender sender) {
-        return "geocraft.command.atmosphere.usage";
-    }
 
     public static void init(){
         if(inited) return;
@@ -240,9 +237,7 @@ public final class CommandAtmosphere {
                 return;
             }
             ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.underlying",
-                    ctx.x,
-                    underlying.getAltitude(),
-                    ctx.z,
+                    ctx.x, underlying.getAltitude(), ctx.z,
                     underlying.getHeatCapacity(),
                     underlying.平均返照率);
         });
@@ -258,9 +253,9 @@ public final class CommandAtmosphere {
     public static ICommand create(@Nonnull final MinecraftServer server){
         init();
         return new CommandBuilder(ATMOSPHERE_COMMAND_NAME)
-                .requirePermissionLevel(2)
-                .passIfNotPlayer(true)
-                .requirePermission(PERMISSION_NODE)
+                .require(2)
+                .requirePlayer(true)
+                .require(PERMISSION_NODE).allow(DefaultPermissionLevel.OP).register()
                 .addAlias(server.isSinglePlayer() && FMLCommonHandler.instance().getSide() == Side.CLIENT? "zh_cn".equals(
                         Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode()
                 )?ALIASES:Collections.emptyList():Collections.emptyList())
@@ -273,16 +268,19 @@ public final class CommandAtmosphere {
                 .append(buildUtilCommand()).done()
                 .append(buildTrackCommand()).done()
                 .execute(buildDefaultExecutor()).done()
+                .usage("geocraft.command.atmosphere.usage")
                 .build();
     }
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildSetCommand(){
-        return literal("set").then(string("property").suggest(
-                (args,context) -> {
-                    List<String> res = getPropertyList();
-                    res.addAll(SetConsumer.keySet());
-                    return res;
+        return literal("set")
+                .require(PERMISSION_NODE+".set").allow(DefaultPermissionLevel.OP).register()
+                .then(string("property").suggest(
+                        (args,context) -> {
+                            List<String> res = getPropertyList();
+                            res.addAll(SetConsumer.keySet());
+                            return res;
                 }).then(number("value", NumberType.DOUBLE).then(
                         blockPos("pos").asOptional().then(
                                 process(CommandAtmosphere::set)
@@ -293,8 +291,9 @@ public final class CommandAtmosphere {
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildStopCommand(){
-        return literal("stop").then(
-                dimension("world").asOptional().then(
+        return literal("stop")
+                .require(PERMISSION_NODE+".stop").allow(DefaultPermissionLevel.OP).register()
+                .then(dimension("world").asOptional().then(
                         execute(((args, context) -> {
                             final World world = context.get("world", DimensionNode.class);
                             final IAtmosphereSystem system = AtmosphereSystemManager.getAtmosphereSystem(world);
@@ -309,14 +308,16 @@ public final class CommandAtmosphere {
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildResetCommand(){
-        return literal("reset").then(
-                string("property").allow("temp").then(
+        return literal("reset")
+                .require(PERMISSION_NODE+".reset").allow(DefaultPermissionLevel.OP).register()
+                .then(string("property").allow("temp").then(
                         blockPos("pos").asOptional().then(
                                 process((args, context) -> {
                                     final World world = context.getWorld();
                                     final Atmosphere atmosphere = context.get("atm");
                                     final BlockPos pos = context.getBlockPos("pos");
-                                    final int x = pos.getX(),z = pos.getZ();
+                                    final int x = pos.getX();
+                                    final int z = pos.getZ();
                                     final String property = context.get("property");
 
                                     if("temp".equalsIgnoreCase(property)){
@@ -339,7 +340,9 @@ public final class CommandAtmosphere {
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildAddCommand(){
-        return literal("add").then(string("property").suggest(
+        return literal("add")
+                .require(PERMISSION_NODE+".add").allow(DefaultPermissionLevel.OP).register()
+                .then(string("property").suggest(
                 (args,context)->{
                     List<String> res = getPropertyList();
                     res.addAll(AddConsumer.keySet());
@@ -356,10 +359,11 @@ public final class CommandAtmosphere {
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildQueryCommand(){
-        return literal("query").then(string("property").suggest(
-                new ArrayList<>(QueryConsumer.keySet())
-        ).then(
-                blockPos("pos").asOptional().then(
+        return literal("query")
+                .require(PERMISSION_NODE+".query").allow(DefaultPermissionLevel.OP).register()
+                .then(string("property").suggest(
+                        new ArrayList<>(QueryConsumer.keySet())
+                ).then(blockPos("pos").asOptional().then(
                         process(CommandAtmosphere::query)
                 )
         ));
@@ -367,31 +371,44 @@ public final class CommandAtmosphere {
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildUtilCommand(){
-        return literal("util").then(
-                string("util_name")
-                        .allow("sun","property","block_info","storage")
-                        .then(blockPos("pos").asOptional().then(
-                                process(CommandAtmosphere::util)
-                                )
-                        )
-        );
+        return literal("util")
+                .require(PERMISSION_NODE+".util").allow(DefaultPermissionLevel.OP).register()
+                .smart()
+                .literal("block_info")
+                .then(blockState("blockToQuery")
+                        .asOptional()
+                        .defaultAs(((node, context) -> context.getWorld().getBlockState(context.getSender().getPosition().down())))
+                        .then(execute((args, context) ->{
+                            final IBlockState state = context.get("blockToQuery");
+                            final ConfigurableBlockState cState = new ConfigurableBlockState(state);
+                            int heatCapacity = GeoBlockSetting.getBlockHeatCapacity(state);
+                            double reflectivity= GeoBlockSetting.getBlockReflectivity(state);
+                            context.notifyCommandListener("geocraft.command.atmosphere.util.block_info",cState,heatCapacity,reflectivity);
+                        }))
+                ).done()
+                .append(string("util_name")
+                        .allow("sun","property","storage")
+                        .then(process(CommandAtmosphere::util))
+                ).done()
+                .done();
     }
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildTrackCommand(){
-        return literal("track").then(
-                string("property").suggest(
-                        (args, context) -> {
-                            List<String> res = getPropertyList();
-                            res.addAll(Arrays.asList("temp","water","steam"));
-                            return res;
-                        }).then(integer("time").min(1).then(
-                                string("file_name").suggest(
-                                        (strings, context) -> Collections.singletonList("track_"+new Date().getTime()+".csv")
-                                ).then(
-                                        blockPos("pos").then(
-                                                process(CommandAtmosphere::track)
-                                        )
+        return literal("track")
+                .requirePlayer(true)
+                .require(4)
+                .require(PERMISSION_NODE+".track").allow(DefaultPermissionLevel.OP).register()
+                .then(string("property")
+                .suggest((args, context) -> {
+                    List<String> res = getPropertyList();
+                    res.addAll(Arrays.asList("temp","water","steam"));
+                    return res;
+                }).then(integer("time").min(1).then(
+                        string("file_name")
+                                .suggest((strings, context) -> Collections.singletonList("track_"+new Date().getTime()+".csv"))
+                                .then(blockPos("pos")
+                                        .then(process(CommandAtmosphere::track))
                                 )
                         )
                 )
@@ -400,7 +417,7 @@ public final class CommandAtmosphere {
 
     @Nonnull
     public static CommandRunFunction buildDefaultExecutor(){
-        return ((args, context) -> {
+        return (args, context) -> {
             final ICommandSender sender = context.getSender();
             final World world = sender.getEntityWorld();
             final BlockPos pos = sender.getPosition();
@@ -421,7 +438,7 @@ public final class CommandAtmosphere {
                 context.notifyCommandListener("geocraft.command.atmosphere.query.basic.5",
                         steam==null?"NULL":steam,water==null?"NULL":water);
             }
-        });
+        };
     }
 
     @Nonnull
@@ -527,7 +544,6 @@ public final class CommandAtmosphere {
         final World world = context.getWorld();
         final WorldInfo info = world.getWorldInfo();
         final String util = context.get("util_name");
-        final BlockPos pos = context.get("pos");
         final IAtmosphereAccessor accessor = context.get("accessor");
 
         if("sun".equalsIgnoreCase(util)){
@@ -545,15 +561,6 @@ public final class CommandAtmosphere {
             }
             return;
         }
-        if("block_info".equalsIgnoreCase(util)){
-            BlockPos downPos = pos.down();
-            IBlockState state = world.getBlockState(downPos);
-            ConfigurableBlockState cState = new ConfigurableBlockState(state);
-            int heatCapacity = GeoBlockSetting.getBlockHeatCapacity(state);
-            double reflectivity= GeoBlockSetting.getBlockReflectivity(state);
-            context.notifyCommandListener("geocraft.command.atmosphere.util.block_info",cState,heatCapacity,reflectivity);
-            return;
-        }
         if("storage".equalsIgnoreCase(util)){
             IAtmosphereSystem system = accessor.getSystem();
             IAtmosphereDataProvider provider = system.getDataProvider();
@@ -569,7 +576,9 @@ public final class CommandAtmosphere {
         final String fileName = context.get("file_name");
         if(fileName.trim().isEmpty()) throw new WrongUsageException("geocraft.command.atmosphere.track.usage");
         final BlockPos pos = context.getBlockPos("pos");
-        final int x = pos.getX(),y = pos.getY(),z = pos.getZ();
+        final int x = pos.getX();
+        final int y = pos.getY();
+        final int z = pos.getZ();
         final String name = context.get("property");
         final Atmosphere atmosphere = context.get("atm");
         if("temp".equalsIgnoreCase(name)){
@@ -676,21 +685,6 @@ public final class CommandAtmosphere {
         public final int z;
         public final ExecuteContext execute;
         public CommandException exception;
-
-        AtmosphereCommandContext(final @Nonnull IAtmosphereAccessor accessor,
-                                 final @Nonnull Atmosphere atmosphere,
-                                 final @Nonnull Layer layer,
-                                 final @Nonnull BlockPos pos,
-                                 final @Nonnull ExecuteContext execute) {
-            this.accessor = accessor;
-            this.atmosphere = atmosphere;
-            this.layer = layer;
-            this.pos = pos;
-            this.x = pos.getX();
-            this.y = pos.getY();
-            this.z = pos.getZ();
-            this.execute = execute;
-        }
 
         AtmosphereCommandContext(final @Nonnull ExecuteContext execute) {
             this.accessor = execute.get("accessor");

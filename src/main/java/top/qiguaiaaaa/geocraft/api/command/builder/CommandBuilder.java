@@ -30,15 +30,16 @@ package top.qiguaiaaaa.geocraft.api.command.builder;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.CommandNode;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -61,7 +62,8 @@ public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilde
     protected final @Nonnull List<String> aliases = new ArrayList<>();
     protected @Nonnull BiPredicate<MinecraftServer,ICommandSender> funcPermissionCheck = PERMIT_ALL;
     protected int requiredPermissionLevel = 0;
-    protected Set<String> requiredPermissions = null;
+    protected Set<PermissionAPINodeInnerBuilder> requiredPermissions = null;
+    protected boolean autoRegisterMissingPermissions = false;
     protected boolean passIfNotPlayer = true;
     protected String usage;
 
@@ -77,28 +79,35 @@ public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilde
     }
 
     @Nonnull
-    public CommandBuilder requirePermissionLevel(final int requiredPermissionLevel) {
+    public CommandBuilder require(final int requiredPermissionLevel) {
         this.requiredPermissionLevel = requiredPermissionLevel;
         return this;
     }
 
     @Nonnull
-    public CommandBuilder permitIf(@Nonnull final BiPredicate<MinecraftServer,ICommandSender> funcPermissionCheck) {
+    public CommandBuilder require(@Nonnull final BiPredicate<MinecraftServer,ICommandSender> funcPermissionCheck) {
         if(funcPermissionCheck == REJECT_ALL) this.funcPermissionCheck = REJECT_ALL;
         this.funcPermissionCheck = combinePredicates(this.funcPermissionCheck,funcPermissionCheck);
         return this;
     }
 
     @Nonnull
-    public CommandBuilder requirePermission(@Nonnull final String permissionNode){
+    public PermissionAPINodeInnerBuilder require(@Nonnull final String permissionNode){
+        final PermissionAPINodeInnerBuilder builder = new PermissionAPINodeInnerBuilder(permissionNode);
         if(this.requiredPermissions == null) this.requiredPermissions = new HashSet<>();
-        this.requiredPermissions.add(permissionNode);
+        this.requiredPermissions.add(builder);
+        return builder;
+    }
+
+    @Nonnull
+    public CommandBuilder registerMissingPermissions(){
+        this.autoRegisterMissingPermissions = true;
         return this;
     }
 
     @Nonnull
-    public CommandBuilder passIfNotPlayer(final boolean doPass){
-        this.passIfNotPlayer = doPass;
+    public CommandBuilder requirePlayer(final boolean needPlayer){
+        this.passIfNotPlayer = !needPlayer;
         return this;
     }
 
@@ -134,12 +143,21 @@ public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilde
     @Nonnull
     @Override
     public CommandNode build(){
+        doRegisterPermissions();
         final CommandNode command = new CommandNode(name);
         command.setAliases(aliases.stream().distinct().sorted().collect(Collectors.toList()));
         command.setChildNode(buildChildNode());
         command.setCheckPermissionFunction(buildPermitPredicate());
         if(usage != null) command.setUsage(usage);
         return command;
+    }
+
+    protected void doRegisterPermissions(){
+        if(!this.autoRegisterMissingPermissions) return;
+        for(@Nonnull PermissionAPINodeInnerBuilder builder:requiredPermissions){
+            if(PermissionAPI.getPermissionHandler().getRegisteredNodes().contains(builder.node)) continue;
+            PermissionAPI.registerNode(builder.node,builder.level,builder.comment);
+        }
     }
 
     @Nonnull
@@ -150,8 +168,9 @@ public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilde
             permitFunc = combinePredicates(permitFunc,buildPermitByLevel());
         }
         if(requiredPermissions != null){
+            final Set<String> permissions = requiredPermissions.stream().map(s -> s.node).collect(Collectors.toSet());
             final BiPredicate<MinecraftServer,ICommandSender> checkNodePermissions = (server, sender) -> {
-                for(String node:requiredPermissions){
+                for(String node:permissions){
                     if(!PermissionAPI.hasPermission((EntityPlayer) sender,node)) return false;
                 }
                 return true;
@@ -172,5 +191,38 @@ public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilde
     protected static BiPredicate<MinecraftServer,ICommandSender> combinePredicates(@Nonnull final BiPredicate<MinecraftServer,ICommandSender> current,
                                                                                    @Nonnull final BiPredicate<MinecraftServer,ICommandSender> toBeCombined){
         return current == PERMIT_ALL?toBeCombined:current.and(toBeCombined);
+    }
+
+    public class PermissionAPINodeInnerBuilder {
+        protected final String node;
+        protected DefaultPermissionLevel level = DefaultPermissionLevel.NONE;
+        protected String comment = "";
+
+        public PermissionAPINodeInnerBuilder(final @Nonnull String node) {
+            this.node = Objects.requireNonNull(node);
+        }
+
+        @Nonnull
+        public PermissionAPINodeInnerBuilder comment(@Nonnull final String comment){
+            this.comment = comment;
+            return this;
+        }
+
+        @Nonnull
+        public PermissionAPINodeInnerBuilder allow(@Nonnull final DefaultPermissionLevel level){
+            this.level = level;
+            return this;
+        }
+
+        @Nonnull
+        public CommandBuilder register(){
+            PermissionAPI.registerNode(node,level,comment);
+            return CommandBuilder.this;
+        }
+
+        @Nonnull
+        public CommandBuilder done(){
+            return CommandBuilder.this;
+        }
     }
 }

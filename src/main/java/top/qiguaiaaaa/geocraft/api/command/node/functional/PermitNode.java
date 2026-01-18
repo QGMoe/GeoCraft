@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.command.node.functional;
 
 import net.minecraft.command.CommandException;
+import net.minecraft.entity.player.EntityPlayer;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
@@ -46,6 +47,8 @@ import java.util.function.Predicate;
 public class PermitNode extends NoSplitNode {
     public static final Predicate<CommandContext> PERMIT_ALL = context -> true;
     public static final Predicate<CommandContext> REJECT_ALL = context -> false;
+    public static final Predicate<CommandContext> PASS_IF_NOT_PLAYER = ctx -> !(ctx.getSender() instanceof EntityPlayer);
+    public static final Predicate<CommandContext> PASS_IF_PLAYER = ctx -> ctx.getSender() instanceof EntityPlayer;
     protected @Nonnull Predicate<CommandContext> checker = REJECT_ALL;
 
     public void setChecker(@Nonnull final Predicate<CommandContext> predicate) {

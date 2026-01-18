@@ -69,15 +69,14 @@ public class StringNodeBuilder extends SmartParameterNodeBuilder<String, StringN
     @Nonnull
     public StringNodeBuilder allow(@Nonnull final String value){
         if(whitelist == null) whitelist = new HashSet<>();
-        whitelist.add(value);
+        whitelist.add(Objects.requireNonNull(value));
         return this;
     }
 
     @Nonnull
     public StringNodeBuilder allow(@Nonnull final String... values){
         for (@Nullable String s : values) {
-            if(s == null) throw new NullPointerException();
-            allow(s);
+            allow(Objects.requireNonNull(s));
         }
         return this;
     }
@@ -85,7 +84,7 @@ public class StringNodeBuilder extends SmartParameterNodeBuilder<String, StringN
     @Nonnull
     public StringNodeBuilder deny(@Nonnull final String value){
         if(blacklist == null) blacklist = new HashSet<>();
-        blacklist.add(value);
+        blacklist.add(Objects.requireNonNull(value));
         return this;
     }
 

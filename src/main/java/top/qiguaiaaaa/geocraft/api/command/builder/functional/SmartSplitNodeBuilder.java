@@ -28,6 +28,8 @@
 package top.qiguaiaaaa.geocraft.api.command.builder.functional;
 
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraftforge.server.permission.DefaultPermissionLevel;
+import net.minecraftforge.server.permission.PermissionAPI;
 import top.qiguaiaaaa.geocraft.api.command.Nodes;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction;
@@ -42,7 +44,9 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 /**
  * {@link SmartSplitNode}的构建器
@@ -218,15 +222,43 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
         }
 
         /**
-         * @see LiteralNodeBuilder#passIf(Predicate) )
+         * @see LiteralNodeBuilder#require(Predicate) )
          * @param funcCheckPermission 权限检查函数
          * @return {@link LiteralNodeInnerBuilder} 自身
          */
         @Nonnull
-        public LiteralNodeInnerBuilder passIf(@Nonnull final Predicate<CommandContext> funcCheckPermission) {
-            literalBuilder.passIf(funcCheckPermission);
+        public LiteralNodeInnerBuilder require(@Nonnull final Predicate<CommandContext> funcCheckPermission) {
+            literalBuilder.require(funcCheckPermission);
             return this;
         }
+
+        @Nonnull
+        public LiteralNodeInnerBuilder require(final int requiredPermissionLevel) {
+            literalBuilder.require(requiredPermissionLevel);
+            return this;
+        }
+
+        @Nonnull
+        public LiteralInnerPermissionAPINodeInnerBuilder require(@Nonnull final String permissionNode) {
+            return new LiteralInnerPermissionAPINodeInnerBuilder(permissionNode);
+        }
+
+        @Nonnull
+        public LiteralNodeInnerBuilder requirePlayer(final boolean needPlayer){
+            literalBuilder.requirePlayer(needPlayer);
+            return this;
+        }
+
+        @Nonnull
+        public LiteralNodeInnerBuilder registerMissingPermissions(){
+            this.literalBuilder.registerMissingPermissions();
+            return this;
+        }
+
+//        @Nonnull
+//        public SmartSplitNodeBuilder.Inner<LiteralNodeInnerBuilder> smart(){
+//            return new SmartSplitNodeBuilder.Inner<>(this,(self,smart)->self.literalBuilder.then(smart.build()));
+//        }
 
         /**
          * {@inheritDoc}
@@ -238,6 +270,40 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
         public LiteralNodeInnerBuilder matchIf(@Nonnull final BiPredicate<List<String>, CommandContext> checker) {
             return (LiteralNodeInnerBuilder) super.matchIf(checker);
         }
+
+        public class LiteralInnerPermissionAPINodeInnerBuilder {
+            protected final String node;
+            protected DefaultPermissionLevel level = DefaultPermissionLevel.NONE;
+            protected String comment = "";
+
+            public LiteralInnerPermissionAPINodeInnerBuilder(final @Nonnull String node) {
+                this.node = Objects.requireNonNull(node);
+            }
+
+            @Nonnull
+            public LiteralInnerPermissionAPINodeInnerBuilder comment(@Nonnull final String comment){
+                this.comment = comment;
+                return this;
+            }
+
+            @Nonnull
+            public LiteralInnerPermissionAPINodeInnerBuilder allow(@Nonnull final DefaultPermissionLevel level){
+                this.level = level;
+                return this;
+            }
+
+            @Nonnull
+            public LiteralNodeInnerBuilder register(){
+                PermissionAPI.registerNode(node,level,comment);
+                return done();
+            }
+
+            @Nonnull
+            public LiteralNodeInnerBuilder done(){
+                literalBuilder.require(this.node).allow(level).comment(comment).done();
+                return LiteralNodeInnerBuilder.this;
+            }
+        }
     }
 
     public static class Outer extends SmartSplitNodeBuilder<Outer> implements INodeBuilder<SmartSplitNode>{
@@ -247,7 +313,7 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
     public static class Inner<Parent> extends SmartSplitNodeBuilder<Inner<Parent>>{
 
         protected final Parent parentBuilder;
-        protected final BiConsumer<Parent,SmartSplitNodeBuilder.Inner<Parent>> onDone;
+        protected final BiConsumer<Parent, Inner<Parent>> onDone;
 
         public Inner(@Nonnull final Parent parentBuilder) {
             this.parentBuilder = parentBuilder;

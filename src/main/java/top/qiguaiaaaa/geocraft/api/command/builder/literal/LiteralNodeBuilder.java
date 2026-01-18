@@ -27,7 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.literal;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.functional.PermitNodeBuilder;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.server.permission.DefaultPermissionLevel;
+import net.minecraftforge.server.permission.PermissionAPI;
+import top.qiguaiaaaa.geocraft.api.command.builder.NoSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
@@ -35,23 +38,72 @@ import top.qiguaiaaaa.geocraft.api.command.node.literal.LiteralNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode.*;
 
 /**
  * @author QiguaiAAAA
  */
-public class LiteralNodeBuilder extends PermitNodeBuilder<LiteralNode,LiteralNodeBuilder> {
+public class LiteralNodeBuilder extends NoSplitNodeBuilder<LiteralNode,LiteralNodeBuilder> {
     @SuppressWarnings("deprecation")
     protected static final BiConsumer<LiteralNodeBuilder,SmartSplitNodeBuilder.Inner<LiteralNodeBuilder>> ON_SMART_DONE =
             (self, smart) -> self.bakedChildNode = smart.build();
     protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
     private final @Nonnull String name;
+    protected Predicate<CommandContext> funcCheckPermission = PERMIT_ALL;
+    protected int requiredPermissionLevel = 0;
+    protected Set<PermissionAPINodeInnerBuilder> requiredPermissions = null;
+    protected boolean autoRegisterMissingPermissions = false;
+    protected boolean passIfNotPlayer = true;
 
     public LiteralNodeBuilder(@Nonnull final String name) {
         this.name = name.trim();
         if(this.name.contains(" ") || this.name.isEmpty()) throw new IllegalArgumentException();
+    }
+
+    @Nonnull
+    public LiteralNodeBuilder require(final int requiredPermissionLevel) {
+        this.requiredPermissionLevel = requiredPermissionLevel;
+        return this;
+    }
+
+    @Nonnull
+    public LiteralNodeBuilder require(@Nonnull final Predicate<CommandContext> funcCheckPermission) {
+        if(this.funcCheckPermission == REJECT_ALL) return this;
+        this.funcCheckPermission = combinePredicates(this.funcCheckPermission,funcCheckPermission);
+        return this;
+    }
+
+    @Nonnull
+    public PermissionAPINodeInnerBuilder require(@Nonnull final String permissionNode){
+        return require(new PermissionAPINodeInnerBuilder(permissionNode));
+    }
+
+    @Nonnull
+    public PermissionAPINodeInnerBuilder require(@Nonnull final PermissionAPINodeInnerBuilder builder){
+        if(this.requiredPermissions == null) this.requiredPermissions = new HashSet<>();
+        this.requiredPermissions.add(builder);
+        return builder;
+    }
+
+    @Nonnull
+    public LiteralNodeBuilder requirePlayer(final boolean needPlayer){
+        this.passIfNotPlayer = !needPlayer;
+        return this;
+    }
+
+    @Nonnull
+    public LiteralNodeBuilder registerMissingPermissions(){
+        this.autoRegisterMissingPermissions = true;
+        return this;
     }
 
     /**
@@ -76,9 +128,79 @@ public class LiteralNodeBuilder extends PermitNodeBuilder<LiteralNode,LiteralNod
     @Override
     public LiteralNode build() {
         final LiteralNode node = new LiteralNode(name);
-        node.setChecker(funcCheckPermission);
+        node.setChecker(buildPermitPredicate());
         node.setChildNode(buildChildNode());
         node.setMatcher(matchChecker);
         return node;
+    }
+
+    // PROTECT AREA
+
+    @Nonnull
+    protected Predicate<CommandContext> buildPermitPredicate(){
+        if(funcCheckPermission == REJECT_ALL) return REJECT_ALL;
+        Predicate<CommandContext> permitFunc = funcCheckPermission;
+        if(requiredPermissionLevel>=0){
+            permitFunc = combinePredicates(permitFunc,buildPermitByLevel());
+        }
+        if(requiredPermissions != null){
+            final Set<String> permissions = requiredPermissions.stream().map(s -> s.node).collect(Collectors.toSet());
+            final Predicate<CommandContext> checkNodePermissions = ctx -> {
+                for(String node:permissions){
+                    if(!PermissionAPI.hasPermission((EntityPlayer) ctx.getSender(),node)) return false;
+                }
+                return true;
+            };
+            final Predicate<CommandContext> bakedChecker = passIfNotPlayer?
+                    PASS_IF_NOT_PLAYER.or(checkNodePermissions):PASS_IF_PLAYER.and(checkNodePermissions);
+            permitFunc = combinePredicates(permitFunc,bakedChecker);
+        }
+        return permitFunc;
+    }
+
+    @Nonnull
+    protected Predicate<CommandContext> buildPermitByLevel(){
+        return (ctx) -> ctx.getSender().canUseCommand(requiredPermissionLevel,ctx.getCommand().getName());
+    }
+
+    @Nonnull
+    protected static Predicate<CommandContext> combinePredicates(@Nonnull final Predicate<CommandContext> current,
+                                                                 @Nonnull final Predicate<CommandContext> toBeCombined){
+        return current == PERMIT_ALL?toBeCombined:current.and(toBeCombined);
+    }
+
+    // INNER BUILDER
+
+    public class PermissionAPINodeInnerBuilder {
+        protected final String node;
+        protected DefaultPermissionLevel level = DefaultPermissionLevel.NONE;
+        protected String comment = "";
+
+        public PermissionAPINodeInnerBuilder(final @Nonnull String node) {
+            this.node = Objects.requireNonNull(node);
+        }
+
+        @Nonnull
+        public PermissionAPINodeInnerBuilder comment(@Nonnull final String comment){
+            this.comment = comment;
+            return this;
+        }
+
+        @Nonnull
+        public PermissionAPINodeInnerBuilder allow(@Nonnull final DefaultPermissionLevel level){
+            this.level = level;
+            return this;
+        }
+
+        @Nonnull
+        public LiteralNodeBuilder register(){
+            PermissionAPI.registerNode(node,level,comment);
+            return LiteralNodeBuilder.this;
+        }
+
+        @Nonnull
+        public LiteralNodeBuilder done(){
+            return LiteralNodeBuilder.this;
+        }
     }
 }
