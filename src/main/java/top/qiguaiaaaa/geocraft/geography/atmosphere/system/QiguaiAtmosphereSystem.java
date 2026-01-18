@@ -49,6 +49,7 @@ import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.setting.GeoAtmosphereSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.QiguaiAtmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.config.CommonAtmosphereSystemInfo;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
@@ -173,10 +174,10 @@ public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
             Fluid fluidToFill = FluidRegistry.WATER;
             if(accessor.getTemperature(false)<= TemperatureProperty.ICE_POINT) fluidToFill = GeoFluids.SNOW;
             if(block.canFill(world,pos,state, fluidToFill, EnumFacing.UP,Blocks.AIR.getDefaultState())){
-                final int drained = atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false);
+                final int drained = atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false); //mB
                 if(drained>=FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME){
                     atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,true);
-                    filled = block.addAmountInQB(world,pos,state,fluidToFill,drained,true);
+                    filled = block.addAmountInQB(world,pos,state,fluidToFill, QBUtil.toQBFromMB(drained),true);
                 }
             }
             if(filled>0){
