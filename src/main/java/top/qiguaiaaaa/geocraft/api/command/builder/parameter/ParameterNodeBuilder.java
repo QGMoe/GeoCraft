@@ -34,6 +34,7 @@ import top.qiguaiaaaa.geocraft.api.command.node.parament.Decorator;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -116,6 +117,11 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
     public SELF suggest(final List<String> suggests) {
         this.suggestProvider = (args,context) -> suggests;
         return (SELF) this;
+    }
+
+    @Nonnull
+    public SELF suggest(final String... suggests){
+        return suggest(Arrays.asList(suggests));
     }
 
     @Nonnull

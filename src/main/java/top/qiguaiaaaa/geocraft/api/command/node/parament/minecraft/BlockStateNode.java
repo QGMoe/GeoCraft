@@ -43,7 +43,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author QiguaiAAAA
@@ -53,7 +52,7 @@ public class BlockStateNode extends SmartParameterNode<IBlockState> {
 
     public BlockStateNode(@Nullable final String blockNodeName,@Nonnull final String name) {
         super(name);
-        this.blockNodeName = Objects.requireNonNull(blockNodeName);
+        this.blockNodeName = blockNodeName;
     }
 
     public BlockStateNode(@Nonnull final String name) {

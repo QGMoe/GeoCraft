@@ -105,7 +105,7 @@ import static top.qiguaiaaaa.geocraft.api.command.Nodes.*;
 
 public final class CommandAtmosphere {
     public static final String ATMOSPHERE_COMMAND_NAME = "atmosphere";
-    public static final String PERMISSION_NODE = "qg.geocraft.command.atmosphere";
+    public static final String PERMISSION_NODE = "geocraft.command.atmosphere";
     public static final List<String> ALIASES = new ArrayList<>(Collections.singleton("大气"));
 
     static final Map<String, BiConsumer<AtmosphereCommandContext,Double>> SetConsumer = new HashMap<>();
@@ -342,8 +342,7 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildAddCommand(){
         return literal("add")
                 .require(PERMISSION_NODE+".add").allow(DefaultPermissionLevel.OP).register()
-                .then(string("property").suggest(
-                (args,context)->{
+                .then(string("property").suggest((args,context)->{
                     List<String> res = getPropertyList();
                     res.addAll(AddConsumer.keySet());
                     return res;
@@ -388,6 +387,10 @@ public final class CommandAtmosphere {
                 ).done()
                 .append(string("util_name")
                         .allow("sun","property","storage")
+                        .decorate((arg,context)->{
+                            context.put("pos",context.getSender().getPosition());
+                            return arg;
+                        })
                         .then(process(CommandAtmosphere::util))
                 ).done()
                 .done();

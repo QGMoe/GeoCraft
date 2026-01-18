@@ -103,7 +103,7 @@ public class StringNodeBuilder extends SmartParameterNodeBuilder<String, StringN
         node.setPattern(pattern);
         if(whitelist != null) whitelist.forEach(node::addAllowValue);
         if(blacklist != null) blacklist.forEach(node::addDisallowedValue);
-        if(suggestProvider == null && whitelist != null){
+        if(suggestProvider == USE_DEFAULT_SUGGESTOR && whitelist != null){
             Stream<String> stream = whitelist.stream();
             if(blacklist != null) stream = stream.filter(v -> !blacklist.contains(v));
             if(pattern != null) stream = stream.filter(v -> pattern.matcher(v).matches());

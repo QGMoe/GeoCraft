@@ -58,7 +58,7 @@ public abstract class NoSplitNodeBuilder<N extends NoSplitNode, S extends NoSpli
 
     @Nullable
     protected final ICommandNode buildChildNode(){
-        if(childNode == null) return null;
+        if(childNode == null && bakedChildNode == null) return null;
         return bakedChildNode != null ? bakedChildNode : childNode.build();
     }
 

@@ -55,7 +55,7 @@ import java.util.function.Predicate;
 public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<SELF>> {
 
     public static final CommandRunFunction DEFAULT_EXECUTE_FUNC_CHECKER = (args, context) -> {
-        if(!args.isEmpty()) throw new SyntaxErrorException("Wrong!");
+        if(!args.isEmpty()) throw new SyntaxErrorException();
     };
 
     private SmartSplitNodeBuilder(){}
