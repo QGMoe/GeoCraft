@@ -73,14 +73,17 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.2.0-beta.4")
     public static final ConfigBoolean ALLOW_DYNAMIC_LIQUID_NEIGHBOR_UPDATE =
             new ConfigBoolean(CATEGORY_FLUID_PHYSICS,"allowDynamicLiquidNeighborUpdate",false,
-                    "允许原版的动态流体被邻居更新，在 VANILLA 模式下无效。当启用时，浮空水或岩浆方块可以通过邻居更新而恢复正常，但这可能会降低大规模流体流动时的性能。");
+                    "允许原版的动态流体被邻居更新，在 VANILLA 模式下无效。当启用时，浮空水或岩浆方块可以通过邻居更新而恢复正常，但这可能会降低大规模流体流动时的性能。\n" +
+                            "Allow vanilla dynamic fluids accepting neighbour updates, not available for VANILLA mode. " +
+                            "When true, floating water or lava can be normalised by neighbour updates. However, it may reduce the performance.");
 
     /**
      * @see ConfigInit#verifyConfigValidity()
      */
     @GeoConfig.Since("0.2.0")
     public static final ConfigMap<Integer, FluidPhysicsInfo.FluidPhysicsInfoJSONWrapper> FLUID_PHYSICS_INFO = new ConfigMap<>(CATEGORY_FLUID_PHYSICS,"fluidPhysicsInfoForEachWorld",
-            "每个维度的全局单独流体物理配置，注意某些配置目前不会在所有物理模式生效。",Integer::parseInt, FluidPhysicsInfo.FluidPhysicsInfoJSONWrapper::new,
+            "每个维度的全局单独流体物理配置，注意某些配置目前不会在所有物理模式生效。\n" +
+                    "Dimensional configurations.Note that some parameters won't take effects for all physics modes currently. ",Integer::parseInt, FluidPhysicsInfo.FluidPhysicsInfoJSONWrapper::new,
             new ConfigEntry<>(0,new FluidPhysicsInfo.FluidPhysicsInfoJSONWrapper(new FluidPhysicsInfo()
                     .setSkyLight(new FluidPhysicsInfo.SkyLight()
                             .checkWhenIceSmelting(true)
@@ -269,12 +272,14 @@ public final class FluidPhysicsConfig {
     public static final ConfigBoolean DO_NOT_DROP_CHUNKS_WHEN_FAILING_PAUSING_PRESSURE_SYSTEM = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
             "doNotDropChunksWhenFailingPausingPressureSystem",true,
             "当服务器线程无法阻止压强系统停止运行时，取消区块卸载操作，以避免可能的多线程竞争导致的崩溃。\n" +
-                    "请注意，如果服务器线程无法及时在一游戏刻内保存，那么下一游戏刻也会尝试保存操作，这样子下去直到保存成功。");
+                    "请注意，如果服务器线程无法及时在一游戏刻内保存，那么下一游戏刻也会尝试保存操作，这样子下去直到保存成功。\n" +
+                    "Stop unloading chunks when Server Thread can't stop Fluid Pressure System Thread in time.");
 
     @GeoConfig.Since("0.2.0-beta.4")
     public static final ConfigBoolean DO_NOT_RUN_TASKS_WHEN_FAILING_GETTING_READ_LOCK = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
             "doNotRunTasksWhenFailingGettingReadLock",true,
-            "当压强线程无法及时获取世界的读取锁，也就是等待服务器保存超时时，跳过当前压强任务的执行，以避免可能的多线程竞争导致的崩溃");
+            "当压强线程无法及时获取世界的读取锁，也就是等待服务器保存超时时，跳过当前压强任务的执行，以避免可能的多线程竞争导致的崩溃\n" +
+                    "Stop FluidPressureSystem from running when it can't attain the read lock in time.");
 
     @GeoConfig.Since("0.2.0-beta.4")
     @Config.RequiresMcRestart
@@ -306,7 +311,8 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.2.0-beta.1")
     public static final ConfigBoolean USE_COMPRESSED_COORDINATE = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
             "useCompressedCoordinate",false,
-            "[实验性功能]使用压缩为长整型的 BlockPos 以减少大规模流体更新时的内存开销。");
+            "[实验性功能]使用压缩为长整型的 BlockPos 以减少大规模流体更新时的内存开销。\n" +
+                    "[Experimental Feature]Use compressed BlockPos (as long) to optimise the usage of memory.");
 
     // *******************************
     // Vanilla Config
@@ -320,7 +326,8 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.1.1")
     @Config.RequiresMcRestart
     public static final ConfigBoolean ENABLE_MIXIN_FOR_WATER_EVAPORATE = new ConfigBoolean(CATEGORY_FLUID_PHYSICS_VANILLA,
-            "enableMixinForWaterEvaporation",true,"启用为实现水蒸发而进行的Mixin操作.关闭后水将无法蒸发.",true);
+            "enableMixinForWaterEvaporation",true,"启用为实现水蒸发而进行的Mixin操作.关闭后水将无法蒸发.\n" +
+            "Enable Mixin for Water evaporation feature. False means water won't evaporate.",true);
 
     // *******************************
     // Vanilla Like Fluid Physics Config
@@ -357,7 +364,8 @@ public final class FluidPhysicsConfig {
     public static final ConfigList<ConfigurableFluid> fluidsNotToSimulateInVanillaLike =
             new ConfigList<>(CATEGORY_FLUID_PHYSICS_VANILLA_LIKE,"fluidBlackList",
                     new ConfigurableList<>(),
-                    "不受此模式影响的流体", ConfigurableFluid::new);
+                    "不受此模式影响的流体\n" +
+                            "Fluids not to be affected by this mode", ConfigurableFluid::new);
 
     @Config.Comment("设置流体垂直流动时的参数")
     @GeoConfig.Since("0.1")
@@ -401,7 +409,8 @@ public final class FluidPhysicsConfig {
     //******************************
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_SIMULATION_MORE_REALITY = CATEGORY_FLUID_PHYSICS.getChildCategory("more_reality")
-            .setComment("设置流体物理模式为"+FluidPhysicsMode.MORE_REALITY+"时的参数");
+            .setComment("设置流体物理模式为"+FluidPhysicsMode.MORE_REALITY+"时的参数\n" +
+                    "Set the parameters when Fluid Physics Mode is "+FluidPhysicsMode.MORE_REALITY);
 
     // ********************
     // Pressure System
@@ -538,7 +547,8 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.1")
     public static final ConfigInteger bottleFindFluidMaxDistance =
             new ConfigInteger(CATEGORY_SIMULATION_MORE_REALITY,"bottleFindFluidMaxDistance",3,
-                    "空瓶装流体（一般是水）时寻找流体的最大范围（即从起点到范围边界的曼哈顿距离）");
+                    "空瓶装流体（一般是水）时寻找流体的最大范围（即从起点到范围边界的曼哈顿距离）\n" +
+                            "The max distance to find water when filling an empty bottle.");
     /**
      * @see GeoFluidSetting#isFluidToUseVanillaBucketMode(Fluid) 
      * @see GeoFluidSetting#setFluidToUseVanillaBucketMode(String, boolean) 
@@ -547,7 +557,8 @@ public final class FluidPhysicsConfig {
     public static final ConfigList<ConfigurableFluid> fluidsWhoseBucketsBehavesAsVanillaBuckets =
             new ConfigList<>(CATEGORY_SIMULATION_MORE_REALITY,"fluidsWhoseBucketsBehavesAsVanillaBuckets",
                     new ConfigurableList<>(),
-                    "流体对应的桶其行为表现不受本模组影响的流体。", ConfigurableFluid::new);
+                    "流体对应的桶其行为表现不受本模组影响的流体。\n" +
+                            "Fluids whose buckets' behaviour will not be affected by GeoCraft", ConfigurableFluid::new);
 
     /**
      * @see GeoFluidSetting#isFluidToBePhysical(Fluid) 
@@ -567,11 +578,13 @@ public final class FluidPhysicsConfig {
             "enableInvalidLiquidStateReport",false,"当在世界中设置不应该出现的原版液体状态时，打印WARN日志。这有助于在出现bug时调试。\n" +
             "Print WARN-level logs when vanilla liquid states that should not appear in the world are detected. This aids in debugging when issues occur.",true);
 
-    @Config.Comment("设置第三方模组联动参数")
+    @Config.Comment({"设置第三方模组联动参数",
+    "Configure compat parameters"})
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT = CATEGORY_SIMULATION_MORE_REALITY.getChildCategory("mod_support");
     // ** IC2 Config
-    @Config.Comment("设置关于[IC2]工业时代II的参数")
+    @Config.Comment({"设置关于[IC2]工业时代II的参数",
+    "Configure compat parameters with Industrial Craft II"})
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT_IC2 = CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT.getChildCategory("ic2");
 
@@ -587,7 +600,8 @@ public final class FluidPhysicsConfig {
             new ConfigInteger(CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT_IC2,"pumpSearchFluidMaxIterations",8,
                     "控制泵搜寻流体的迭代次数。");
     // ** IE Config
-    @Config.Comment("设置关于[IE]沉浸工程的参数")
+    @Config.Comment({"设置关于[IE]沉浸工程的参数",
+    "Configure compat parameters with Immersive Engineering"})
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT_IE =
             CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT.getChildCategory("immersiveengineering");

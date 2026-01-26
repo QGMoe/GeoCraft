@@ -94,12 +94,12 @@ public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask impl
         //坡度流动模式
         if(quanta == 1){
             if(!slopeModeForModsWhenOnFluidsAndQuantaIs1.getValue() && isSameLiquid(stateBelow)){
-//                if(!managePressureTask(world,rand)) updateUp(world,rand);
+                managePressureTask(world,rand);
                 return;
             }
             Set<EnumFacing> directions = this.getPossibleFlowDirections(world, pos,densityDir,quantaPerBlock);
             if(directions.isEmpty()){
-//                if(!managePressureTask(world,rand)) updateUp(world,rand);
+                managePressureTask(world,rand);
                 return;
             }
             EnumFacing randomFacing = (EnumFacing) directions.toArray()[rand.nextInt(directions.size())];
@@ -161,7 +161,7 @@ public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask impl
             //移动至新位置
             world.setBlockState(pos.offset(randomFacing), state.withProperty(LEVEL, meta), Constants.BlockFlags.SEND_TO_CLIENTS);
         }else {
-//            if(!managePressureTask(world,rand)) updateUp(world,rand);
+            managePressureTask(world,rand);
         }
     }
 
