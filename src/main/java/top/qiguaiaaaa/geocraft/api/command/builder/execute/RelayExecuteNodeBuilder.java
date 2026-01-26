@@ -40,9 +40,6 @@ import java.util.List;
  * @author QiguaiAAAA
  */
 public class RelayExecuteNodeBuilder extends ExecuteNodeBuilder {
-    public RelayExecuteNodeBuilder() {
-    }
-
     protected INodeBuilder<?> childNode;
     protected ICommandNode bakedChildNode;
 

@@ -28,41 +28,41 @@
 package top.qiguaiaaaa.geocraft.command;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.command.ICommand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.util.misc.ExtendedNextTickListEntry;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
+
+import static top.qiguaiaaaa.geocraft.api.command.Nodes.execute;
+import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
 
 /**
  * @since 0.1.1
  * @author QiguaiAAAA
  */
-public class CommandQueryBlockState extends CommandBase {
-    @Nonnull
-    @Override
-    public String getName() {
-        return "queryBlockState";
-    }
+public class CommandQueryBlockState{
 
-    @Nonnull
-    @Override
-    public String getUsage(@Nonnull ICommandSender sender) {
-        return "";
-    }
-
-    @Override
-    public void execute(@Nonnull final MinecraftServer server, @Nonnull final ICommandSender sender, @Nonnull final String[] args) {
-        BlockPos pos = sender.getPosition();
-        IBlockState state = sender.getEntityWorld().getBlockState(pos);
-        notifyCommandListener(sender,this,state.toString());
-        BlockUpdater updater = BlockUpdater.getBlockUpdater(sender.getEntityWorld());
-        Set<ExtendedNextTickListEntry> entries = updater == null? Collections.emptySet():updater.queryEntries(pos,false);
-        entries.forEach(e -> notifyCommandListener(sender,this,e.toString()+" wait time "+(e.scheduledTime-sender.getEntityWorld().getTotalWorldTime())));
+    public static ICommand create(){
+        return new CommandBuilder("queryBlockState")
+                .require(2)
+                .then(pos()
+                        .center(true)
+                        .asOptional()
+                        .then(world().then(execute(ctx->{
+                            final BlockPos pos = ctx.getBlockPos(POS);
+                            final World world = ctx.get(WORLD);
+                            final IBlockState state = world.getBlockState(pos);
+                            ctx.notifyCommandListener(state.toString());
+                            final BlockUpdater updater = BlockUpdater.getBlockUpdater(world);
+                            final Set<ExtendedNextTickListEntry> entries = updater == null? Collections.emptySet():updater.queryEntries(pos,false);
+                            entries.forEach(e -> ctx.notifyCommandListener(e.toString()+" wait time "+(e.scheduledTime-world.getTotalWorldTime())));
+                        })))
+                )
+                .build();
     }
 }

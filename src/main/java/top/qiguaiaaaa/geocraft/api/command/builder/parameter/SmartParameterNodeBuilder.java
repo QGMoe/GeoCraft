@@ -38,7 +38,7 @@ import java.util.function.BiPredicate;
 /**
  * @author QiguaiAAAA
  */
-public abstract class SmartParameterNodeBuilder<P, T extends ParameterNode<P> & ISmartNode,SELF extends ParameterNodeBuilder<P,T,SELF>> extends ParameterNodeBuilder<P,T,SELF>{
+public abstract class SmartParameterNodeBuilder<P, T extends ParameterNode<P> & ISmartNode, S extends ParameterNodeBuilder<P,T, S>> extends ParameterNodeBuilder<P,T, S>{
 
     protected BiPredicate<List<String>, CommandContext> matcher;
 
@@ -62,8 +62,8 @@ public abstract class SmartParameterNodeBuilder<P, T extends ParameterNode<P> & 
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF matchIf(@Nonnull final BiPredicate<List<String>,CommandContext> matcher){
+    public S matchIf(@Nonnull final BiPredicate<List<String>,CommandContext> matcher){
         this.matcher = matcher;
-        return (SELF) this;
+        return (S) this;
     }
 }

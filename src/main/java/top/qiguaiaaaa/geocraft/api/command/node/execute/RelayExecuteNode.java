@@ -54,5 +54,8 @@ public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNod
         return true;
     }
 
+    /**
+     * 当命令退出当前节点时执行
+     */
     public void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException{}
 }

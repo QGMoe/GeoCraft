@@ -75,52 +75,7 @@ public class BlockStateNode extends SmartParameterNode<IBlockState> {
         }else if(input.endsWith("[default")){
             return Collections.singletonList(input+"]");
         }else if(input.contains("[")){
-            final String[] split = input.split("\\[",2);
-            final Block block = Block.REGISTRY.getObject(new ResourceLocation(split[0]));
-            if(block == Blocks.AIR) return null;
-            final String[] states = split[1].split(",");
-            if(input.endsWith(",")){
-                final Set<String> inputProperties = new HashSet<>();
-                for(final String s:states){
-                    final String[] propertyPair = s.split("=",2);
-                    inputProperties.add(propertyPair[0]);
-                }
-                return block.getBlockState().getProperties().stream()
-                        .filter(property -> !inputProperties.contains(property.getName()))
-                        .map(property -> input+property.getName()+"=")
-                        .collect(Collectors.toList());
-            }else if(!states[states.length-1].contains("=")){
-                final Set<String> inputProperties = new HashSet<>();
-                for(int i=0;i<states.length-1;i++){
-                    final String[] propertyPair = states[i].split("=",2);
-                    inputProperties.add(propertyPair[0]);
-                }
-                final int curPropertyBegin = input.contains(",")?input.lastIndexOf(",")+1:input.lastIndexOf("[");
-                final String baseInput = input.substring(0,curPropertyBegin);
-                final String curInputProperty = input.substring(curPropertyBegin);
-                final List<String> suggests = block.getBlockState().getProperties().stream()
-                        .filter(property -> !inputProperties.contains(property.getName()))
-                        .map(property -> baseInput+property.getName()+"=")
-                        .collect(Collectors.toList());
-                if(block.getBlockState().getProperty(curInputProperty) != null){
-                    suggests.add(input+"=");
-                }
-                return suggests;
-            }else {
-                final String[] propertyPair = states[states.length-1].split("=",2);
-                final IProperty<?> property = block.getBlockState().getProperty(propertyPair[0]);
-                if(property==null) return null;
-                final String baseInput = propertyPair.length>1?input.substring(0,input.length()-propertyPair[1].length()):input;
-                final List<String> suggests = property.getAllowedValues().stream()
-                        .sorted()
-                        .map(value -> baseInput+value.toString())
-                        .collect(Collectors.toList());
-                if(propertyPair.length>1 && property.getAllowedValues().stream().map(Objects::toString).collect(Collectors.toSet()).contains(propertyPair[1])){
-                    suggests.add(input+"]");
-                    suggests.add(input+",");
-                }
-                return suggests;
-            }
+            return suggestProperties(input);
         }else if(Block.REGISTRY.containsKey(new ResourceLocation(input))){
             final List<String> suggests = Block.REGISTRY.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
             suggests.add(input+"[");
@@ -200,5 +155,55 @@ public class BlockStateNode extends SmartParameterNode<IBlockState> {
             return "default".equals(args.get(0)) || args.get(0).startsWith("[");
         }
         return true;
+    }
+
+    @Nullable
+    protected static List<String> suggestProperties(final @Nonnull String input){
+        final String[] split = input.split("\\[",2);
+        final Block block = Block.REGISTRY.getObject(new ResourceLocation(split[0]));
+        if(block == Blocks.AIR) return null;
+        final String[] states = split[1].split(",");
+        if(input.endsWith(",")){
+            final Set<String> inputProperties = new HashSet<>();
+            for(final String s:states){
+                final String[] propertyPair = s.split("=",2);
+                inputProperties.add(propertyPair[0]);
+            }
+            return block.getBlockState().getProperties().stream()
+                    .filter(property -> !inputProperties.contains(property.getName()))
+                    .map(property -> input+property.getName()+"=")
+                    .collect(Collectors.toList());
+        }else if(!states[states.length-1].contains("=")){
+            final Set<String> inputProperties = new HashSet<>();
+            for(int i=0;i<states.length-1;i++){
+                final String[] propertyPair = states[i].split("=",2);
+                inputProperties.add(propertyPair[0]);
+            }
+            final int curPropertyBegin = input.contains(",")?input.lastIndexOf(",")+1:input.lastIndexOf("[");
+            final String baseInput = input.substring(0,curPropertyBegin);
+            final String curInputProperty = input.substring(curPropertyBegin);
+            final List<String> suggests = block.getBlockState().getProperties().stream()
+                    .filter(property -> !inputProperties.contains(property.getName()))
+                    .map(property -> baseInput+property.getName()+"=")
+                    .collect(Collectors.toList());
+            if(block.getBlockState().getProperty(curInputProperty) != null){
+                suggests.add(input+"=");
+            }
+            return suggests;
+        }else {
+            final String[] propertyPair = states[states.length-1].split("=",2);
+            final IProperty<?> property = block.getBlockState().getProperty(propertyPair[0]);
+            if(property==null) return null;
+            final String baseInput = propertyPair.length>1?input.substring(0,input.length()-propertyPair[1].length()):input;
+            final List<String> suggests = property.getAllowedValues().stream()
+                    .sorted()
+                    .map(value -> baseInput+value.toString())
+                    .collect(Collectors.toList());
+            if(propertyPair.length>1 && property.getAllowedValues().stream().map(Objects::toString).collect(Collectors.toSet()).contains(propertyPair[1])){
+                suggests.add(input+"]");
+                suggests.add(input+",");
+            }
+            return suggests;
+        }
     }
 }

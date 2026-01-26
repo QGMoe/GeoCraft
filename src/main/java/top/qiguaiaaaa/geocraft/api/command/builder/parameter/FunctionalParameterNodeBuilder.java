@@ -36,7 +36,7 @@ import java.util.function.Function;
 /**
  * @author QiguaiAAAA
  */
-public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>,SELF extends FunctionalParameterNodeBuilder<P,T,SELF>> extends ParameterNodeBuilder<P, T,SELF> {
+public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>, S extends FunctionalParameterNodeBuilder<P,T, S>> extends ParameterNodeBuilder<P, T, S> {
 
     protected final Function<String, T> builder;
 

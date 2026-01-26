@@ -39,6 +39,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -63,13 +65,8 @@ import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandExecutor;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.RelayExecuteNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.StringNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.MinecraftVec3NodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockPosNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.DimensionNode;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockState;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
@@ -103,6 +100,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static top.qiguaiaaaa.geocraft.api.command.Nodes.*;
+import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
 
 public final class CommandAtmosphere {
     public static final String ATMOSPHERE_COMMAND_NAME = "atmosphere";
@@ -113,10 +111,6 @@ public final class CommandAtmosphere {
     static final Map<String, BiConsumer<AtmosphereCommandContext,Double>> AddConsumer = new HashMap<>();
     static final Map<String, Consumer<AtmosphereCommandContext>> QueryConsumer = new HashMap<>();
     static boolean inited = false;
-
-    static final String POS = "pos";
-    static final String VALUE = "value";
-    static final String PROPERTY = "property";
 
     public static void init(){
         if(inited) return;
@@ -255,25 +249,6 @@ public final class CommandAtmosphere {
     }
 
     @Nonnull
-    static MinecraftVec3NodeBuilder<BlockPos, BlockPosNode> pos(){
-        return blockPos(POS)
-                .asOptional()
-                .translate("geocraft.command.atmosphere.arg.pos");
-    }
-
-    @Nonnull
-    static NumberNodeBuilder<Double, NumberNode<Double>> value(){
-        return doubleArg(VALUE)
-                .translate("geocraft.command.atmosphere.arg.value");
-    }
-
-    @Nonnull
-    static StringNodeBuilder property(){
-        return string(PROPERTY)
-                .translate("geocraft.command.atmosphere.arg.property");
-    }
-
-    @Nonnull
     public static ICommand create(@Nonnull final MinecraftServer server){
         init();
         return new CommandBuilder(ATMOSPHERE_COMMAND_NAME)
@@ -308,11 +283,8 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildStopCommand(){
         return literal("stop")
                 .require(PERMISSION_NODE+".stop").allow(DefaultPermissionLevel.OP).register()
-                .then(dimension("world")
-                        .asOptional()
-                        .translate("geocraft.command.atmosphere.arg.world")
-                        .then(execute(ctx -> {
-                            final World world = ctx.get("world", DimensionNode.class);
+                .then(world().then(execute(ctx -> {
+                            final World world = ctx.get(WORLD, DimensionNode.class);
                             final IAtmosphereSystem system = AtmosphereSystemManager.getAtmosphereSystem(world);
                             if(system == null) throw new CommandException("geocraft.command.atmosphere_system.null");
                             system.setStop(!system.isStopped());
@@ -430,7 +402,9 @@ public final class CommandAtmosphere {
             final BlockPos pos = context.getPosition();
             final IAtmosphereAccessor accessor = getAtmosphereAccessor(world,pos);
             final Atmosphere atmosphere = getAtmosphere(accessor);
-            context.notifyCommandListener("geocraft.command.atmosphere.query.basic", "§"+TextFormatting.AQUA,pos.getX(), Altitude.get物理海拔(pos.getY()),pos.getZ());
+            final ITextComponent title = new TextComponentTranslation("geocraft.command.atmosphere.query.basic",pos.getX(), Altitude.get物理海拔(pos.getY()),pos.getZ());
+            title.getStyle().setColor(TextFormatting.AQUA);
+            context.getSender().sendMessage(title);
             context.notifyCommandListener("geocraft.command.atmosphere.query.basic.1",
                     accessor.getPressure(),
                     accessor.getWaterPressure(),

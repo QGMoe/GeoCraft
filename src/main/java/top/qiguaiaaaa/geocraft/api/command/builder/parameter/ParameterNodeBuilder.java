@@ -46,9 +46,9 @@ import java.util.function.Supplier;
  * @author QiguaiAAAA
  * @param <P> 参数类型
  * @param <T> 参数类型对应的参数节点类型
- * @param <SELF> 自身类型，用于 {@link #smart()}
+ * @param <S> 自身类型，用于 {@link #smart()}
  */
-public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF extends ParameterNodeBuilder<P,T,SELF>> extends NoSplitNodeBuilder<T,SELF> {
+public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S extends ParameterNodeBuilder<P,T, S>> extends NoSplitNodeBuilder<T, S> {
     public static final BiFunction<List<String>,SuggestContext,List<String>> USE_DEFAULT_SUGGESTOR = (strings, context) -> null;
     public static final ParameterNode.DefaultParser<?> USE_DEFAULT_PARSER = (node,context) -> null;
     @SuppressWarnings("deprecation")
@@ -73,99 +73,106 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF asOptional() {
+    public S asOptional() {
         optional = true;
-        return (SELF) this;
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S asNecessary(){
+        optional = false;
+        return (S) this;
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF defaultAs(@Nonnull final ParameterNode.DefaultParser<P> parser) {
+    public S defaultAs(@Nonnull final ParameterNode.DefaultParser<P> parser) {
         this.parser = parser;
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF defaultAs(@Nonnull final P defaultValue){
+    public S defaultAs(@Nonnull final P defaultValue){
         this.parser = (node, context) -> defaultValue;
-        return (SELF) this;
+        return (S) this;
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF suggest(final BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
+    public S suggest(final BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
         this.suggestProvider = suggestProvider;
-        return (SELF) this;
+        return (S) this;
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF suggest(final Function<SuggestContext, List<String>> suggestProvider) {
+    public S suggest(final Function<SuggestContext, List<String>> suggestProvider) {
         this.suggestProvider = (args,context) -> suggestProvider.apply(context);
-        return (SELF) this;
+        return (S) this;
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF suggest(final Supplier<List<String>> suggestProvider) {
+    public S suggest(final Supplier<List<String>> suggestProvider) {
         this.suggestProvider = (args,context) -> suggestProvider.get();
-        return (SELF) this;
+        return (S) this;
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF suggest(final List<String> suggests) {
+    public S suggest(final List<String> suggests) {
         this.suggestProvider = (args,context) -> suggests;
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
-    public SELF suggest(final String... suggests){
+    public S suggest(final String... suggests){
         return suggest(Arrays.asList(suggests));
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF translate(@Nonnull final String key){
+    public S translate(@Nonnull final String key){
         this.langKey = key;
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF comment(@Nonnull final String key){
+    public S comment(@Nonnull final String key){
         this.commentKey = key;
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF clearDecorators(){
+    public S clearDecorators(){
         this.decorator = null;
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF decorate(@Nonnull final Decorator<P> decorator){
+    public S decorate(@Nonnull final Decorator<P> decorator){
         if(this.decorator == null) this.decorator = decorator;
         else this.decorator = this.decorator.andThen(decorator);
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF decorate(@Nonnull final Decorator.Simple<P> decorator){
+    public S decorate(@Nonnull final Decorator.Simple<P> decorator){
         if(this.decorator == null) this.decorator = decorator.toFull();
         else this.decorator = this.decorator.andThen(decorator);
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SmartSplitNodeBuilder.Inner<SELF> smart(){
-        return new SmartSplitNodeBuilder.Inner<>((SELF) this,(BiConsumer<SELF, SmartSplitNodeBuilder.Inner<SELF>>) (BiConsumer<?,?>) ON_SMART_DONE);
+    public SmartSplitNodeBuilder.Inner<S> smart(){
+        return new SmartSplitNodeBuilder.Inner<>((S) this,(BiConsumer<S, SmartSplitNodeBuilder.Inner<S>>) (BiConsumer<?,?>) ON_SMART_DONE);
     }
 
     @Nonnull

@@ -59,10 +59,10 @@ geocraft.command.io_error=An IO Exception Occurred (%s), command couldn't be pro
 geocraft.command.chunk_error.unloaded=Location (%s,%s) is unloaded
 geocraft.command.atmosphere_system.null=Current world doesn't exist an Atmosphere System.
 
-geocraft.command.atmosphere.arg.pos=Position
-geocraft.command.atmosphere.arg.value=Value
-geocraft.command.atmosphere.arg.property=Property
-geocraft.command.atmosphere.arg.world=World
+geocraft.command.common.arg.pos=Position
+geocraft.command.common.arg.value=Value
+geocraft.command.common.arg.property=Property
+geocraft.command.common.arg.world=World
 geocraft.command.atmosphere.arg.block_to_query=需要查询的方块状态
 geocraft.command.atmosphere.arg.util_name=Util Name
 geocraft.command.atmosphere.arg.time=Duration
@@ -109,7 +109,7 @@ geocraft.command.atmosphere.query.wind.up=(%s,%s,%s) 所在大气朝向上的风
 geocraft.command.atmosphere.query.wind.down=(%s,%s,%s) 所在大气朝向下的风速为 %s m/s
 geocraft.command.atmosphere.query.heat_volume=The total Heat Capacity of the atmosphere layer at (%s,%s,%s) is %s FE/(layer·℃)
 geocraft.command.atmosphere.query.layer_inf=Currently in %s from Y=%s to Y=%s
-geocraft.command.atmosphere.query.basic=%s ATMOSPHERE at (%s,%s m,%s) INFORMATION
+geocraft.command.atmosphere.query.basic=ATMOSPHERE at (%s,%s m,%s) INFORMATION
 geocraft.command.atmosphere.query.basic.1=P: %s Pa,Water P: %s Pa,T: %s K
 geocraft.command.atmosphere.query.basic.2=Wind: %s
 geocraft.command.atmosphere.query.basic.3=[Layer %s  %s->%s]
