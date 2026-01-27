@@ -348,14 +348,14 @@ public final class MoreRealityEventHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
-    public void afterStaticWaterUpdate(StaticLiquidUpdateEvent.After event){
+    public void afterStaticWaterUpdate(final @Nonnull StaticLiquidUpdateEvent.After event){
         if(event.getLiquid() != FluidRegistry.WATER) return;
-        final IBlockState state = event.getState();
-        final World worldIn = event.getWorld();
-        final BlockPos pos = event.getPos();
+        final @Nonnull IBlockState state = event.getState();
+        final @Nonnull World worldIn = event.getWorld();
+        final @Nonnull BlockPos pos = event.getPos();
 
         IBlockState newState;
-        try(@Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(worldIn,pos,true)){
+        try(@Nullable final IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(worldIn,pos,true)){
             if(accessor == null) return;
             //先尝试结冰
             newState = MoreRealityFluidPhysicsCore.freezeWater(worldIn,pos,state,worldIn.rand,accessor);
@@ -371,8 +371,9 @@ public final class MoreRealityEventHandler {
             }
 
             if(!accessor.canAccessAtmosphere()) return;
+            if(!accessor.getAtmosphereInfo().canWaterEvaporate(pos)) return;
 
-            int oldMeta = state.getValue(LEVEL);
+            final int oldMeta = state.getValue(LEVEL);
             newState = MoreRealityFluidPhysicsCore.evaporateWater(worldIn,pos,state,worldIn.rand,accessor);
             if(newState == null){
                 event.setResult(Event.Result.ALLOW);

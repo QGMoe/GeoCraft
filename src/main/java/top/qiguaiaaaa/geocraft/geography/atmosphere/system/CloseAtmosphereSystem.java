@@ -56,7 +56,12 @@ public class CloseAtmosphereSystem extends QiguaiAtmosphereSystem {
 
     @Override
     public IAtmosphereAccessor getAccessor(@Nonnull AtmosphereData data, @Nonnull BlockPos pos, boolean notAir) {
-        return new DirectAtmosphereAccessor(this,data,pos,notAir);
+        return new DirectAtmosphereAccessor(this,data,pos,notAir){
+            @Override
+            public boolean canAccessAtmosphere() {
+                return true;
+            }
+        };
     }
 
     @Nullable

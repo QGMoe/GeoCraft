@@ -39,7 +39,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.IFluidBlock;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
@@ -60,7 +59,11 @@ import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import static net.minecraft.block.BlockLiquid.LEVEL;
 
@@ -108,7 +111,7 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
         if(canMoveDown){ //向下流动
             if(isSameLiquid(stateBelow)){
                 flowDown(world,pos,stateBelow,liquidQuanta,updateRate);
-            }else if(stateBelow.getBlock() == Blocks.LAVA || stateBelow.getBlock() == Blocks.FLOWING_LAVA){ // 岩浆碰到水,消耗岩浆
+            }else if(stateBelow.getBlock() == Blocks.WATER || stateBelow.getBlock() == Blocks.FLOWING_WATER){ // 岩浆碰到水,消耗岩浆
                 liquidQuanta--;
                 liquidMeta = 8-liquidQuanta;
                 if (liquidQuanta<=0) world.setBlockState(pos,Blocks.AIR.getDefaultState(),updateFlag); //先更新自身状态
@@ -293,8 +296,6 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
      * 是否是相同液体
      */
     protected boolean isSameLiquid(@Nonnull final IBlockState state){
-        final Block block = state.getBlock();
-        if(block instanceof IFluidBlock) return false;
         return state.getMaterial() == this.material && state.getBlock() instanceof BlockLiquid;
     }
 
