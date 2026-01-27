@@ -604,7 +604,7 @@ public final class CommandAtmosphere {
     }
 
     @Nonnull
-    private static List<String> getPropertyList(){
+    static List<String> getPropertyList(){
         return GeographyProperty.MANAGER.getProperties().getKeys().stream().map(ResourceLocation::toString).collect(Collectors.toList());
     }
 

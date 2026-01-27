@@ -27,6 +27,8 @@
 
 package top.qiguaiaaaa.geocraft;
 
+import net.minecraft.command.CommandHandler;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -35,6 +37,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemRunner;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereRegionFileCache;
+import top.qiguaiaaaa.geocraft.command.BrigoCompat;
 import top.qiguaiaaaa.geocraft.command.CommandAtmosphere;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
@@ -69,6 +72,9 @@ public class GeoCraft {
     @EventHandler
     public void onServerStarting(FMLServerStartingEvent event){
         event.registerServerCommand(CommandAtmosphere.create(event.getServer()));
+        if(Loader.isModLoaded("brigo")){
+            BrigoCompat.registerAtmosphere((CommandHandler) event.getServer().getCommandManager());
+        }
 //        event.registerServerCommand(new CommandQueryBlockState());
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncRun();
