@@ -41,9 +41,10 @@ import net.minecraft.command.CommandHandler;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.*;
 import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
@@ -65,15 +66,15 @@ public final class BrigoCompat {
         final CommandDispatcher<CommandSource> dispatcher = getDispatcher(handler);
         if(dispatcher == null) return;
         dispatcher.register(literal(ATMOSPHERE_COMMAND_NAME)
-                .then(literal("set",SetConsumer.keySet(),
+                .then(literal("set", Stream.concat(getPropertyList().stream(),SetConsumer.keySet().stream()).collect(Collectors.toList()),
                         builder -> builder.then(argument(VALUE, DoubleArgumentType.doubleArg())
                                 .then(blockPos())))
                         .then(compatArgs(PROPERTY,VALUE,"x","y","z")))
-                .then(literal("add",AddConsumer.keySet(),
+                .then(literal("add", Stream.concat(getPropertyList().stream(),AddConsumer.keySet().stream()).collect(Collectors.toList()),
                         builder -> builder.then(argument(VALUE,DoubleArgumentType.doubleArg())
                                 .then(blockPos())))
                         .then(compatArgs(PROPERTY,VALUE,"x","y","z")))
-                .then(literal("query",QueryConsumer.keySet(),
+                .then(literal("query",Stream.concat(getPropertyList().stream(),QueryConsumer.keySet().stream()).collect(Collectors.toList()),
                         builder -> builder.then(blockPos())))
                 .then(literal("reset")
                         .then(literal("temp")
@@ -84,7 +85,7 @@ public final class BrigoCompat {
                         .then(literal("sun"))
                         .then(literal("property"))
                         .then(literal("storage")))
-                .then(literal("track", Arrays.asList("temp","water","steam"),
+                .then(literal("track", Stream.concat(getPropertyList().stream(), Stream.of("temp","water","steam")).collect(Collectors.toList()),
                         builder -> builder.then(argument("duration",IntegerArgumentType.integer(1))
                                 .then(argument("file name",StringArgumentType.word())
                                         .then(blockPos()))))
