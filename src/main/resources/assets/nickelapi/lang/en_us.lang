@@ -1,0 +1,58 @@
+nickel.command.parameter.generic.big_decimal=BigDecimal
+nickel.command.parameter.generic.big_integer=BigInteger
+nickel.command.parameter.generic.boolean=Boolean
+nickel.command.parameter.generic.double=Double
+nickel.command.parameter.generic.integer=Integer
+nickel.command.parameter.generic.long=Long
+nickel.command.parameter.generic.string=String
+nickel.command.parameter.generic.uuid=UUID
+nickel.command.parameter.minecraft.block_pos=BlockPos
+nickel.command.parameter.minecraft.block=Block
+nickel.command.parameter.minecraft.block_state=BlockState
+nickel.command.parameter.minecraft.dimension=Dimension
+nickel.command.parameter.minecraft.entity_selector=TargetSelector
+nickel.command.parameter.minecraft.item=Item
+nickel.command.parameter.minecraft.item_stack=ItemStack
+nickel.command.parameter.minecraft.vector3d=Vector3D
+nickel.command.parameter.forge.fluid=Fluid
+nickel.command.parameter.forge.ore_directory=Ore Directory
+nickel.command.parameter.forge.entity_entry=Entity Entry
+
+nickel.command.parameter.base.default_not_found=This optional parameter node doesn't have a default value parser!
+nickel.command.parameter.smart.checker1=This parameter is required to accepted one argument.
+nickel.command.parameter.smart.checkers=This parameter is required to accepted at least %s arguments.
+nickel.command.parameter.checker.resource_location.invalid.repeat=Resource Location Parameter must not contain more than two ':' characters.
+nickel.command.parameter.checker.resource_location.invalid.slash=Namespace of Resource Location Parameter must not contain character '/'.
+nickel.command.parameter.string.nonMatch=Invalid input %s , which requires input to match %s
+nickel.command.parameter.string.invalid.white=Invalid input %s , which only allows the following values: %s
+nickel.command.parameter.string.invalid.black=Invalid input %s , which disallows the following values: %s
+nickel.command.parameter.dimension.not_found=Dimension %s not found. Maybe it is unloaded?
+nickel.command.parameter.block_state.invalid_end=%s misses right square bracket "]"
+nickel.command.parameter.fluid.invalid=Invalid fluid %s
+nickel.command.parameter.ore_directory.invalid=Invalid Ore Directory %s
+nickel.command.parameter.entity_entry.invalid=Invalid Entity Entry %s
+
+nickel.command.functional.permit.denied=Permission denied.
+nickel.command.functional.literal.non_match=Expect literal %s , but found %s
+
+nickel.command.execute.argument_not_empty=Unexpected excess arguments %s
+
+nickel.command.context.get.non_entity=No Matched Entity Found
+nickel.command.context.get.unknown_argument.entity=An error occurred when trying getting a entity from context: unknown argument class type %s
+nickel.command.context.get.unknown_argument.entities=An error occurred when trying getting a entity from context: unknown argument class type %s
+
+nickel.command.literals.exception.default=Literals Node is set to be optional but no default logic was set!
+
+#行末空格 开始
+nickel.command.exception.syntax.node.pre=Syntax Error occurred in command node 
+nickel.command.exception.syntax.node.sub= 
+nickel.command.exception.syntax.details=Details: 
+nickel.command.exception.syntax.usage=Usage: 
+#行末空格 结束
+nickel.command.exception.base.message=Some problems occurred when the command was running
+#行末空格开始
+nickel.command.exception.base.node.pre=Error occurred in command node 
+nickel.command.exception.base.node.sub= 
+nickel.command.exception.base.details=Details: 
+nickel.command.exception.base.branch=Branch: 
+#行末空格结束

@@ -1,0 +1,60 @@
+nickel.command.parameter.generic.big_decimal=高精度十进制数
+nickel.command.parameter.generic.big_integer=高精度整数
+nickel.command.parameter.generic.boolean=布尔值
+nickel.command.parameter.generic.double=双精度浮点数
+nickel.command.parameter.generic.integer=整型
+nickel.command.parameter.generic.long=长整型
+nickel.command.parameter.generic.string=字符串
+nickel.command.parameter.generic.uuid=UUID
+nickel.command.parameter.minecraft.block_pos=方块坐标
+nickel.command.parameter.minecraft.block=方块
+nickel.command.parameter.minecraft.block_state=方块状态
+nickel.command.parameter.minecraft.dimension=维度
+nickel.command.parameter.minecraft.entity_selector=目标选择器
+nickel.command.parameter.minecraft.item=物品
+nickel.command.parameter.minecraft.item_stack=物品堆
+nickel.command.parameter.minecraft.vector3d=三维向量
+nickel.command.parameter.forge.fluid=流体
+nickel.command.parameter.forge.ore_directory=矿物词典
+nickel.command.parameter.forge.entity_entry=实体类型
+
+nickel.command.parameter.base.default_not_found=该可选参数未正确配置默认值解析器
+nickel.command.parameter.smart.checker1=该参数至少需要一个输入
+nickel.command.parameter.smart.checkers=该参数至少需要 %s 个输入
+nickel.command.parameter.checker.resource_location.invalid.repeat=命名空间 ID 不能存在两个及以上的分号『:』
+nickel.command.parameter.checker.resource_location.invalid.slash=命名空间不能存在正斜杠『/』
+nickel.command.parameter.string.nonMatch=无效的输入 %s ，该字符串参数的输入必须匹配正则表达式 %s
+nickel.command.parameter.string.invalid.white=无效的输入 %s ，该字符串参数仅允许以下输入：%s
+nickel.command.parameter.string.invalid.black=无效的输入 %s ，该字符串参数不接受以下输入： %s
+nickel.command.parameter.dimension.not_found=无法根据 ID %s 找到对应的维度，该维度可能不存在或已被卸载
+nickel.command.parameter.block_state.invalid_end=%s 缺少右方括号『[』
+nickel.command.parameter.fluid.invalid=无效的流体 %s
+nickel.command.parameter.ore_directory.invalid=无效的矿物词典 %s
+nickel.command.parameter.entity_entry.invalid=无效的实体类型 %s
+
+nickel.command.functional.permit.denied=因您的权限不足，该命令无法执行
+nickel.command.functional.literal.non_match=命令期望的字面量是 %s ，但是您输入了 %s
+
+nickel.command.execute.argument_not_empty=多余的输入：%s
+
+nickel.command.context.get.non_entity=没有匹配到任何符合条件的实体
+nickel.command.context.get.unknown_argument.entity=尝试从执行上下文获取一个实体时出现了一个意外的错误：未知的对象类型 %s
+nickel.command.context.get.unknown_argument.entities=尝试从执行上下文获取实体们时出现了一个意外的错误：未知的对象类型 %s
+
+nickel.command.literals.exception.default=该字面量节点被设置为可选，但意外地没有配置任何的默认逻辑
+
+#存在行末空格
+nickel.command.exception.syntax.node.pre=命令节点
+nickel.command.exception.syntax.node.sub= 出现语法错误
+#行末空格 开始
+nickel.command.exception.syntax.details=详细信息： 
+nickel.command.exception.syntax.usage=用法： 
+#行末空格 结束
+nickel.command.exception.base.message=命令运行时出现了一些错误
+#存在行末空格
+nickel.command.exception.base.node.pre=命令运行到命令节点 
+nickel.command.exception.base.node.sub= 时发生错误
+#行末空格 开始
+nickel.command.exception.base.details=详细信息： 
+nickel.command.exception.base.branch=分支： 
+#行末空格 结束

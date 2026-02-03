@@ -31,7 +31,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.ICommand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
+import top.qiguaiaaaa.nickel.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.util.misc.ExtendedNextTickListEntry;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
@@ -39,7 +39,7 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
 
-import static top.qiguaiaaaa.geocraft.api.command.Nodes.execute;
+import static top.qiguaiaaaa.nickel.command.Nodes.execute;
 import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
 
 /**

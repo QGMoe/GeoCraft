@@ -1,0 +1,88 @@
+/*
+ * Copyright 2025 QiguaiAAAA
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * 版权所有 2025 QiguaiAAAA
+ * 根据Apache许可证第2.0版（“本许可证”）许可；
+ * 除非符合本许可证的规定，否则你不得使用此文件。
+ * 你可以在此获取本许可证的副本：
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * 除非所适用法律要求或经书面同意，在本许可证下分发的软件是“按原样”分发的，
+ * 没有任何形式的担保或条件，不论明示或默示。
+ * 请查阅本许可证了解有关本许可证下许可和限制的具体要求。
+ * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
+ */
+
+package top.qiguaiaaaa.nickel.command.node.parameter.generic.number;
+
+import net.minecraft.command.NumberInvalidException;
+import top.qiguaiaaaa.nickel.command.node.parameter.ParameterNode;
+
+import javax.annotation.Nonnull;
+import java.math.BigDecimal;
+
+/**
+ * @author QiguaiAAAA
+ */
+public class BigDecimalNode extends NumberNode<BigDecimal> {
+    public static final ParameterNode.DefaultParser<BigDecimal> DEFAULT_PARSER = (node, context) -> new BigDecimal("0");
+
+    public BigDecimalNode(@Nonnull String name) {
+        super(name);
+        setDefaultParser(DEFAULT_PARSER);
+    }
+
+    @Nonnull
+    @Override
+    public Class<BigDecimal> getType() {
+        return BigDecimal.class;
+    }
+
+    @Nonnull
+    @Override
+    public Class<BigDecimal> getTypeClass() {
+        return getType();
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "nickel.command.parameter.generic.big_decimal";
+    }
+
+    @Override
+    protected BigDecimal parseNumber(@Nonnull String arg) throws NumberInvalidException {
+        try {
+            final BigDecimal decimal = new BigDecimal(arg);
+            if(minValue != null && minValue.compareTo(decimal)>0){
+                throw new NumberInvalidException("commands.generic.num.tooSmall", decimal, minValue);
+            }
+            if(maxValue != null && maxValue.compareTo(decimal)<0){
+                throw new NumberInvalidException("commands.generic.num.tooBig", decimal, maxValue);
+            }
+            return decimal;
+        }catch (NumberFormatException e){
+            throw new NumberInvalidException(e.getMessage());
+        }
+    }
+
+//    @Nonnull
+//    private static BigDecimal clamp(@Nonnull BigDecimal value,@Nonnull BigDecimal min,@Nonnull BigDecimal max){
+//        if(value.compareTo(min)>0){
+//            if(value.compareTo(max)<0) return value;
+//            else return max;
+//        }else return min;
+//    }
+}

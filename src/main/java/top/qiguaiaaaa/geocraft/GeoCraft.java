@@ -52,7 +52,7 @@ import top.qiguaiaaaa.geocraft.world.gen.GeoCraftPostPopulatingGenerator;
 
 import javax.annotation.Nonnull;
 
-@Mod(modid = GeoCraft.MODID, name = GeoCraft.NAME, version = GeoCraft.VERSION, dependencies = "required:mixinbooter;",acceptableRemoteVersions = "*",useMetadata = true)
+@Mod(modid = GeoCraft.MODID, name = GeoCraft.NAME, version = GeoCraft.VERSION, dependencies = "required:mixinbooter;required:nickelapi",acceptableRemoteVersions = "*",useMetadata = true)
 public class GeoCraft {
     public static final String MODID = "geocraft";
     public static final String NAME = "Geo Craft";

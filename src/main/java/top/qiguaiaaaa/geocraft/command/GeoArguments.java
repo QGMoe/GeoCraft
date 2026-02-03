@@ -29,17 +29,17 @@ package top.qiguaiaaaa.geocraft.command;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FastParameterNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.StringNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.MinecraftVec3NodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockPosNode;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.DimensionNode;
+import top.qiguaiaaaa.nickel.command.builder.parameter.FastParameterNodeBuilder;
+import top.qiguaiaaaa.nickel.command.builder.parameter.StringNodeBuilder;
+import top.qiguaiaaaa.nickel.command.builder.parameter.minecraft.MinecraftVec3NodeBuilder;
+import top.qiguaiaaaa.nickel.command.builder.parameter.num.NumberNodeBuilder;
+import top.qiguaiaaaa.nickel.command.node.parameter.generic.number.NumberNode;
+import top.qiguaiaaaa.nickel.command.node.parameter.minecraft.BlockPosNode;
+import top.qiguaiaaaa.nickel.command.node.parameter.minecraft.DimensionNode;
 
 import javax.annotation.Nonnull;
 
-import static top.qiguaiaaaa.geocraft.api.command.Nodes.*;
+import static top.qiguaiaaaa.nickel.command.Nodes.*;
 
 /**
  * @author QiguaiAAAA

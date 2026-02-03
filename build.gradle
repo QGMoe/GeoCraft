@@ -175,6 +175,8 @@ processResources {
     inputs.property 'mixin_refmap', propertyString('mixin_refmap')
     inputs.property 'mixin_package', propertyString('mixin_package')
     inputs.property 'mixin_configs', propertyStringList('mixin_configs').join(' ')
+    //Nickel API
+    inputs.property 'nickel_api_version', propertyString('nickel_api_version')
 
     def filterList = ['mcmod.info', 'pack.mcmeta']
     filterList.addAll(propertyStringList('mixin_configs').collect(config -> "mixins.${config}.json" as String))
@@ -191,7 +193,9 @@ processResources {
                 'mod_update_json': propertyString('mod_update_json'),
                 'mod_logo_path': propertyString('mod_logo_path'),
                 'mixin_refmap': propertyString('mixin_refmap'),
-                'mixin_package': propertyString('mixin_package')
+                'mixin_package': propertyString('mixin_package'),
+                //Nickel API
+                'nickel_api_version': propertyString('nickel_api_version')
         )
     }
 

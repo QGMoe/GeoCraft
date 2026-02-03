@@ -1,16 +1,25 @@
 [
-{
-  "modid": "${mod_id}",
-  "name": "${mod_name}",
-  "description": "Bring REAL Geography into Minecraft! \n给Minecraft带来真实的自然地理!",
-  "version": "${mod_version}",
-  "mcversion": "1.12.2",
-  "url": "${mod_url}",
-  "updateUrl": "",
-  "authorList": ["${mod_authors}"],
-  "credits": "${mod_credits}",
-  "logoFile": "${mod_logo_path}",
-  "screenshots": [],
-  "dependencies": ["mixinbooter"]
-}
+  {
+    "modid": "${mod_id}",
+    "name": "${mod_name}",
+    "description": "Bring REAL Geography into Minecraft! \n给Minecraft带来真实的自然地理!",
+    "version": "${mod_version}",
+    "mcversion": "1.12.2",
+    "url": "${mod_url}",
+    "updateUrl": "",
+    "authorList": ["${mod_authors}"],
+    "credits": "${mod_credits}",
+    "logoFile": "${mod_logo_path}",
+    "screenshots": [],
+    "dependencies": ["mixinbooter","nickelapi"]
+  },
+  {
+    "modid": "nickelapi",
+    "name": "NickelAPI",
+    "description": "A Experimental Command API inside GeoCraft.",
+    "version": "${nickel_api_version}",
+    "mcversion": "1.12.2",
+    "authorList": ["${mod_authors}"],
+    "credits": "${mod_credits}"
+  }
 ]

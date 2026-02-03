@@ -39,6 +39,7 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
 import top.qiguaiaaaa.geocraft.capability.SavingScheduledTicksCapability;
 import top.qiguaiaaaa.geocraft.capability.SchedulingTicksCapability;
@@ -50,7 +51,7 @@ import top.qiguaiaaaa.geocraft.world.storage.ScheduledTicksData;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(modid = GeoCraft.MODID)
 public final class CommonEventHandler {
 
     @SubscribeEvent
