@@ -29,12 +29,12 @@ package top.qiguaiaaaa.geocraft.api.block;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
-import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
+import top.qiguaiaaaa.geocraft.api.util.BlockFlagsModifier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,53 +51,284 @@ public interface IBlockStateLayeredFluidHost extends ILayeredFluidHost{
      * @return 若指定状态不存在,返回null
      */
     @Nullable
-    IBlockState getLayerState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int layer);
+    IBlockState getLayerState(@Nonnull final IBlockState state,
+                              @Nullable final EnumFacing side,
+                              @Nonnull final Fluid fluid,
+                              final int layer);
+
+    @Nullable
+    EnumFacing getDefaultSide(@Nonnull final IBlockState state);
+
+    @Nullable
+    @Override
+    default EnumFacing getDefaultSide(@Nonnull final World world, @Nonnull final BlockPos pos, @Nonnull final IBlockState state){
+        return getDefaultSide(state);
+    }
+
+    @Nullable
+    @Override
+    default EnumFacing getDefaultSide(@Nonnull final World world,
+                                      @Nonnull final BlockPos pos,
+                                      @Nonnull final IBlockState state,
+                                      final boolean isAssumed){
+        return getDefaultSide(state);
+    }
+
+    boolean isAcceptedFluid(@Nonnull final IBlockState state,
+                            @Nullable final EnumFacing side,
+                            @Nonnull final Fluid fluid);
 
     @Override
-    boolean isAcceptedFluid(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid);
-
-    @Override
-    int getLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid);
-
-    @Override
-    default long getAmountInQB(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
-        return getLayers(world, pos, state, fluid)* getAmountInQBPerLayer(world, pos, state,fluid);
+    default boolean isAcceptedFluid(@Nonnull final World world,
+                                    @Nonnull final BlockPos pos,
+                                    @Nonnull final IBlockState state,
+                                    @Nullable final EnumFacing side,
+                                    @Nonnull final Fluid fluid) {
+        return isAcceptedFluid(state,side,fluid);
     }
 
     @Override
-    default int getMaxLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        return (LayeredFluidHostUtil.DEFAULT_MAX_HEIGHT -getEmptyHeight(world,pos,state,fluid))/ getHeightPerLayer(world,pos,state);
+    default boolean isAcceptedFluid(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nullable final EnumFacing side,
+                            @Nonnull final Fluid fluid,
+                            final boolean isAssumed){
+        return isAcceptedFluid(state,side,fluid);
+    }
+
+    default int getLayers(@Nonnull final IBlockState state,
+                  @Nullable final EnumFacing side,
+                  @Nonnull final Fluid fluid){
+        if(!isAcceptedFluid(state, side, fluid)) return 0;
+        return (getMaxHeight(state, side, fluid) - getEmptyHeight(state, side, fluid))
+                /getHeightPerLayer(state, side);
     }
 
     @Override
-    default long getMaxAmountInQB(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
-        return getMaxLayers(world, pos, state, fluid)* getAmountInQBPerLayer(world, pos, state,fluid);
+    default int getLayers(@Nonnull final World world,
+                          @Nonnull final BlockPos pos,
+                          @Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side,
+                          @Nonnull final Fluid fluid) {
+        return getLayers(state,side,fluid);
     }
 
     @Override
-    default int getHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        return getEmptyHeight(world,pos,state,fluid)+ getLayers(world,pos,state,fluid)* getHeightPerLayer(world,pos,state);
+    default int getLayers(@Nonnull final World world,
+                  @Nonnull final BlockPos pos,
+                  @Nonnull final IBlockState state,
+                  @Nullable final EnumFacing side,
+                  @Nonnull final Fluid fluid,
+                  final boolean isAssumed){
+        return getLayers(state,side,fluid);
+    }
+
+    long getAmountInQBPerLayer(@Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid);
+
+    @Override
+    default long getAmountInQBPerLayer(@Nonnull final World world,
+                                       @Nonnull final BlockPos pos,
+                                       @Nonnull final IBlockState state,
+                                       @Nullable final EnumFacing side,
+                                       @Nonnull final Fluid fluid) {
+        return getAmountInQBPerLayer(state,side,fluid);
     }
 
     @Override
-    int getEmptyHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid);
+    default long getAmountInQBPerLayer(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid,
+                               final boolean isAssumed){
+        return getAmountInQBPerLayer(state,side,fluid);
+    }
+
+    int getHeightPerLayer(@Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side);
 
     @Override
-    default int getMaxHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        return getEmptyHeight(world,pos,state,fluid) + getMaxLayers(world,pos,state,fluid)* getHeightPerLayer(world,pos,state);
+    default int getHeightPerLayer(@Nonnull final World world,
+                                  @Nonnull final BlockPos pos,
+                                  @Nonnull final IBlockState state,
+                                  @Nullable final EnumFacing side) {
+        return getHeightPerLayer(state,side);
     }
 
     @Override
-    int getHeightPerLayer(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state);
+    default int getHeightPerLayer(@Nonnull final World world,
+                          @Nonnull final BlockPos pos,
+                          @Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side,
+                          final boolean isAssumed){
+        return getHeightPerLayer(state,side);
+    }
+
+    int getEmptyHeight(@Nonnull final IBlockState state,
+                       @Nullable final EnumFacing side,
+                       @Nonnull final Fluid fluid);
 
     @Override
-    long getAmountInQBPerLayer(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid);
+    default int getEmptyHeight(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid) {
+        return getEmptyHeight(state,side,fluid);
+    }
 
     @Override
-    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags){
-        IBlockState newState = getLayerState(state, fluid,newLayer);
+    default int getEmptyHeight(@Nonnull final World world,
+                       @Nonnull final BlockPos pos,
+                       @Nonnull final IBlockState state,
+                       @Nullable final EnumFacing side,
+                       @Nonnull final Fluid fluid,
+                       final boolean isAssumed){
+        return getEmptyHeight(state,side,fluid);
+    }
+
+    default int getHeight(@Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side,
+                          @Nonnull final Fluid fluid) {
+        return getEmptyHeight(state,side,fluid)+
+                getLayers(state,side,fluid)* getHeightPerLayer(state,side);
+    }
+
+    @Override
+    default int getHeight(@Nonnull final World world,
+                          @Nonnull final BlockPos pos,
+                          @Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side,
+                          @Nonnull final Fluid fluid) {
+        return getHeight(state, side, fluid);
+    }
+
+    @Override
+    default int getHeight(@Nonnull final World world,
+                          @Nonnull final BlockPos pos,
+                          @Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side,
+                          @Nonnull final Fluid fluid,
+                          final boolean isAssumed) {
+        return getHeight(state, side, fluid);
+    }
+
+    int getMaxHeight(@Nonnull final IBlockState state,
+                     @Nullable final EnumFacing side,
+                     @Nonnull final Fluid fluid);
+
+    @Override
+    default int getMaxHeight(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid) {
+        return getMaxHeight(state, side, fluid);
+    }
+
+    @Override
+    default int getMaxHeight(@Nonnull final World world,
+                     @Nonnull final BlockPos pos,
+                     @Nonnull final IBlockState state,
+                     @Nullable final EnumFacing side,
+                     @Nonnull final Fluid fluid,
+                     final boolean isAssumed){
+        return getMaxHeight(state, side, fluid);
+    }
+
+    default int getMaxLayers(@Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid) {
+        return (getMaxHeight(state,side,fluid) - getEmptyHeight(state,side,fluid))
+                / getHeightPerLayer(state,side);
+    }
+
+    @Override
+    default int getMaxLayers(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid) {
+        return getMaxHeight(state, side, fluid);
+    }
+
+    @Override
+    default int getMaxLayers(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid,
+                             final boolean isAssumed) {
+        return getMaxLayers(state, side, fluid);
+    }
+
+    @Nullable
+    default NBTTagCompound getFluidNBTData(@Nonnull final IBlockState state,
+                                   @Nullable final EnumFacing side,
+                                   @Nonnull final Fluid fluid){
+        return null;
+    }
+
+    @Nullable
+    @Override
+    default NBTTagCompound getFluidNBTData(@Nonnull final World world,
+                                           @Nonnull final BlockPos pos,
+                                           @Nonnull final IBlockState state,
+                                           @Nullable final EnumFacing side,
+                                           @Nonnull final Fluid fluid){
+        return getFluidNBTData(state, side, fluid);
+    }
+
+    @Nullable
+    @Override
+    default NBTTagCompound getFluidNBTData(@Nonnull final World world,
+                                   @Nonnull final BlockPos pos,
+                                   @Nonnull final IBlockState state,
+                                   @Nullable final EnumFacing side,
+                                   @Nonnull final Fluid fluid,
+                                   final boolean isAssumed){
+        return getFluidNBTData(state,side,fluid);
+    }
+
+    @Override
+    default boolean setLayer(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid,
+                             final int newLayer,
+                             @Nullable final NBTTagCompound nbt,
+                             final long blockFlagsModifier){
+        final @Nullable IBlockState newState = getLayerState(state,side, fluid, newLayer);
         if(newState == null) return false;
-        final int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
-        return world.setBlockState(pos,newState,flags);
+        return world.setBlockState(pos,newState, BlockFlagsModifier.modify(Constants.BlockFlags.DEFAULT,blockFlagsModifier));
+    }
+
+    default boolean isFull(@Nonnull final IBlockState state,
+                           @Nullable final EnumFacing side,
+                           @Nonnull final Fluid fluid) {
+        return getLayers(state,side,fluid) >= getMaxLayers(state,side,fluid);
+    }
+
+    @Override
+    default boolean isFull(@Nonnull final World world,
+                           @Nonnull final BlockPos pos,
+                           @Nonnull final IBlockState state,
+                           @Nullable final EnumFacing side,
+                           @Nonnull final Fluid fluid) {
+        return isFull(state, side, fluid);
+    }
+
+    @Override
+    default boolean isFull(@Nonnull final World world,
+                           @Nonnull final BlockPos pos,
+                           @Nonnull final IBlockState state,
+                           @Nullable final EnumFacing side,
+                           @Nonnull final Fluid fluid,
+                           final boolean isAssumed) {
+        return isFull(state, side, fluid);
     }
 }

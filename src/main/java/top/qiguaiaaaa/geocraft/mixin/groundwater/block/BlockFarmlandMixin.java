@@ -45,6 +45,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 
+import javax.annotation.Nonnull;
+
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 
 /**
@@ -59,17 +61,19 @@ public abstract class BlockFarmlandMixin extends Block {
     }
 
     @Inject(method = "turnToDirt",at = @At("HEAD"),cancellable = true)
-    private static void 天圆地方$turnToDirt_Inject(World world, BlockPos pos, CallbackInfo ci) {
-        final IBlockState state = world.getBlockState(pos);
+    private static void 天圆地方$turnToDirt_Inject(final @Nonnull World world,
+                                                   final @Nonnull BlockPos pos,
+                                                   final @Nonnull CallbackInfo ci) {
+        final @Nonnull IBlockState state = world.getBlockState(pos);
         if(!(state.getBlock() instanceof IBlockSoil)) return;
         ci.cancel();
-        int quanta = ((IBlockSoil)state.getBlock()).getLayers(world,pos,state,FluidRegistry.WATER);
+        final int quanta = ((IBlockSoil)state.getBlock()).getLayers(state,null,FluidRegistry.WATER);
         world.setBlockState(pos, Blocks.DIRT.getDefaultState().withProperty(HUMIDITY,quanta));
 
-        AxisAlignedBB emptyAABBAbove = field_194405_c.offset(pos);
+        final @Nonnull AxisAlignedBB emptyAABBAbove = field_194405_c.offset(pos);
 
-        for (Entity entity : world.getEntitiesWithinAABBExcludingEntity(null, emptyAABBAbove)) {
-            double d0 = Math.min(emptyAABBAbove.maxY - emptyAABBAbove.minY, emptyAABBAbove.maxY - entity.getEntityBoundingBox().minY);
+        for (final @Nonnull Entity entity : world.getEntitiesWithinAABBExcludingEntity(null, emptyAABBAbove)) {
+            final double d0 = Math.min(emptyAABBAbove.maxY - emptyAABBAbove.minY, emptyAABBAbove.maxY - entity.getEntityBoundingBox().minY);
             entity.setPositionAndUpdate(entity.posX, entity.posY + d0 + 0.001, entity.posZ);
         }
     }

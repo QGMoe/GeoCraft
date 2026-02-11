@@ -70,6 +70,7 @@ import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableFluid;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.block.StaticLiquidUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.player.FillGlassBottleEvent.FillGlassBottleOnFluidEvent;
+import top.qiguaiaaaa.geocraft.api.fluid.FluidHostOperation;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
@@ -200,7 +201,12 @@ public final class FiniteEventHandler {
         }
     }
 
-    public static boolean onBlockReplaced(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState currentState, @Nonnull IBlockState replacedState, @Nonnull PlaceSource source, @Nullable Entity sourceEntity){
+    public static boolean onBlockReplaced(@Nonnull final World world,
+                                          @Nonnull final BlockPos pos,
+                                          @Nonnull final IBlockState currentState,
+                                          @Nonnull final IBlockState replacedState,
+                                          @Nonnull final PlaceSource source,
+                                          @Nullable final Entity sourceEntity){
         final Fluid fluid = FluidUtil.getFluid(currentState);
         if(fluid == null) return true;
         final Block block = currentState.getBlock();
@@ -227,13 +233,13 @@ public final class FiniteEventHandler {
                     host = (ILayeredFluidHost) placeBlock;
                 }else break layeredHost;
 
-                canFillQB = host.addAmountInQB(world,pos,replacedState,fluid,QB,false);
+                canFillQB = host.addAmountInQB(world,pos,replacedState,null,fluid,QB, FluidHostOperation.SIM_WITH_ASSUMPTION);
                 if(canFillQB <=0L) {
                     canFillQB = 0L;
                     break layeredHost;
                 }
-                curLayer = host.getLayers(world,pos,replacedState,fluid);
-                canFillLayer = (int) (canFillQB/host.getAmountInQBPerLayer(world,pos,replacedState,fluid));
+                curLayer = host.getLayers(world,pos,replacedState,null,fluid,true);
+                canFillLayer = (int) (canFillQB/host.getAmountInQBPerLayer(world,pos,replacedState,null,fluid,true));
                 if(QB>=canFillQB+QBUtil.QUANTA_VOLUME) break layeredHost; //在最后的时候再处理
                 IBlockState quantaState = null;
                 if(source == PlaceSource.FALLING_BLOCK){
@@ -247,7 +253,7 @@ public final class FiniteEventHandler {
                         canFillLayer = 0;
                         break layeredHost;
                     }
-                    quantaState = ((IBlockStateLayeredFluidHost)host).getLayerState(replacedState,fluid,curLayer+canFillLayer);
+                    quantaState = ((IBlockStateLayeredFluidHost)host).getLayerState(replacedState,null,fluid,curLayer+canFillLayer);
                     if(quantaState == null){
                         canFillQB = 0L;
                         canFillLayer = 0;
@@ -257,7 +263,7 @@ public final class FiniteEventHandler {
 
                 switch (source) {
                     case PLAYER:
-                        host.addLayer(world,pos,replacedState,fluid,canFillLayer,true);
+                        host.addLayer(world,pos,replacedState,null,fluid,canFillLayer,FluidHostOperation.DO_WITH_ASSUMPTION);
                         break;
                     case FALLING_BLOCK:
                         ((EntityFallingBlockAccessor)sourceEntity).setFallTile(quantaState);
@@ -284,11 +290,11 @@ public final class FiniteEventHandler {
             if(canFillLayer>0){
                 switch (source) {
                     case PLAYER:
-                        host.addLayer(world,pos,replacedState,fluid,canFillLayer,true);
+                        host.addLayer(world,pos,replacedState,null,fluid,canFillLayer,FluidHostOperation.DO_WITH_ASSUMPTION);
                         break;
                     case FALLING_BLOCK:
                         if(sourceEntity == null) break;
-                        IBlockState quantaState = ((IBlockStateLayeredFluidHost)host).getLayerState(replacedState,fluid,curLayer+canFillLayer);
+                        IBlockState quantaState = ((IBlockStateLayeredFluidHost)host).getLayerState(replacedState,null,fluid,curLayer+canFillLayer);
                         if(quantaState == null) break;
                         ((EntityFallingBlockAccessor)sourceEntity).setFallTile(quantaState);
                         break;

@@ -46,11 +46,14 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.IWorldGenerator;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
+import top.qiguaiaaaa.geocraft.api.fluid.FluidHostOperation;
 import top.qiguaiaaaa.geocraft.api.setting.GeoSoilSetting;
+import top.qiguaiaaaa.geocraft.api.util.BlockFlagsModifier;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Random;
 
@@ -117,7 +120,11 @@ public class GeoCraftPostPopulatingGenerator implements IWorldGenerator {
     }
 
     @Nullable
-    protected IBlockState addHumidity(World world,Biome biome,BlockPos pos,IBlockState state,boolean waterFlag){
+    protected IBlockState addHumidity(final @Nonnull World world,
+                                      final @Nonnull Biome biome,
+                                      final @Nonnull BlockPos pos,
+                                      final @Nonnull IBlockState state,
+                                      final boolean waterFlag){
         if(waterFlag && state.getMaterial() == Material.AIR){
             if(enableProtection){
                 needProtection = true;
@@ -125,19 +132,20 @@ public class GeoCraftPostPopulatingGenerator implements IWorldGenerator {
             }
             return Blocks.WATER.getDefaultState();
         }
-        Block block = state.getBlock();
+        final @Nonnull Block block = state.getBlock();
         if(block instanceof IBlockSoil){
-            IBlockSoil soil = (IBlockSoil) block;
-            if(waterFlag) return soil.getLayerState(state,FluidRegistry.WATER,4);
+            final @Nonnull IBlockSoil soil = (IBlockSoil) block;
+            if(waterFlag) return soil.getLayerState(state,null,FluidRegistry.WATER,4);
             if(!biome.canRain()) return null;
-            return soil.getLayerState(state,FluidRegistry.WATER,
+            return soil.getLayerState(state,null,FluidRegistry.WATER,
                     (int)MathHelper.clamp(4*biome.getRainfall()+1,0,soil.getMaxStableHumidity(state)));
         }
         if(block instanceof ILayeredFluidHost){ //之前已经处理过本身为流体的可能性，这里一定不会是流体
-            ILayeredFluidHost permeable = (ILayeredFluidHost) block;
-            int maxQuanta = permeable.getMaxLayers(world,pos,state,FluidRegistry.WATER);
+            final @Nonnull ILayeredFluidHost host = (ILayeredFluidHost) block;
+            final int maxQuanta = host.getMaxLayers(world,pos,state,null,FluidRegistry.WATER,false);
             if(waterFlag){
-                permeable.addLayer(world,pos,state,FluidRegistry.WATER,maxQuanta, Constants.BlockFlags.DEFAULT_AND_RERENDER,Constants.BlockFlags.NO_OBSERVERS | Constants.BlockFlags.NO_RERENDER);
+                host.addLayer(world,pos,state,null,FluidRegistry.WATER,maxQuanta, FluidHostOperation.DO_WITH_CERTAINTY,null,null,
+                        BlockFlagsModifier.build(Constants.BlockFlags.NO_OBSERVERS | Constants.BlockFlags.NO_RERENDER,Constants.BlockFlags.DEFAULT_AND_RERENDER));
                 shouldContinue = true;
                 return null;
             }

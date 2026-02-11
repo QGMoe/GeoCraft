@@ -25,19 +25,11 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api;
-
-import org.apache.logging.log4j.Logger;
-import top.qiguaiaaaa.geocraft.api.util.APIUtil;
+package top.qiguaiaaaa.geocraft.api.fluid;
 
 /**
- * @since 0.1
+ * @since GeoCraftAPI 0.3.1
  * @author QiguaiAAAA
  */
-public final class GeoCraftAPI {
-    public final static long API_VERSION = 3;
-    public final static String API_VERSION_NAME = "0.3.1";
-    public final static String MODID = "geocraft";
-    public final static String PROVIDERS = "GeoCraftAPI";
-    public final static Logger LOGGER = APIUtil.LOGGER;
+public interface IFluidTo {
 }

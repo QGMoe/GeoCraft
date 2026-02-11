@@ -33,6 +33,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
+import top.qiguaiaaaa.geocraft.api.fluid.FluidHostOperation;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 
@@ -59,13 +60,19 @@ public class FlowChoice {
      * @param direction 方向
      * @param fluid 流体
      */
-    public FlowChoice(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state ,@Nonnull ILayeredFluidHost host, @Nonnull EnumFacing direction, @Nonnull Fluid fluid) {
+    public FlowChoice(@Nonnull final World world,
+                      @Nonnull final BlockPos pos,
+                      @Nonnull final IBlockState state ,
+                      @Nonnull final ILayeredFluidHost host,
+                      @Nonnull final EnumFacing direction,
+                      @Nonnull final Fluid fluid) {
         this.direction = direction;
-        this.heightPerLayer = host.getHeightPerLayer(world, pos, state);
-        this.emptyHeight = host.getEmptyHeight(world,pos,state,fluid);
-        this.currentLayers = host.getLayers(world, pos, state, fluid);
-        this.maxLayers = host.getMaxLayers(world, pos, state, fluid);
-        this.QBPerLayer = host.getAmountInQBPerLayer(world, pos, state, fluid);
+        final @Nonnull EnumFacing side = this.direction.getOpposite();
+        this.heightPerLayer = host.getHeightPerLayer(world, pos,state,side,true);
+        this.emptyHeight = host.getEmptyHeight(world,pos,state,side,fluid);
+        this.currentLayers = host.getLayers(world, pos, state,side, fluid);
+        this.maxLayers = host.getMaxLayers(world, pos, state,side, fluid);
+        this.QBPerLayer = host.getAmountInQBPerLayer(world, pos, state,side, fluid);
         this.host = host;
     }
 
@@ -93,7 +100,7 @@ public class FlowChoice {
      */
     public FlowChoice(@Nonnull EnumFacing direction,int currentLayers,int maxLayers,long QBPerLayer){
         this.direction = direction;
-        this.heightPerLayer = LayeredFluidHostUtil.DEFAULT_MAX_HEIGHT/maxLayers;
+        this.heightPerLayer = LayeredFluidHostUtil.ONE_BLOCK_HEIGHT /maxLayers;
         this.emptyHeight = 0;
         this.currentLayers = currentLayers;
         this.maxLayers = maxLayers;
@@ -128,7 +135,15 @@ public class FlowChoice {
      * @return 剩余未应用的流体量，单位为QB
      */
     public long apply(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
-        return Math.max(addedAmountInQB-Math.max(host.addAmountInQB(world,pos,state,fluid,addedAmountInQB,true),0),0);
+        return Math.max(addedAmountInQB-Math.max(host.addAmountInQB(world,
+                pos,
+                state,
+                this.direction.getOpposite(),
+                fluid,
+                addedAmountInQB,
+                FluidHostOperation.DO_WITH_CERTAINTY,
+                null,
+                null),0),0);
     }
 
     public void addAmountInQB(long amount){
