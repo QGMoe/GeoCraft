@@ -63,7 +63,7 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.MIXTURE;
  * @since 0.2.0-beta.2
  * @author QiguaiAAAA
  */
-public class BlockSnowMoreReality extends BlockSnowExtended implements IBlockStateLayeredFluidHost {
+public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLayeredFluidHost {
     @Override
     public int tickRate(final @Nonnull World worldIn) {
         return 5;

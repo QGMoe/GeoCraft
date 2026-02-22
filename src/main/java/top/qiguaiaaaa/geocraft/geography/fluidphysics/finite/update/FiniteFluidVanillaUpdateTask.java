@@ -45,7 +45,7 @@ import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
 import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
-import top.qiguaiaaaa.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
+import top.qiguaiaaaa.geocraft.block.finite.IBlockLiquidFinite;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
@@ -199,7 +199,7 @@ public final class FiniteFluidVanillaUpdateTask extends FluidUpdateBaseTask {
             //  Average Flow
             // *******************
             int newLiquidQuanta = LayeredFluidHostUtil.averageFlow(liquidQuanta,
-                    ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA,
+                    IBlockLiquidFinite.HEIGHT_PER_QUANTA,
                     QBUtil.QUANTA_VOLUME,
                     0,
                     averageFlowChoices);

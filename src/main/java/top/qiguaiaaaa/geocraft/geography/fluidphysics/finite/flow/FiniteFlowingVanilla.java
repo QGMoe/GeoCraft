@@ -46,7 +46,7 @@ import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
 import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
-import top.qiguaiaaaa.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
+import top.qiguaiaaaa.geocraft.block.finite.IBlockLiquidFinite;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
@@ -113,7 +113,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
             final Block block = facingState.getBlock();
             final ILayeredFluidHost permeableBlock = (block instanceof ILayeredFluidHost)?(ILayeredFluidHost) block:null;
 
-            int facingHeight,facingQuanta,facingHeightPerLayer = ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA;
+            int facingHeight,facingQuanta,facingHeightPerLayer = IBlockLiquidFinite.HEIGHT_PER_QUANTA;
             if(permeableBlock != null){
                 facingHeight = permeableBlock.getHeight(worldIn,mutablePos,facingState,fluid);
                 facingQuanta = permeableBlock.getLayers(worldIn,mutablePos,facingState,fluid);
@@ -121,17 +121,17 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
                 int facingMeta = getDepth(facingState);
                 if(facingMeta <0 || facingMeta>7) facingMeta = 8;
                 facingQuanta = 8-facingMeta;
-                facingHeight = facingQuanta* ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA;
+                facingHeight = facingQuanta* IBlockLiquidFinite.HEIGHT_PER_QUANTA;
             }
 
-            if(facingHeight+facingHeightPerLayer<=(liquidQuanta-1)* ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA){
+            if(facingHeight+facingHeightPerLayer<=(liquidQuanta-1)* IBlockLiquidFinite.HEIGHT_PER_QUANTA){
                 averageModeFlowDirections.add(permeableBlock == null?
                         new FlowChoice(facing,facingQuanta):
                         new FlowChoice(worldIn,mutablePos,facingState,permeableBlock,facing,fluid));
             }
 
             if(!canFlowInto2RegardlessPermeable(facingState)) continue;
-            if(slopeModeFlowDirections != null && facingHeight<liquidQuanta* ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA) slopeModeFlowDirections.add(facing);
+            if(slopeModeFlowDirections != null && facingHeight<liquidQuanta* IBlockLiquidFinite.HEIGHT_PER_QUANTA) slopeModeFlowDirections.add(facing);
         }
     }
 
@@ -167,7 +167,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
     public boolean canFlowIntoWhenSnowLayer(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,int quanta){
         if(state.getBlock() != Blocks.SNOW_LAYER) return true;
         if(((ILayeredFluidHost)Blocks.SNOW_LAYER).isFull(world,pos,state,FluidRegistry.WATER)) return false;
-        return ((ILayeredFluidHost)Blocks.SNOW_LAYER).getHeight(world,pos,state, FluidRegistry.WATER)<(quanta-1)* ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA;
+        return ((ILayeredFluidHost)Blocks.SNOW_LAYER).getHeight(world,pos,state, FluidRegistry.WATER)<(quanta-1)* IBlockLiquidFinite.HEIGHT_PER_QUANTA;
     }
 
     public boolean canFlow(@Nonnull final World worldIn,

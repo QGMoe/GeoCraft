@@ -36,7 +36,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fluids.Fluid;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -49,7 +48,6 @@ import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.block.finite.IBlockLiquidFinite;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
-import top.qiguaiaaaa.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure.FinitePressureTasks;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
@@ -61,7 +59,7 @@ import javax.annotation.Nullable;
 import java.util.Random;
 
 @Mixin(value = BlockStaticLiquid.class)
-public class BlockStaticLiquidMixin extends BlockLiquid implements IBlockLiquidFinite, ILayeredFluidHostFiniteLiquid {
+public class BlockStaticLiquidMixin extends BlockLiquid implements IBlockLiquidFinite {
 //    @Unique
 //    private static final boolean 天圆地方$debug = false;
     @Unique
@@ -169,17 +167,6 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IBlockLiquidF
 
     @Shadow
     private void updateLiquid(World worldIn, BlockPos pos, IBlockState state) {}
-
-    //*********
-    // 透水方块
-    //*********
-
-    @Nonnull
-    @Override
-    @Unique
-    public Fluid 天圆地方$getFluid() {
-        return 天圆地方$FINITE$flowingHandler.fluid;
-    }
 
     // ********************
     // IBlockLiquidFinite

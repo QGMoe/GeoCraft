@@ -215,7 +215,7 @@ public class BlockSoilFarmland extends BlockFarmland implements IBlockSoil, IBlo
         return state.getValue(MOISTURE) >= 7;
     }
 
-    public static class MoreReality extends BlockSoilFarmland{
+    public static class Finite extends BlockSoilFarmland{
 
         @Override
         protected void updateTickOnRandom(@Nonnull final World worldIn,

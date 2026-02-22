@@ -36,7 +36,7 @@ import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
 import top.qiguaiaaaa.geocraft.block.BlockSnowExtended;
-import top.qiguaiaaaa.geocraft.block.BlockSnowMoreReality;
+import top.qiguaiaaaa.geocraft.block.BlockSnowFinite;
 import top.qiguaiaaaa.geocraft.block.soil.*;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.property.*;
@@ -72,9 +72,9 @@ public final class RegistryHandler {
         registerVanillaBlockOverride("sand",new BlockSoilSand().setHardness(0.5F).setTranslationKey("sand"));
         registerVanillaBlockOverride("gravel",new BlockSoilGravel().setHardness(0.6F).setTranslationKey("gravel"));
         registerVanillaBlockOverride("grass_path",new BlockSoilGrassPath().setHardness(0.65F).setTranslationKey("grassPath"));
-        registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSoilFarmland.MoreReality():new BlockSoilFarmland())
+        registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSoilFarmland.Finite():new BlockSoilFarmland())
                 .setHardness(0.6F).setTranslationKey("farmland"));
-        registerVanillaBlockOverride("snow_layer",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSnowMoreReality():new BlockSnowExtended())
+        registerVanillaBlockOverride("snow_layer",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSnowFinite():new BlockSnowExtended())
                 .setHardness(0.1F).setTranslationKey("snow").setLightOpacity(0));
         registerVanillaBlockOverride("clay",new BlockSoilClay().setHardness(0.6F).setTranslationKey("clay"));
     }

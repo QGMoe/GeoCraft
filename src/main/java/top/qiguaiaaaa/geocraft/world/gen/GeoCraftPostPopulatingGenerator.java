@@ -36,9 +36,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
@@ -139,8 +137,7 @@ public class GeoCraftPostPopulatingGenerator implements IWorldGenerator {
             if(!biome.canRain()) return null;
             return soil.getLayerState(state,null,FluidRegistry.WATER,
                     (int)MathHelper.clamp(4*biome.getRainfall()+1,0,soil.getMaxStableHumidity(state)));
-        }
-        if(block instanceof ILayeredFluidHost){ //之前已经处理过本身为流体的可能性，这里一定不会是流体
+        }else if(block instanceof ILayeredFluidHost){ //之前已经处理过本身为流体的可能性，这里一定不会是流体
             final @Nonnull ILayeredFluidHost host = (ILayeredFluidHost) block;
             final int maxQuanta = host.getMaxLayers(world,pos,state,null,FluidRegistry.WATER,false);
             if(waterFlag){
