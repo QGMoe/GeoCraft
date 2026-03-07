@@ -25,43 +25,14 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.world;
+package top.qiguaiaaaa.geocraft_test.assets;
 
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunkProvider;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import net.minecraftforge.fluids.Fluid;
+import top.qiguaiaaaa.geocraft.fluid.FluidSnow;
 
 /**
  * @author QiguaiAAAA
  */
-public class FakeChunkProvider implements IChunkProvider {
-    @Nullable
-    @Override
-    public Chunk getLoadedChunk(int x, int z) {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public Chunk provideChunk(int x, int z) {
-        return null;
-    }
-
-    @Override
-    public boolean tick() {
-        return false;
-    }
-
-    @Nonnull
-    @Override
-    public String makeString() {
-        return null;
-    }
-
-    @Override
-    public boolean isChunkGeneratedAt(int x, int z) {
-        return false;
-    }
+public class MockFluids {
+    public static final Fluid SNOW = new FluidSnow();
 }

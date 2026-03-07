@@ -25,14 +25,38 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.assets;
+package top.qiguaiaaaa.geocraft_test.block;
 
-import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.fluid.FluidSnow;
+import net.minecraft.block.material.MapColor;
+import net.minecraft.block.material.Material;
+import net.minecraft.util.ResourceLocation;
+import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
  */
-public class TestFluids {
-    public static final Fluid SNOW = new FluidSnow();
+public final class MockBlockInfoBuilder {
+    Material material = Material.GROUND;
+    ResourceLocation id = null;
+    MapColor color = MapColor.STONE;
+
+    @Nonnull
+    public MockBlockInfoBuilder withMaterial(final @Nonnull Material material) {
+        this.material = material;
+        return this;
+    }
+
+    @Nonnull
+    public MockBlockInfoBuilder withID(final @Nonnull String id) {
+        this.id = new ResourceLocation(GeoCraftTest.MODID, id);
+        return this;
+    }
+
+    @Nonnull
+    public MockBlockInfoBuilder withMapColor(final @Nonnull MapColor color) {
+        this.color = color;
+        return this;
+    }
 }

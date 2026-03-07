@@ -37,14 +37,14 @@ import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
-import top.qiguaiaaaa.geocraft_test.assets.TestBlocks;
-import top.qiguaiaaaa.geocraft_test.assets.TestFluids;
+import top.qiguaiaaaa.geocraft_test.assets.MockFluids;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-import static top.qiguaiaaaa.geocraft_test.block.TestBlockFluidHostCommon.LAYERS;
+import static top.qiguaiaaaa.geocraft_test.assets.MockBlocks.LayeredFluidHosts.FLUID_HOST_COMMON;
+import static top.qiguaiaaaa.geocraft_test.block.MockBlockFluidHostCommon.LAYERS;
 
 /**
  * @author QiguaiAAAA
@@ -63,13 +63,13 @@ public class LayeredFluidHostTest extends GeoCraftTest{
 
     @SuppressWarnings("unused")
     public static void testQB_Inner(){
-        final @Nonnull ILayeredFluidHost host = TestBlocks.FLUID_HOST_COMMON;
-        final @Nonnull IBlockState defaultState = TestBlocks.FLUID_HOST_COMMON.getDefaultState();
-        long filled = host.addAmountInQB(null,BlockPos.ORIGIN,defaultState.withProperty(LAYERS,7), TestFluids.SNOW,QBUtil.QUANTA_VOLUME,false);
+        final @Nonnull ILayeredFluidHost host = FLUID_HOST_COMMON;
+        final @Nonnull IBlockState defaultState = FLUID_HOST_COMMON.getDefaultState();
+        long filled = host.addAmountInQB(null,BlockPos.ORIGIN,defaultState.withProperty(LAYERS,7), MockFluids.SNOW,QBUtil.QUANTA_VOLUME,false);
         Assertions.assertEquals(QBUtil.QUANTA_VOLUME,filled);
-        filled = host.addAmountInQB(null,BlockPos.ORIGIN,defaultState.withProperty(LAYERS,3),TestFluids.SNOW,QBUtil.BUCKET_VOLUME,false);
+        filled = host.addAmountInQB(null,BlockPos.ORIGIN,defaultState.withProperty(LAYERS,3), MockFluids.SNOW,QBUtil.BUCKET_VOLUME,false);
         Assertions.assertEquals(QBUtil.BUCKET_VOLUME-3*QBUtil.QUANTA_VOLUME,filled);
-        filled = host.addAmountInQB(null,BlockPos.ORIGIN,defaultState.withProperty(LAYERS,1),TestFluids.SNOW,QBUtil.BUCKET_VOLUME,true);
+        filled = host.addAmountInQB(null,BlockPos.ORIGIN,defaultState.withProperty(LAYERS,1), MockFluids.SNOW,QBUtil.BUCKET_VOLUME,true);
         Assertions.assertEquals(QBUtil.BUCKET_VOLUME-QBUtil.QUANTA_VOLUME,filled);
     }
 
@@ -87,20 +87,20 @@ public class LayeredFluidHostTest extends GeoCraftTest{
             final @Nonnull Random random = new Random(System.nanoTime());
             for(@Nonnull final EnumFacing facing:EnumFacing.HORIZONTALS){
                 if(random.nextDouble()<0.2) continue;
-                final @Nonnull IBlockState state = TestBlocks.FLUID_HOST_COMMON.getDefaultState().withProperty(LAYERS,random.nextInt(8)+1);
+                final @Nonnull IBlockState state = FLUID_HOST_COMMON.getDefaultState().withProperty(LAYERS,random.nextInt(8)+1);
                 facingState.put(facing,state);
                 LOGGER.info("Dir {} is state {}",facing,state);
             }
 
             final @Nonnull List<FlowChoice> averageModeFlowDirections = new ArrayList<>();
             facingState.forEach((facing, state) -> averageModeFlowDirections.add(
-                    new FlowChoice(null,BlockPos.ORIGIN,state,TestBlocks.FLUID_HOST_COMMON,facing,TestFluids.SNOW)));
+                    new FlowChoice(null,BlockPos.ORIGIN,state,FLUID_HOST_COMMON,facing, MockFluids.SNOW)));
 
             final int centralLayers = random.nextInt(8)+1;
             LOGGER.info("Central layers is {}",centralLayers);
             final int left = LayeredFluidHostUtil.averageFlow(centralLayers,
-                    TestBlocks.FLUID_HOST_COMMON.getHeightPerLayer(null,null,null),
-                    TestBlocks.FLUID_HOST_COMMON.getAmountInQBPerLayer(null,null,null,TestFluids.SNOW),
+                    FLUID_HOST_COMMON.getHeightPerLayer(null,null,null),
+                    FLUID_HOST_COMMON.getAmountInQBPerLayer(null,null,null, MockFluids.SNOW),
                     0,
                     averageModeFlowDirections
             );
@@ -109,7 +109,7 @@ public class LayeredFluidHostTest extends GeoCraftTest{
 
             for(final @Nonnull FlowChoice choice:averageModeFlowDirections){
                 Assertions.assertNotNull(choice);
-                Assertions.assertEquals(0,choice.apply(null,BlockPos.ORIGIN,facingState.get(choice.direction),TestFluids.SNOW));
+                Assertions.assertEquals(0,choice.apply(null,BlockPos.ORIGIN,facingState.get(choice.direction), MockFluids.SNOW));
             }
         }
     }

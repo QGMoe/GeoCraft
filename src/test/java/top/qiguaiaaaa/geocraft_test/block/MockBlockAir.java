@@ -25,34 +25,19 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.world;
+package top.qiguaiaaaa.geocraft_test.block;
 
-import net.minecraft.profiler.Profiler;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
-import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.storage.WorldInfo;
+import net.minecraft.block.BlockAir;
+import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
  */
-public class FakeWorld extends World {
-    protected FakeWorld(WorldInfo info, WorldProvider providerIn, Profiler profilerIn, boolean client) {
-        super(new FakeSaveHandler(), info, providerIn, profilerIn, client);
-    }
-
-    protected final FakeChunkProvider provider = new FakeChunkProvider();
-
-    @Nonnull
-    @Override
-    protected IChunkProvider createChunkProvider() {
-        return provider;
-    }
-
-    @Override
-    protected boolean isChunkLoaded(int x, int z, boolean allowEmpty) {
-        return true;
+public class MockBlockAir extends BlockAir {
+    public MockBlockAir(final @Nonnull ResourceLocation id) {
+        super();
+        this.setRegistryName(id);
     }
 }

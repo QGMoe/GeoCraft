@@ -40,7 +40,7 @@ import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
-import top.qiguaiaaaa.geocraft_test.assets.TestFluids;
+import top.qiguaiaaaa.geocraft_test.assets.MockFluids;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,10 +48,10 @@ import javax.annotation.Nullable;
 /**
  * @author QiguaiAAAA
  */
-public class TestBlockFluidHostCommon extends Block implements ILayeredFluidHost {
+public class MockBlockFluidHostCommon extends Block implements ILayeredFluidHost {
     public static final PropertyInteger LAYERS = PropertyInteger.create("layers",1,8);
 
-    public TestBlockFluidHostCommon() {
+    public MockBlockFluidHostCommon() {
         super(Material.WATER);
         this.setDefaultState(this.getDefaultState().withProperty(LAYERS,1));
         this.setRegistryName(GeoCraftTest.MODID,"common_fluid_host");
@@ -65,7 +65,7 @@ public class TestBlockFluidHostCommon extends Block implements ILayeredFluidHost
 
     @Override
     public boolean isAcceptedFluid(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
-        return fluid == TestFluids.SNOW;
+        return fluid == MockFluids.SNOW;
     }
 
     @Override

@@ -36,7 +36,9 @@ import net.minecraftforge.registries.GameData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.spongepowered.asm.launch.MixinBootstrap;
 
 import javax.annotation.Nonnull;
@@ -50,6 +52,7 @@ import java.util.HashMap;
 /**
  * @author QiguaiAAAA
  */
+@ExtendWith(GeoCraftTest.SetupGeoTestExtension.class)
 public class GeoCraftTest {
 
     public static final String MODID = "test";
@@ -61,10 +64,9 @@ public class GeoCraftTest {
     }
 
     @SuppressWarnings("unchecked")
-    @BeforeAll
     public static void preInit()
             throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Assertions.assertEquals(Stage.NO_INIT,stage);
+        if(stage != Stage.NO_INIT) return;
         stage = Stage.PRE_INIT;
         LOGGER.info("Pre Initialisation begin");
 
@@ -125,6 +127,14 @@ public class GeoCraftTest {
         final @Nonnull Class<?> entryCls = Launch.classLoader.loadClass(testEntryClass);
         final @Nonnull Method entryPoint = entryCls.getMethod(testEntryPoint);
         entryPoint.invoke(null);
+    }
+
+    public static final class SetupGeoTestExtension implements BeforeAllCallback{
+
+        @Override
+        public void beforeAll(ExtensionContext context) throws Exception {
+            preInit();
+        }
     }
 
     public static final class Stage{

@@ -25,13 +25,25 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.assets;
+package top.qiguaiaaaa.geocraft_test.block;
 
-import top.qiguaiaaaa.geocraft_test.block.TestBlockFluidHostCommon;
+import net.minecraft.block.BlockLiquid;
+
+import javax.annotation.Nonnull;
+import java.util.function.Consumer;
 
 /**
  * @author QiguaiAAAA
  */
-public final class TestBlocks {
-    public static final TestBlockFluidHostCommon FLUID_HOST_COMMON = new TestBlockFluidHostCommon();
+public class MockBlockLiquid extends BlockLiquid {
+    protected MockBlockLiquid(final @Nonnull MockBlockInfoBuilder builder) {
+        super(builder.material);
+    }
+
+    @Nonnull
+    public static MockBlockLiquid create(final @Nonnull Consumer<MockBlockInfoBuilder> builderConsumer){
+        final MockBlockInfoBuilder builder = new MockBlockInfoBuilder();
+        builderConsumer.accept(builder);
+        return new MockBlockLiquid(builder);
+    }
 }

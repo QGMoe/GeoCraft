@@ -45,12 +45,13 @@ public class UtilsTest {
     private static final float EPSILON_FLOAT = 1e-6f;
 
     /**
+     * @author QiguaiAAAA, ChatGPT
      * @see MathUtil
      */
-    public static class TestMathUtil{
-
+    public final static class TestMathUtil{
 
         /**
+         * ChatGPT Generated Code
          * @see MathUtil#getAverage(long[]) 
          */
         @Test
@@ -90,6 +91,7 @@ public class UtilsTest {
         }
 
         /**
+         * ChatGPT Generated Code
          * @see MathUtil#getPercent(long[], double) 
          */
         @Test
@@ -167,7 +169,11 @@ public class UtilsTest {
      * @author QiguaiAAAA, ChatGPT
      * @see BaseUtil
      */
-    public static class TestBaseUtil{
+    public final static class TestBaseUtil{
+
+        /**
+         * ChatGPT Generated
+         */
         @Test
         public void toIntArrayTest() {
 
@@ -202,6 +208,9 @@ public class UtilsTest {
             GeoCraftTest.LOGGER.info("toIntArrayTest passed");
         }
 
+        /**
+         * ChatGPT Generated
+         */
         @Test
         public void toLongArrayTest() {
 
@@ -226,17 +235,48 @@ public class UtilsTest {
             GeoCraftTest.LOGGER.info("toLongArrayTest passed");
         }
 
+        /**
+         * ChatGPT Generated
+         */
         @Test
         public void toBooleanArrayTest() {
-            final String[] input = {"true","false","TRUE","FaLsE","hello"};
-            final boolean[] expected = {true,false,true,false,false};
-            final boolean[] actual = BaseUtil.toBooleanArray(input);
 
-            GeoCraftTest.LOGGER.info("toBooleanArray result={}", Arrays.toString(actual));
+            // 正常情况
+            final String[] input1 = {"true","false","TRUE","FaLsE"};
+            final boolean[] expected1 = {true,false,true,false};
+            final boolean[] actual1 = BaseUtil.toBooleanArray(input1);
 
-            Assertions.assertArrayEquals(expected, actual);
+            GeoCraftTest.LOGGER.info("toBooleanArray normal result={}", Arrays.toString(actual1));
+            Assertions.assertArrayEquals(expected1, actual1);
+
+            // 单元素
+            final String[] input2 = {"true"};
+            final boolean[] expected2 = {true};
+            Assertions.assertArrayEquals(expected2, BaseUtil.toBooleanArray(input2));
+
+            // 空数组
+            final String[] input3 = {};
+            final boolean[] actual3 = BaseUtil.toBooleanArray(input3);
+            Assertions.assertEquals(0, actual3.length);
+
+            // 非法字符串
+            Assertions.assertThrows(
+                    IllegalArgumentException.class,
+                    () -> BaseUtil.toBooleanArray(new String[]{"true","hello"})
+            );
+
+            // 非法布尔拼写
+            Assertions.assertThrows(
+                    IllegalArgumentException.class,
+                    () -> BaseUtil.toBooleanArray(new String[]{"Truee"})
+            );
+
+            GeoCraftTest.LOGGER.info("toBooleanArrayTest passed");
         }
 
+        /**
+         * ChatGPT Generated
+         */
         @Test
         public void toDoubleArrayTest() {
 
@@ -261,6 +301,9 @@ public class UtilsTest {
             GeoCraftTest.LOGGER.info("toDoubleArrayTest passed");
         }
 
+        /**
+         * ChatGPT Generated
+         */
         @Test
         public void checkAndReturnIntTest() {
 
@@ -284,6 +327,9 @@ public class UtilsTest {
             GeoCraftTest.LOGGER.info("checkAndReturnIntTest passed");
         }
 
+        /**
+         * ChatGPT Generated
+         */
         @Test
         public void checkAndReturnLongTest() {
             Assertions.assertEquals(5L,
@@ -305,6 +351,9 @@ public class UtilsTest {
             GeoCraftTest.LOGGER.info("checkAndReturnLongTest passed");
         }
 
+        /**
+         * ChatGPT Generated
+         */
         @Test
         public void checkAndReturnDoubleTest() {
 
@@ -331,6 +380,9 @@ public class UtilsTest {
             GeoCraftTest.LOGGER.info("checkAndReturnDoubleTest passed");
         }
 
+        /**
+         * ChatGPT Generated
+         */
         @Test
         public void checkAndReturnFloatTest() {
 
@@ -349,6 +401,56 @@ public class UtilsTest {
             );
 
             GeoCraftTest.LOGGER.info("checkAndReturnFloatTest passed");
+        }
+
+        /**
+         * ChatGPT Generated
+         */
+        @Test
+        public void parseBooleanTest() {
+
+            // 正常 true
+            Assertions.assertTrue(BaseUtil.parseBoolean("true"));
+            Assertions.assertTrue(BaseUtil.parseBoolean("TRUE"));
+            Assertions.assertTrue(BaseUtil.parseBoolean("TrUe"));
+
+            // 正常 false
+            Assertions.assertFalse(BaseUtil.parseBoolean("false"));
+            Assertions.assertFalse(BaseUtil.parseBoolean("FALSE"));
+            Assertions.assertFalse(BaseUtil.parseBoolean("FaLsE"));
+
+            GeoCraftTest.LOGGER.info("parseBoolean normal cases passed");
+
+            // 非法字符串
+            Assertions.assertThrows(
+                    IllegalArgumentException.class,
+                    () -> BaseUtil.parseBoolean("hello")
+            );
+
+            // 接近但错误
+            Assertions.assertThrows(
+                    IllegalArgumentException.class,
+                    () -> BaseUtil.parseBoolean("Truee")
+            );
+
+            Assertions.assertThrows(
+                    IllegalArgumentException.class,
+                    () -> BaseUtil.parseBoolean("0")
+            );
+
+            // 空字符串
+            Assertions.assertThrows(
+                    IllegalArgumentException.class,
+                    () -> BaseUtil.parseBoolean("")
+            );
+
+            // null
+            Assertions.assertThrows(
+                    IllegalArgumentException.class,
+                    () -> BaseUtil.parseBoolean(null)
+            );
+
+            GeoCraftTest.LOGGER.info("parseBooleanTest passed");
         }
     }
 }
