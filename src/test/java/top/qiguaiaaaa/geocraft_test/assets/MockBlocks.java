@@ -34,12 +34,12 @@ import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
-import org.junit.jupiter.api.Assertions;
 import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
 import top.qiguaiaaaa.geocraft_test.block.MockBlockAir;
 import top.qiguaiaaaa.geocraft_test.block.MockBlockLiquid;
 import top.qiguaiaaaa.geocraft_test.block.MockBlockSimple;
 import top.qiguaiaaaa.geocraft_test.block.MockBlockFluidHostCommon;
+import top.qiguaiaaaa.geocraft_test.world.sandbox.MockSandboxEnvBuilder;
 
 import javax.annotation.Nonnull;
 
@@ -67,44 +67,17 @@ public final class MockBlocks {
         public static IBlockState 淼 = WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,1); // 汪淼的淼
         public static IBlockState 㵘 = WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,0); // 打 水水水水
 
+        public static final MockSandboxEnvBuilder.Impl BUILDER = MockSandboxEnvBuilder.create().withStateData(Bases.class);
+
         /**
-         * 从汉字组成的字符串描述生成一个基本的沙盒结构
+         * 根据 Bases 提供的方块，从汉字组成的字符串描述生成一个基本的沙盒结构
          * @param size 正方形边长
          * @param chars 由汉字描述的结构，从低到高，其边长必须是 size 的大小
          * @return 转换后的 IBlockState，索引为 Y,Z,X
          */
         @Nonnull
         public static IBlockState[][][] generateFromCharacters(final int size,final @Nonnull String[] chars){
-            final IBlockState[][][] sandbox = new IBlockState[chars.length][][];
-            for(int y=0;y<chars.length;y++){
-                sandbox[y] = new IBlockState[size][];
-                int i = 0;
-                for(int z=0;z<size;z++){
-                    sandbox[y][z] = new IBlockState[size];
-                    for(int x=0;x<size;x++){
-                        final int code = chars[y].codePointAt(i);
-                        final int charCount = Character.charCount(code);
-                        final String character = chars[y].substring(i,i+charCount);
-                        final IBlockState state = getBlockStateByName(character);
-                        sandbox[y][z][x] = state;
-                        i += charCount;
-                    }
-                    if(z == size-1) break;
-                    Assertions.assertTrue(z<size-1);
-                    Assertions.assertEquals('\n', chars[y].charAt(i));
-                    i++;
-                }
-            }
-            return sandbox;
-        }
-
-        @Nonnull
-        static IBlockState getBlockStateByName(final @Nonnull String name){
-            try {
-                return (IBlockState) Bases.class.getField(name).get(null);
-            } catch (final NoSuchFieldException | IllegalAccessException | ClassCastException e) {
-                return Assertions.fail(e);
-            }
+            return BUILDER.generateFromCharacters(size, chars);
         }
     }
 }

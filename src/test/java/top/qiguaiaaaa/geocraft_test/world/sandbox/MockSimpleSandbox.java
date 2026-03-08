@@ -25,13 +25,12 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.world;
+package top.qiguaiaaaa.geocraft_test.world.sandbox;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 import org.junit.jupiter.api.Assertions;
@@ -42,18 +41,19 @@ import javax.annotation.Nullable;
 /**
  * @author QiguaiAAAA
  */
-public class MockSimpleSandbox implements IBlockAccess {
+public class MockSimpleSandbox implements IMockSandbox {
 
     protected final IBlockState[][][] structure; //y,z,x
+
+    protected @Nullable IBlockState outerBlock;
 
     public MockSimpleSandbox(final @Nonnull IBlockState[][][] structure) {
         this.structure = structure;
     }
 
-    protected boolean isOutOfRange(final int x,final int y,final int z){
-        return !(y < structure.length && z < structure[y].length && x < structure[y][x].length);
+    public void setOuterBlock(final @Nullable IBlockState outer){
+        this.outerBlock = outer;
     }
-
 
     @Nullable
     @Override
@@ -69,7 +69,10 @@ public class MockSimpleSandbox implements IBlockAccess {
     @Nonnull
     @Override
     public IBlockState getBlockState(final @Nonnull BlockPos pos) {
-        if(isOutOfRange(pos.getX(),pos.getY(),pos.getZ())) return Assertions.fail("Out of Range");
+        if(isOutOfRange(pos)){
+            if(outerBlock != null) return outerBlock;
+            return Assertions.fail("Out of Range");
+        }
         return structure[pos.getY()][pos.getZ()][pos.getX()];
     }
 
@@ -104,5 +107,32 @@ public class MockSimpleSandbox implements IBlockAccess {
         final @Nonnull IBlockState state = getBlockState(pos);
         if (state.isTopSolid() && side == EnumFacing.UP) return true;
         return state.isNormalCube();
+    }
+
+    protected boolean isOutOfRange(final int x,final int y,final int z){
+        return !(y < structure.length && z < structure[y].length && x < structure[y][x].length);
+    }
+
+    @Override
+    public boolean isOutOfRange(@Nonnull final BlockPos pos) {
+        return isOutOfRange(pos.getX(),pos.getY(),pos.getZ());
+    }
+
+    @Override
+    public boolean canSeeSky(@Nonnull BlockPos pos) {
+        while (pos.getY()<=structure.length){
+            if(!isAirBlock(pos)) return false;
+            pos = pos.up();
+        }
+        return true;
+    }
+
+    @Override
+    public IBlockState setBlockState(@Nonnull final BlockPos pos, @Nonnull final IBlockState state) {
+        Assertions.assertNotNull(state);
+        Assertions.assertFalse(isOutOfRange(pos));
+        final IBlockState old = structure[pos.getY()][pos.getZ()][pos.getX()];
+        structure[pos.getY()][pos.getZ()][pos.getX()] = state;
+        return old;
     }
 }

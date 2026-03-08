@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test;
+package top.qiguaiaaaa.geocraft_test.tests;
 
 import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.math.MathUtil;
+import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -40,7 +41,7 @@ import java.util.Arrays;
 /**
  * @author QiguaiAAAA
  */
-public class UtilsTest {
+public class TestUtils {
     private static final double EPSILON_DOUBLE = 1e-9;
     private static final float EPSILON_FLOAT = 1e-6f;
 

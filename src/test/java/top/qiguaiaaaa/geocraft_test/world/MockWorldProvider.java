@@ -27,45 +27,19 @@
 
 package top.qiguaiaaaa.geocraft_test.world;
 
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.IChunkLoader;
+import net.minecraft.world.DimensionType;
+import net.minecraft.world.WorldProvider;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * @author QiguaiAAAA
  */
-public class FakeChunkLoader implements IChunkLoader {
-    @Nullable
+public class MockWorldProvider extends WorldProvider {
+
+    @Nonnull
     @Override
-    public Chunk loadChunk(@Nonnull World worldIn, int x, int z) {
-        return null;
-    }
-
-    @Override
-    public void saveChunk(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
-
-    }
-
-    @Override
-    public void saveExtraChunkData(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
-
-    }
-
-    @Override
-    public void chunkTick() {
-
-    }
-
-    @Override
-    public void flush() {
-
-    }
-
-    @Override
-    public boolean isChunkGeneratedAt(int x, int z) {
-        return true;
+    public DimensionType getDimensionType() {
+        return DimensionType.THE_END;
     }
 }

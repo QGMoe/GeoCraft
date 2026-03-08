@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.world;
+package top.qiguaiaaaa.geocraft_test.world.storage;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.WorldProvider;
@@ -34,6 +34,7 @@ import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraft.world.storage.IPlayerFileData;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.WorldInfo;
+import top.qiguaiaaaa.geocraft_test.world.chunk.FakeChunkLoader;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,7 +49,7 @@ public class FakeSaveHandler implements ISaveHandler {
     @Nullable
     @Override
     public WorldInfo loadWorldInfo() {
-        return new FakeWorldInfo();
+        return new MockWorldInfo();
     }
 
     @Override

@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test;
+package top.qiguaiaaaa.geocraft_test.tests;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
@@ -37,6 +37,7 @@ import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
+import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
 import top.qiguaiaaaa.geocraft_test.assets.MockFluids;
 
 import javax.annotation.Nonnull;
@@ -49,8 +50,8 @@ import static top.qiguaiaaaa.geocraft_test.block.MockBlockFluidHostCommon.LAYERS
 /**
  * @author QiguaiAAAA
  */
-public class LayeredFluidHostTest extends GeoCraftTest{
-    private static final String SELF_CLS_NAME = LayeredFluidHostTest.class.getName();
+public class TestLayeredFluidHost extends GeoCraftTest {
+    private static final String SELF_CLS_NAME = TestLayeredFluidHost.class.getName();
 
     public static void doTest() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         GeoCraftTest.run(SELF_CLS_NAME,Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner");

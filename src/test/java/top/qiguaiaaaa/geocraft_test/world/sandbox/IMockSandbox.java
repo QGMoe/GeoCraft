@@ -25,34 +25,28 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.world;
+package top.qiguaiaaaa.geocraft_test.world.sandbox;
 
-import net.minecraft.profiler.Profiler;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
-import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.storage.WorldInfo;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
  */
-public class MockWorld extends World {
-    protected MockWorld(WorldInfo info, WorldProvider providerIn, Profiler profilerIn, boolean client) {
-        super(new FakeSaveHandler(), info, providerIn, profilerIn, client);
-    }
+public interface IMockSandbox extends IBlockAccess {
 
-    protected final MockChunkProvider provider = new MockChunkProvider();
+    boolean isOutOfRange(final @Nonnull BlockPos pos);
 
-    @Nonnull
-    @Override
-    protected IChunkProvider createChunkProvider() {
-        return provider;
-    }
+    boolean canSeeSky(final @Nonnull BlockPos pos);
 
-    @Override
-    protected boolean isChunkLoaded(int x, int z, boolean allowEmpty) {
-        return true;
-    }
+    /**
+     * 设置一个 BlokcState ，并返回原来的 BlockState
+     * @param pos 位置
+     * @param state 新的 State
+     * @return 原来的 State
+     */
+    IBlockState setBlockState(final @Nonnull BlockPos pos, final @Nonnull IBlockState state);
 }

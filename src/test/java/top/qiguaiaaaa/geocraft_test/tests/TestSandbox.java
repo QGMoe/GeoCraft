@@ -25,23 +25,24 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.assets;
+package top.qiguaiaaaa.geocraft_test.tests;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
-import top.qiguaiaaaa.geocraft_test.world.MockSimpleSandbox;
+import top.qiguaiaaaa.geocraft_test.assets.MockBlocks;
+import top.qiguaiaaaa.geocraft_test.world.sandbox.MockSimpleSandbox;
 
-import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
+
+import static top.qiguaiaaaa.geocraft_test.world.sandbox.MockSandboxEnvBuilder.layer;
 
 /**
  * @author QiguaiAAAA
  */
-public class TestMockBlocks {
+public class TestSandbox {
 
     /**
      * @author QiguaiAAAA, ChatGPT
@@ -53,26 +54,6 @@ public class TestMockBlocks {
 
         public static void doTest() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
             GeoCraftTest.run(SELF_CLS_NAME,Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner");
-        }
-
-        /**
-         * 构造一个结构层字符串。
-         * <p>
-         * 注意：
-         * 第一个参数仅用于避免 IntelliJ 的参数提示 `rows:` 影响代码排版，
-         * 实际结构内容从第二个参数开始。
-         * <p>
-         * 示例：
-         * layer(
-         *     "",
-         *     "石石石",
-         *     "石〇石",
-         *     "石石石"
-         * )
-         */
-        @Nonnull
-        private static String layer(@Nonnull final String... rows) {
-            return String.join("\n", Arrays.copyOfRange(rows, 1, rows.length));
         }
 
         /**

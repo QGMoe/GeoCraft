@@ -25,10 +25,11 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.world;
+package top.qiguaiaaaa.geocraft_test.world.chunk;
 
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.chunk.storage.IChunkLoader;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,32 +37,35 @@ import javax.annotation.Nullable;
 /**
  * @author QiguaiAAAA
  */
-public class MockChunkProvider implements IChunkProvider {
+public class FakeChunkLoader implements IChunkLoader {
     @Nullable
     @Override
-    public Chunk getLoadedChunk(int x, int z) {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public Chunk provideChunk(int x, int z) {
+    public Chunk loadChunk(@Nonnull World worldIn, int x, int z) {
         return null;
     }
 
     @Override
-    public boolean tick() {
-        return false;
+    public void saveChunk(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
+
     }
 
-    @Nonnull
     @Override
-    public String makeString() {
-        return null;
+    public void saveExtraChunkData(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
+
+    }
+
+    @Override
+    public void chunkTick() {
+
+    }
+
+    @Override
+    public void flush() {
+
     }
 
     @Override
     public boolean isChunkGeneratedAt(int x, int z) {
-        return false;
+        return true;
     }
 }
