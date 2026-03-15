@@ -116,8 +116,7 @@ public class TestSandbox {
                             line(〇,〇,〇),
                             line(〇,〇,〇))
             },new String[]{
-                    layer(
-                            "",
+                    layer("",
                             "〇〇〇",
                             "〇〇〇",
                             "〇〇〇"
@@ -184,20 +183,17 @@ public class TestSandbox {
                             line(崗,崗,崗),
                             line(䒚,粆,砂))
             },new String[]{
-                    layer(
-                            "",
+                    layer("",
                             "石石石",
                             "石石石",
                             "石石石"
                     ),
-                    layer(
-                            "",
+                    layer("",
                             "〇〇〇",
                             "〇〇〇",
                             "〇〇〇"
                     ),
-                    layer(
-                            "",
+                    layer("",
                             "閃 閃 閃",
                             "崗 崗 崗",
                             "䒚0粆0砂0"

@@ -25,50 +25,24 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.asm.mixin;
+package top.qiguaiaaaa.geocraft_test.mixin;
 
-import org.spongepowered.asm.logging.ILogger;
-import org.spongepowered.asm.mixin.MixinEnvironment;
-import org.spongepowered.asm.service.mojang.LoggerAdapterLog4j2;
-import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
-import top.qiguaiaaaa.geocraft.api.util.APIUtil;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import top.qiguaiaaaa.geocraft_test.tests.TestMixinEnvironment;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author QiguaiAAAA
  */
-public class MixinServiceTestEnv extends MixinServiceLaunchWrapper {
+@Mixin(value = TestMixinEnvironment.class,remap = false)
+public class MixinTestMixinEnvironment {
 
-    @Override
-    public String getName() {
-        return "GeoTestEnv";
-    }
-
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
-    public MixinEnvironment.Phase getInitialPhase() {
-        return MixinEnvironment.Phase.PREINIT;
-    }
-
-//    @Override
-//    protected ILogger createLogger(final @Nonnull String name) {
-//        return new LoggerAdapterLog4j2(name){
-//            @Override
-//            public void debug(final @Nonnull String message,final @Nonnull Object... params) {
-//                super.debug(APIUtil.callerInfo(1) + " -->" +message, params);
-//            }
-//        };
-//    }
-
-    @Override
-    public Collection<String> getPlatformAgents() {
-        return Collections.singletonList("top.qiguaiaaaa.geocraft_test.asm.mixin.MixinPlatformAgentTestEnv");
+    @Inject(method = "add",at = @At("HEAD"),cancellable = true)
+    public void injectAdd(final int a, final int b,final @Nonnull CallbackInfoReturnable<Integer> cir){
+        cir.setReturnValue(a - b);
     }
 }

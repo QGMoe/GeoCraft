@@ -151,7 +151,7 @@ public final class MockBlocks {
     }
 
     @SuppressWarnings("unused")
-    public static final class FiniteFluids{
+    public static final class VanillaFluids {
         public static final MockSandboxEnvBuilder<?> BUILDER;
 
         public static final FiniteFlowingVanilla WATER_FLOWING = MockBlockLiquid.create(b ->
@@ -249,7 +249,12 @@ public final class MockBlocks {
             registerToMinecraft("WATER",9,STATIC_WATER).setHardness(100.0F).setLightOpacity(3);
             registerToMinecraft("FLOWING_LAVA",10,DYNAMIC_LAVA).setHardness(100.0F).setLightLevel(1.0F).setLightOpacity(3);
             registerToMinecraft("LAVA",11,STATIC_LAVA).setHardness(100.0F).setLightLevel(1.0F).setLightOpacity(3);
-            BUILDER = MockSandboxEnvBuilder.create("Fluid Blocks").withStateData(Bases.BUILDER).withStateData(FiniteFluids.class);
+            BUILDER = MockSandboxEnvBuilder.create("Vanilla Fluid Blocks").withStateData(Bases.BUILDER).withStateData(VanillaFluids.class);
+        }
+
+        @Nonnull
+        public static FiniteFlowingVanilla getFlowingByMaterial(final @Nonnull Material material){
+            return material.isLiquid()?material == Material.WATER?WATER_FLOWING:LAVA_FLOWING:Assertions.fail("Unknown Liquid Type!");
         }
     }
 
@@ -282,7 +287,7 @@ public final class MockBlocks {
     static {
         BUILDER_ALL = MockSandboxEnvBuilder.create("Minecraft Blocks")
                 .withStateData(Bases.class)
-                .withStateData(FiniteFluids.class)
+                .withStateData(VanillaFluids.class)
                 .withStateData(GeoSnows.class);
     }
 

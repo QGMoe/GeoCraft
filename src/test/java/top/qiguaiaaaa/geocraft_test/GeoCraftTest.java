@@ -41,7 +41,9 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.Mixins;
 import top.qiguaiaaaa.geocraft_test.assets.MockBlocks;
+import top.qiguaiaaaa.geocraft_test.tests.TestMixinEnvironment;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -83,8 +85,14 @@ public class GeoCraftTest {
         Launch.classLoader.registerTransformer("top.qiguaiaaaa.geocraft_test.asm.TestEnvTransformer");
 
         LOGGER.info("Initialising Mixins");
+        System.setProperty("mixin.env.remapRefMap", "true"); //开发环境映射
         System.setProperty("mixin.service", "top.qiguaiaaaa.geocraft_test.asm.mixin.MixinServiceTestEnv");
         MixinBootstrap.init();
+
+        GeoCraftTest.LOGGER.info("Current Registered transformers:");
+        Launch.classLoader.getTransformers().forEach(transform -> GeoCraftTest.LOGGER.info(transform.getClass().getName()));
+
+        Mixins.addConfiguration("mixin/mixins.geocraft.test.mixin-test.json");
 
         LOGGER.info("Transforming to LaunchClassLoader");
         final @Nonnull Class<GeoCraftTest> self = (Class<GeoCraftTest>) Launch.classLoader.loadClass("top.qiguaiaaaa.geocraft_test.GeoCraftTest");
@@ -100,6 +108,12 @@ public class GeoCraftTest {
         LOGGER.info("Testing Transformers");
         final @Nullable ResourceLocation testObj = GameData.checkPrefix("minecraft:test",false);
         Assertions.assertNull(testObj,"Inject Failed!");
+
+        // TODO: Make Mixin Work
+//        LOGGER.info("Testing Mixins");
+//        final int numberA = 10;
+//        final int numberB = 35;
+//        Assertions.assertEquals(numberA-numberB, TestMixinEnvironment.add(numberA,numberB), "Mixin Environment Initialisation Failed");
 
         stage = Stage.POST_INIT;
         LOGGER.info("Post Initialisation begin");
@@ -125,6 +139,11 @@ public class GeoCraftTest {
         LOGGER.info("Test Environment Initialised On LaunchClassLoader");
     }
 
+    public static void run(final @Nonnull String testEntryClass, final @Nonnull String testEntryPoint)
+            throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        run(testEntryClass,testEntryPoint,Pair.of(new Class<?>[]{},new Object[]{}));
+    }
+
     public static void run(final @Nonnull String testEntryClass, final @Nonnull String testEntryPoint,final @Nonnull Pair<Class<?>[],Object[]> data)
             throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Assertions.assertEquals(Stage.TEST_AVAILABLE,stage);
@@ -141,8 +160,12 @@ public class GeoCraftTest {
         }
     }
 
+    public void test(final @Nonnull String methodName) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        run(this.getClass().getName(),methodName);
+    }
+
     public void test() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        run(this.getClass().getName(),Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner",Pair.of(new Class<?>[]{},new Object[]{}));
+        run(this.getClass().getName(),Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner");
     }
 
     public void test(final @Nonnull Pair<Class<?>[],Object[]> data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {

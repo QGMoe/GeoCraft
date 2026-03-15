@@ -357,7 +357,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
                 final int newDistance = getSingleSlopeDistance(worldIn,
                         facingPos$迭代用$mut.getX(),
                         y,
-                        facingPos$最外层$mut.getZ(),
+                        facingPos$迭代用$mut.getZ(),
                         distance + 1,
                         enumfacing.getOpposite());
                 if (newDistance < difficulty) difficulty = newDistance;

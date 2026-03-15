@@ -27,48 +27,29 @@
 
 package top.qiguaiaaaa.geocraft_test.asm.mixin;
 
-import org.spongepowered.asm.logging.ILogger;
-import org.spongepowered.asm.mixin.MixinEnvironment;
-import org.spongepowered.asm.service.mojang.LoggerAdapterLog4j2;
-import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
-import top.qiguaiaaaa.geocraft.api.util.APIUtil;
+import org.spongepowered.asm.launch.platform.IMixinPlatformServiceAgent;
+import org.spongepowered.asm.launch.platform.MixinPlatformAgentAbstract;
+import org.spongepowered.asm.launch.platform.container.IContainerHandle;
+import org.spongepowered.asm.util.Constants;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author QiguaiAAAA
  */
-public class MixinServiceTestEnv extends MixinServiceLaunchWrapper {
-
+public class MixinPlatformAgentTestEnv extends MixinPlatformAgentAbstract implements IMixinPlatformServiceAgent {
     @Override
-    public String getName() {
-        return "GeoTestEnv";
+    public void init() {
+        // do nothing
     }
 
     @Override
-    public boolean isValid() {
-        return true;
+    public String getSideName() {
+        return Constants.SIDE_UNKNOWN;
     }
 
     @Override
-    public MixinEnvironment.Phase getInitialPhase() {
-        return MixinEnvironment.Phase.PREINIT;
-    }
-
-//    @Override
-//    protected ILogger createLogger(final @Nonnull String name) {
-//        return new LoggerAdapterLog4j2(name){
-//            @Override
-//            public void debug(final @Nonnull String message,final @Nonnull Object... params) {
-//                super.debug(APIUtil.callerInfo(1) + " -->" +message, params);
-//            }
-//        };
-//    }
-
-    @Override
-    public Collection<String> getPlatformAgents() {
-        return Collections.singletonList("top.qiguaiaaaa.geocraft_test.asm.mixin.MixinPlatformAgentTestEnv");
+    public Collection<IContainerHandle> getMixinContainers() {
+        return null;
     }
 }
