@@ -78,11 +78,11 @@ public final class MathUtil {
         return cp[loc-1];
     }
 
-    public static boolean inRange(int a,int b,int c){
-        if(b>c){
-            b = (c = (b = b ^ c) ^ c) ^ b;
+    public static boolean inRange(final int n,int l,int r){
+        if(l>r){
+            l = (r = (l = l ^ r) ^ r) ^ l;
         }
-        return a>=b && a <= c;
+        return n>=l && n <= r;
     }
 
     @Nullable

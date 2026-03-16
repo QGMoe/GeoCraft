@@ -39,8 +39,4 @@ public final class APIMathUtil {
             return Math.min(num, max);
         }
     }
-
-    public static int getModifiedFlag(int flag,int disabled,int enabled){
-        return (flag | enabled) & ~disabled;
-    }
 }
