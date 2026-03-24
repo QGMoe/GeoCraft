@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.reality.block;
+package top.qiguaiaaaa.geocraft.mixin.finite.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;

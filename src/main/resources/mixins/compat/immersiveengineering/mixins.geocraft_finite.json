@@ -1,0 +1,13 @@
+{
+  "package": "top.qiguaiaaaa.geocraft.mixin.finite.mod.immersiveengineering",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "BlockIEFluidConcreteMixin",
+    "TileEntityFluidPlacerMixin",
+    "UtilsMixin"
+  ],
+  "client": [
+  ]
+}

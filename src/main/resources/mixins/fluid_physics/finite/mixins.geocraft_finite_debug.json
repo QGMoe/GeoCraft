@@ -1,5 +1,5 @@
 {
-  "package": "top.qiguaiaaaa.geocraft.mixin.reality",
+  "package": "top.qiguaiaaaa.geocraft.mixin.finite",
   "required": false,
   "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.geocraft.refmap.json",

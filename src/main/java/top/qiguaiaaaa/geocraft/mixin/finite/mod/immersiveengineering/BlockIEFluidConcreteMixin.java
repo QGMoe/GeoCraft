@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.reality.mod.immersiveengineering;
+package top.qiguaiaaaa.geocraft.mixin.finite.mod.immersiveengineering;
 
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluid;
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluidConcrete;
@@ -54,7 +54,7 @@ public class BlockIEFluidConcreteMixin extends BlockIEFluid implements IBlockFlu
         super(name, fluid, material);
     }
 
-    @Inject(method = "func_180650_b",at = @At("HEAD"),cancellable = true,remap = false)
+    @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true,remap = true)
     public void updateTick(World world, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();

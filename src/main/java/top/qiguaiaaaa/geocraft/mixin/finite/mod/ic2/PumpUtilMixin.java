@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.reality.mod.ic2;
+package top.qiguaiaaaa.geocraft.mixin.finite.mod.ic2;
 
 import ic2.core.util.PumpUtil;
 import net.minecraft.util.math.BlockPos;

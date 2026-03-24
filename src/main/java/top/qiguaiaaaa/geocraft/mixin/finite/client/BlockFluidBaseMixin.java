@@ -25,44 +25,60 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.reality.mod.immersiveengineering;
+package top.qiguaiaaaa.geocraft.mixin.finite.client;
 
-import blusunrize.immersiveengineering.common.util.Utils;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.MapColor;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.IFluidBlock;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-@Mixin(value = Utils.class,remap = false)
-public class UtilsMixin {
-    @Inject(method = "drainFluidBlock",at= @At("HEAD"),cancellable = true,remap = false)
-    private static void drainFluidBlock(World world, BlockPos pos, boolean doDrain, CallbackInfoReturnable<FluidStack> cir) {
-        Block b = world.getBlockState(pos).getBlock();
-        Fluid f = FluidRegistry.lookupFluidForBlock(b);
 
-        if(f!=null) {
-            if(!GeoFluidSetting.isFluidToBePhysical(f)) return;
-            if(b instanceof IFluidBlock) {
-                if(((IFluidBlock)b).canDrain(world, pos))
-                    cir.setReturnValue(((IFluidBlock)b).drain(world, pos, doDrain));
-                else
-                    cir.setReturnValue(null);
-            } else {
-                int meta = b.getMetaFromState(world.getBlockState(pos));
-                int quanta = 8-meta;
-                if(doDrain)
-                    world.setBlockToAir(pos);
-                cir.setReturnValue(new FluidStack(f, quanta* FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME));
-            }
-        } else cir.setReturnValue(null);
-        cir.cancel();
+/**
+ * @author QiguaiAAAA
+ */
+@Mixin(value = BlockFluidBase.class)
+public abstract class BlockFluidBaseMixin extends Block {
+    @Final
+    @Shadow(remap = false)
+    protected String fluidName;
+
+    @Shadow(remap = false)
+    protected int densityDir;
+
+    public BlockFluidBaseMixin(Material blockMaterialIn, MapColor blockMapColorIn) {
+        super(blockMaterialIn, blockMapColorIn);
     }
+
+    @Inject(method = "shouldSideBeRendered",at = @At("HEAD"),cancellable = true)
+    public void 天圆地方$shouldSideBeRendered(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side, CallbackInfoReturnable<Boolean> cir) {
+        cir.cancel();
+        IBlockState neighbor = world.getBlockState(pos.offset(side));
+        Fluid neighborFluid = FluidUtil.getFluid(neighbor);
+
+        if(neighborFluid != null){
+            if(neighborFluid.getName().equals(fluidName)){
+                cir.setReturnValue(false);
+                return;
+            }
+            cir.setReturnValue(true);
+            return;
+        }
+        if (side == (densityDir <0 ? EnumFacing.UP : EnumFacing.DOWN)) {
+            cir.setReturnValue(true);
+            return;
+        }
+        cir.setReturnValue(super.shouldSideBeRendered(state, world, pos, side));
+    }
+
 }

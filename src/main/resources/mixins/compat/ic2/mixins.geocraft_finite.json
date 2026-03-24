@@ -1,11 +1,11 @@
 {
-  "package": "top.qiguaiaaaa.geocraft.mixin.reality.mod.immersiveengineering",
+  "package": "top.qiguaiaaaa.geocraft.mixin.finite.mod.ic2",
   "required": true,
   "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.geocraft.refmap.json",
   "mixins": [
-    "BlockIEFluidConcreteMixin",
-    "UtilsMixin"
+    "LiquidUtilMixin",
+    "PumpUtilMixin"
   ],
   "client": [
   ]

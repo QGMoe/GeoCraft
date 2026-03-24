@@ -113,7 +113,7 @@ public final class FiniteEventHandler {
         IBlockState state = worldIn.getBlockState(pos);
         if (item == Items.BUCKET) {
             if(!FluidUtil.isFluid(state)) pos = pos.offset(raytraceresult.sideHit); //非满的水方块会透过去
-            /// 上面的逻辑可能可以去掉了，因为{@link top.qiguaiaaaa.geocraft.mixin.reality.block.BlockLiquidMixin#天圆地方$redirectCollideCheck(Integer)}
+            /// 上面的逻辑可能可以去掉了，因为{@link top.qiguaiaaaa.geocraft.mixin.finite.block.BlockLiquidMixin#天圆地方$redirectCollideCheck(Integer)}
             if (!worldIn.isBlockModifiable(playerIn, pos)) return;
 
             FluidStack stack = FluidOperationUtil.tryDrainFluid(worldIn,pos, Fluid.BUCKET_VOLUME,bucketFindFluidMaxDistance.getValue(),false);

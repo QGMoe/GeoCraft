@@ -57,7 +57,7 @@ import static top.qiguaiaaaa.geocraft_test.assets.MockBlocks.VanillaFluids.getFl
 /**
  * @author QiguaiAAAA
  */
-public final class TestVanillaSlopeAlgorithm extends FluidPhysicsTest {
+public final class TestVanillaSlopeAlgorithm extends FiniteModeTest {
     public static Map<String,EnumFacing> FACING_ALIASES = Maps.newHashMap();
 
     @SuppressWarnings("unused")

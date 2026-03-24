@@ -57,18 +57,7 @@ import static top.qiguaiaaaa.geocraft_test.assets.MockBlocks.VanillaFluids.getFl
 /**
  * @author QiguaiAAAA
  */
-public final class TestPlaceFluid extends FluidPhysicsTest {
-
-    @BeforeAll
-    public static void initCurrentTest() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        run(TestPlaceFluid.class.getName(),"initCurrentTest_Inner");
-    }
-
-    @SuppressWarnings("unused")
-    public static void initCurrentTest_Inner(){
-        FluidPhysicsMode.setCurrentMode(FluidPhysicsMode.MORE_REALITY);
-    }
-
+public final class TestPlaceFluid extends FiniteModeTest {
     @ParameterizedTest
     @MethodSource("pullDataForTestPlaceFluid")
     public void testPlaceFluid(final @Nonnull PlaceFluidTestData data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {

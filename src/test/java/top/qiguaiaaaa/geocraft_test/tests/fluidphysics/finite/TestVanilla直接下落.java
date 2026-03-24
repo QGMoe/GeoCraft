@@ -52,7 +52,7 @@ import static top.qiguaiaaaa.geocraft_test.assets.MockBlocks.VanillaFluids.*;
 /**
  * @author QiguaiAAAA
  */
-public final class TestVanilla直接下落 extends FluidPhysicsTest {
+public final class TestVanilla直接下落 extends FiniteModeTest {
     @ParameterizedTest
     @MethodSource("pullDataFor测试直接下落")
     public void 测试直接下落(final @Nonnull 直接下落测试数据 data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {

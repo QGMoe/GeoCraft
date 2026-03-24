@@ -46,9 +46,9 @@ public final class MixinHandler {
     private static final GeoCompatInfo BRIGO_COMPAT = new GeoCompatInfo("brigo","top.qiguaiaaaa.geocraft.command.BrigoCompat");
 
     public static final Set<GeoCompatInfo> COMPATS_UNDER_FINITE = Collections.unmodifiableSet(Sets.newHashSet(
-            new GeoCompatInfo("ic2",null,"mixins/ic2/mixins.geocraft_reality.json")
+            new GeoCompatInfo("ic2",null, "mixins/compat/ic2/mixins.geocraft_finite.json")
                     .enableIf(FluidPhysicsConfig.enableSupportForIC2::getValue),
-            new GeoCompatInfo("immersiveengineering",null,"mixins/immersiveengineering/mixins.geocraft_reality.json")
+            new GeoCompatInfo("immersiveengineering",null, "mixins/compat/immersiveengineering/mixins.geocraft_finite.json")
                     .enableIf(FluidPhysicsConfig.enableSupportForIE::getValue),
             new GeoCompatInfo("toughasnails",
                     "top.qiguaiaaaa.geocraft.compat.toughasnails.TANCompat",

@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.reality;
+package top.qiguaiaaaa.geocraft.mixin.finite;
 
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
