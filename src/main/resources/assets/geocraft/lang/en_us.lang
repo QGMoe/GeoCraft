@@ -13,6 +13,8 @@ geocraft.command.atmosphere.arg.block_to_query=需要查询的方块状态
 geocraft.command.atmosphere.arg.util_name=Util Name
 geocraft.command.atmosphere.arg.time=Duration
 geocraft.command.atmosphere.arg.file_name=File Name
+geocraft.command.geotest.arg.test_id=测试ID
+geocraft.command.geotest.arg.target=测试目标
 
 geocraft.command.common.comment.doit=是否真的执行此项操作
 geocraft.command.atmosphere.comment.time=追踪的时长，单位为大气刻
@@ -90,5 +92,16 @@ geocraft.command.fluidphysics.evapration.amount=Estimated Amount:
 #行末空格 结束
 geocraft.command.fluidphysics.evapration.evaporated=%s mB Water (%s Quanta) is evaporated
 geocraft.command.fluidphysics.evapration.vanilla.evaporated=%s mB Water is evaporated
+
+geocraft.command.geotest.run.failed=测试 %s 失败
+geocraft.command.geotest.run.success=测试 %s 成功
+geocraft.command.geotest.run.pass=环境条件未满足，测试 %s 并未进行
+
+geocraft.geotest.finite_fluid_drain_mixin_test.pass=位置 %s 的方块状态为 %s，不是 BlockLiquid 或其子类,或对应流体不是水或熔岩
+geocraft.geotest.finite_fluid_drain_mixin_test.pass_because_config=位置 %s 的流体为 %s，在配置中保留了原版的桶效果或流体物理,不能进行测试
+geocraft.geotest.finite_fluid_drain_mixin_test.handler=位置 %s 的 IFluidHandler 为 %s 的实现
+geocraft.geotest.finite_fluid_drain_mixin_test.failed=注入校验失败，获得的对象不为 %s 类或其子类
+
+geocraft.geomessages.report_at_github=前往 GitHub 向原作者报告问题
 
 geocraft.fluid.carbon_dioxide=Carbon Dioxide

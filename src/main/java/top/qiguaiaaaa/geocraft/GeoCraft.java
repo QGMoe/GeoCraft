@@ -43,6 +43,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemRunner;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereRegionFileCache;
 import top.qiguaiaaaa.geocraft.command.CommandAtmosphere;
 import top.qiguaiaaaa.geocraft.command.CommandFluidPhysics;
+import top.qiguaiaaaa.geocraft.command.CommandGeoTest;
 import top.qiguaiaaaa.geocraft.compat.GeoCompatLoader;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
@@ -52,7 +53,7 @@ import top.qiguaiaaaa.geocraft.world.gen.GeoCraftPostPopulatingGenerator;
 
 import javax.annotation.Nonnull;
 
-@Mod(modid = GeoCraft.MODID, name = GeoCraft.NAME, version = GeoCraft.VERSION, dependencies = "required:mixinbooter;required:nickelapi",acceptableRemoteVersions = "*",useMetadata = true)
+@Mod(modid = GeoCraft.MODID, name = GeoCraft.NAME, version = GeoCraft.VERSION, dependencies = "required:mixinbooter;required:nickelapi@[0.0.2,)",acceptableRemoteVersions = "*",useMetadata = true)
 public class GeoCraft {
     public static final String MODID = "geocraft";
     public static final String NAME = "Geo Craft";
@@ -86,6 +87,7 @@ public class GeoCraft {
     public void onServerStarting(final @Nonnull FMLServerStartingEvent event){
         event.registerServerCommand(CommandAtmosphere.create(event.getServer()));
         event.registerServerCommand(CommandFluidPhysics.create());
+        event.registerServerCommand(CommandGeoTest.create());
 //        event.registerServerCommand(new CommandQueryBlockState());
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncRun();

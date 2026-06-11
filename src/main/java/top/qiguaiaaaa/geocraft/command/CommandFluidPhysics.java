@@ -35,22 +35,19 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
-import top.qiguaiaaaa.nickel.command.builder.CommandBuilder;
-import top.qiguaiaaaa.nickel.command.builder.INodeBuilder;
-import top.qiguaiaaaa.nickel.command.builder.execute.RelayExecuteNodeBuilder;
-import top.qiguaiaaaa.nickel.command.builder.execute.SimpleCommandExecutor;
-import top.qiguaiaaaa.nickel.command.context.ExecuteContext;
-import top.qiguaiaaaa.nickel.command.node.ISmartNode;
-import top.qiguaiaaaa.nickel.command.node.parameter.generic.StringNode;
+import moe.qingu.nickel.command.builder.CommandBuilder;
+import moe.qingu.nickel.command.builder.INodeBuilder;
+import moe.qingu.nickel.command.builder.execute.RelayExecuteNodeBuilder;
+import moe.qingu.nickel.command.builder.execute.SimpleCommandExecutor;
+import moe.qingu.nickel.command.context.ExecuteContext;
+import moe.qingu.nickel.command.node.ISmartNode;
+import moe.qingu.nickel.command.node.parameter.generic.StringNode;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
@@ -63,12 +60,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
+import static moe.qingu.nickel.command.Nodes.*;
+import static moe.qingu.nickel.text.Texts.*;
 import static net.minecraft.block.BlockLiquid.LEVEL;
 import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.AtmosphereCommandContext.ACCESSOR;
 import static top.qiguaiaaaa.geocraft.command.CommandFluidPhysics.FluidPhysicsCommandExecutor.CHECK_ATMOSPHERE_ACCESSIBILITY;
 import static top.qiguaiaaaa.geocraft.command.CommandFluidPhysics.FluidPhysicsCommandExecutor.GET_LIGHTED_ATMOSPHERE_ACCESSOR;
 import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
-import static top.qiguaiaaaa.nickel.command.Nodes.*;
 
 /**
  * @author QiguaiAAAA
@@ -174,21 +172,19 @@ public final class CommandFluidPhysics {
                 final Object2DoubleArrayMap<String> reasons = new Object2DoubleArrayMap<>();
                 final double possibility = this.gatherEvaporationStatus(state,reasons,accessor);
 
-                final ITextComponent title = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.title",pos.getX(),pos.getY(),pos.getZ());
-                title.getStyle().setColor(TextFormatting.YELLOW).setBold(true);
-                ctx.getSender().sendMessage(title);
-                final ITextComponent possibilityDisplay = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.possibility.pre");
-                final ITextComponent possibilityContent = new TextComponentString(possibility * 100d +" %");
-                possibilityContent.getStyle().setColor(TextFormatting.AQUA);
-                possibilityDisplay.appendSibling(possibilityContent);
-                ctx.getSender().sendMessage(possibilityDisplay);
+                ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.evapration.title").arg(pos.getX(),pos.getY(),pos.getZ())
+                        .color(TextFormatting.YELLOW).bold(true).done());
+                ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.evapration.possibility.pre")
+                        .then(plain(possibility * 100d +" %").color(TextFormatting.AQUA))
+                        .done());
                 reasons.forEach((reason,delta)->{
-                    final ITextComponent reasonDisplay = new TextComponentTranslation(reason).appendText(" : ");
-                    reasonDisplay.getStyle().setItalic(true);
-                    final ITextComponent deltaDisplay = new TextComponentString((delta>=0?"+":"-")+String.format("%.4f %%",delta*100d));
-                    deltaDisplay.getStyle().setColor(delta>0?TextFormatting.GREEN:delta<0?TextFormatting.RED:TextFormatting.GRAY).setUnderlined(true);
-                    reasonDisplay.appendSibling(deltaDisplay);
-                    ctx.getSender().sendMessage(reasonDisplay);
+                    ctx.getSender().sendMessage(translation(reason)
+                            .then(plain(" : "))
+                            .italic(true)
+                            .then(plain((delta>=0?"+":"-")+String.format("%.4f %%",delta*100d))
+                                    .color(delta>0?TextFormatting.GREEN:delta<0?TextFormatting.RED:TextFormatting.GRAY)
+                                    .underlined(true))
+                            .done());
                 });
                 if(doEvaporate) this.evaporateFor(state,accessor,ctx);
             }
@@ -235,9 +231,10 @@ public final class CommandFluidPhysics {
                 final @Nonnull IBlockState newState = FluidPhysicsCoreFinite.evaporateWater(state,accessor.getWorld().rand,accessor);
                 accessor.getWorld().setBlockState(accessor.getPos(),newState);
                 final int quanta = newState == Blocks.AIR.getDefaultState()?Math.max(8-state.getValue(LEVEL),0):(newState.getValue(LEVEL)-state.getValue(LEVEL));
-                final ITextComponent evaporatedInfo = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.evaporated",quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,quanta);
-                evaporatedInfo.getStyle().setColor(quanta <= 0?TextFormatting.GRAY:TextFormatting.GREEN);
-                ctx.getSender().sendMessage(evaporatedInfo);
+                ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.evapration.evaporated")
+                        .arg(quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,quanta)
+                        .color(quanta <= 0?TextFormatting.GRAY:TextFormatting.GREEN)
+                        .done());
             }
         },
         CLASSIC(FluidPhysicsMode.VANILLA_LIKE){
@@ -250,14 +247,15 @@ public final class CommandFluidPhysics {
                 final @Nonnull IBlockState state = getWaterState(worldIn,pos);
                 final int amount = this.getEstimatedEvaporateAmount(state,accessor);
 
-                final ITextComponent title = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.title",pos.getX(),pos.getY(),pos.getZ());
-                title.getStyle().setColor(TextFormatting.YELLOW).setBold(true);
-                ctx.getSender().sendMessage(title);
-                final ITextComponent amountDisplay = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.amount");
-                final ITextComponent amountContent = new TextComponentString(amount +" mB");
-                amountContent.getStyle().setColor(TextFormatting.AQUA);
-                amountDisplay.appendSibling(amountContent);
-                ctx.getSender().sendMessage(amountDisplay);
+                ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.evapration.title")
+                        .arg(pos.getX(),pos.getY(),pos.getZ())
+                        .color(TextFormatting.YELLOW)
+                        .bold(true)
+                        .done());
+                ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.evapration.amount")
+                        .then(plain(amount +" mB")
+                                .color(TextFormatting.AQUA))
+                        .done());
                 if(doEvaporate) this.evaporateFor(state,accessor,ctx);
             }
 
@@ -297,9 +295,8 @@ public final class CommandFluidPhysics {
 
             final void evaporateFor(@Nonnull final IBlockState state,@Nonnull final IAtmosphereAccessor accessor,@Nonnull final ExecuteContext ctx){
                 final int amount = getRealEvaporateAmount(state,accessor);
-                final ITextComponent evaporatedInfo = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.vanilla.evaporated",amount);
-                evaporatedInfo.getStyle().setColor(amount <= 0?TextFormatting.GRAY:TextFormatting.GREEN);
-                ctx.getSender().sendMessage(evaporatedInfo);
+                ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.evapration.vanilla.evaporated").arg(amount)
+                        .color(amount <= 0?TextFormatting.GRAY:TextFormatting.GREEN).done());
             }
         },
         VANILLA(FluidPhysicsMode.VANILLA){

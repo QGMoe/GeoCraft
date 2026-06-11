@@ -49,7 +49,8 @@ import javax.annotation.Nonnull;
 
 @Mixin(value = FluidUtil.class,remap = false)
 public class ForgeFluidUtilMixin {
-    @Redirect(method = {"getFluidHandler","getFluidBlockHandler"},
+    @Redirect(method = {"Lnet/minecraftforge/fluids/FluidUtil;getFluidHandler(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)Lnet/minecraftforge/fluids/capability/IFluidHandler;",
+            "getFluidBlockHandler"},
             at= @At(value = "NEW",
                     target = "net/minecraftforge/fluids/capability/wrappers/FluidBlockWrapper"),remap = false)
     private static FluidBlockWrapper 天圆地方$getFluidBlockHandlerMod(final @Nonnull IFluidBlock block, final @Nonnull World world, final @Nonnull BlockPos pos) {
@@ -65,7 +66,8 @@ public class ForgeFluidUtilMixin {
         }else return true;
     }
 
-    @Redirect(method = {"getFluidHandler","getFluidBlockHandler"},
+    @Redirect(method = {"Lnet/minecraftforge/fluids/FluidUtil;getFluidHandler(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)Lnet/minecraftforge/fluids/capability/IFluidHandler;",
+            "getFluidBlockHandler"},
             at=@At(value = "NEW",
                     target = "net/minecraftforge/fluids/capability/wrappers/BlockLiquidWrapper"),remap = false)
     private static BlockLiquidWrapper 天圆地方$Inject$getFluidBlockHandlerVanilla(final @Nonnull BlockLiquid block, final @Nonnull World world, final @Nonnull BlockPos pos) {

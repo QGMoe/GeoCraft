@@ -37,12 +37,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
-import top.qiguaiaaaa.nickel.command.context.CommandContext;
-import top.qiguaiaaaa.nickel.command.context.ExecuteContext;
-import top.qiguaiaaaa.nickel.command.context.SuggestContext;
-import top.qiguaiaaaa.nickel.command.node.parameter.minecraft.MinecraftVec3Node;
-import top.qiguaiaaaa.nickel.command.node.parameter.minecraft.Vec3dNode;
-import top.qiguaiaaaa.nickel.command.utils.ValidChecker;
+import moe.qingu.nickel.command.context.CommandContext;
+import moe.qingu.nickel.command.context.ExecuteContext;
+import moe.qingu.nickel.command.context.SuggestContext;
+import moe.qingu.nickel.command.node.parameter.minecraft.MinecraftVec3Node;
+import moe.qingu.nickel.command.node.parameter.minecraft.Vec3dNode;
+import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;

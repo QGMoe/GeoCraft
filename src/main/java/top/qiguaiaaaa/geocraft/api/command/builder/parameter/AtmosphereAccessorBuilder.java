@@ -29,7 +29,7 @@ package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.command.node.parameter.AtmosphereAccessorNode;
-import top.qiguaiaaaa.nickel.command.builder.parameter.minecraft.MinecraftVec3NodeBuilder;
+import moe.qingu.nickel.command.builder.parameter.minecraft.MinecraftVec3NodeBuilder;
 
 import javax.annotation.Nonnull;
 
