@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.exception;
 
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.text.ITextComponent;
@@ -51,6 +52,12 @@ public class NickelSyntaxException extends SyntaxErrorException implements INick
         this.fromBranch = fromBranch;
         this.fromNode = fromNode;
         this.appendix = null;
+    }
+
+    public NickelSyntaxException(@Nonnull final CommandBranch fromBranch, @Nonnull final IDocumentaryNode fromNode, @Nonnull final TextBuilder<?,?> appendix) {
+        this.fromBranch = fromBranch;
+        this.fromNode = fromNode;
+        this.appendix = appendix.done();
     }
 
     public NickelSyntaxException(@Nonnull final CommandBranch fromBranch, @Nonnull final IDocumentaryNode fromNode, @Nonnull final ITextComponent appendix) {

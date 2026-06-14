@@ -27,16 +27,21 @@
 
 package top.qiguaiaaaa.geocraft.command;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import moe.qingu.nickel.command.builder.CommandBuilder;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.node.parameter.generic.StringNode;
+import moe.qingu.nickel.command.node.parameter.generic.UUIDNode;
 import moe.qingu.nickel.text.TextBuilder;
 import moe.qingu.nickel.text.TranslationTextBuilder;
 import moe.qingu.nickel.text.hover.HoverEventBuilder;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
@@ -51,7 +56,10 @@ import top.qiguaiaaaa.geocraft.configs.ConfigurationLoader;
 
 import javax.annotation.Nonnull;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static moe.qingu.nickel.command.Nodes.*;
 import static moe.qingu.nickel.text.Texts.*;
@@ -63,7 +71,11 @@ public final class CommandGeoConfig {
     public static final String GEO_CONFIG_COMMAND_NAME = "geoconfig";
     public static final String GEO_CONFIG_PERMISSION_NODE = "geocraft.command."+GEO_CONFIG_COMMAND_NAME;
 
+    private static final UUID INIT_REQUEST = UUID.fromString("f47ac10b-58cc-4372-a567-0e02b2c3d479");
     private static final HashMap<Class<? extends ConfigItem<?,?>>, Processor> applicationProcessors = new HashMap<>();
+    private static final Cache<UUID,Boolean> requestCaches = CacheBuilder.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .build();
 
     static{
         putProcessor(ConfigString.class, ConfigItem::setValue);
@@ -145,6 +157,17 @@ public final class CommandGeoConfig {
                                 .translate("geocraft.command.geoconfig.arg.config_value")
                                 .then(execute(CommandGeoConfig::applyChanges))
                         ).done()
+                        .literal("reset")
+                        .require(4)
+                        .requirePlayer(true)
+                        .require(GEO_CONFIG_PERMISSION_NODE+".reset").allow(DefaultPermissionLevel.OP).register()
+                        .then(uuid("request_id")
+                                .asOptional()
+                                .suggest(Collections.emptyList())
+                                .defaultAs(INIT_REQUEST)
+                                .translate("geocraft.command.geoconfig.arg.request_id")
+                                .then(execute(CommandGeoConfig::resetToDefault)))
+                        .done()
                         .literal("query").then(execute(CommandGeoConfig::showInfo)).done()
                         .execute(CommandGeoConfig::showInfo)
                         .done())
@@ -170,16 +193,32 @@ public final class CommandGeoConfig {
     @Nonnull
     private static TextBuilder<?,?> valueTextOf(final @Nonnull ConfigItem<?,?> item){
         final String value = item.getValue().toString();
-        return value.codePoints().count()<100?plain(value).color(TextFormatting.AQUA):
+        return value.codePoints().count()<300?plain(value).color(TextFormatting.AQUA):
                 translation("geocraft.command.geoconfig.info.cur_value.out_of_range").color(TextFormatting.GOLD);
+    }
+
+    @Nonnull
+    private static TextBuilder<?,?> defaultValueTextOf(final @Nonnull ConfigItem<?,?> item){
+        final String value = item.getValue().toString();
+        return value.codePoints().count()<500?plain(value).color(TextFormatting.AQUA):
+                translation("geocraft.command.geoconfig.info.cur_value.out_of_range").color(TextFormatting.GOLD);
+    }
+
+    @Nonnull
+    private static Object statusTextOf(final @Nonnull ConfigItem<?,?> item){
+        return item.isDeprecated()?translation("geocraft.command.geoconfig.info.title.deprecation").color(TextFormatting.RED):
+                item.isBeta()?translation("geocraft.command.geoconfig.info.title.experimental").color(TextFormatting.GOLD):
+                        "";
     }
 
     public static void showInfo(@Nonnull final ExecuteContext ctx) {
         final ConfigItem<?,?> item = ctx.get("config_entry",ConfigItemNode.class);
         ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.info.title")
+                .arg(statusTextOf(item))
                 .arg(item.getPath())
                 .color(TextFormatting.AQUA)
                 .bold(true)
+                .strikethrough(item.isDeprecated())
                 .hoverTo(showComment(item))
                 .done());
         ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.info.type")
@@ -189,6 +228,9 @@ public final class CommandGeoConfig {
                 .done());
         ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.info.cur_value")
                 .arg(valueTextOf(item))
+                .hoverTo(HoverEvent.Action.SHOW_TEXT)
+                .content(translation("geocraft.command.geoconfig.info.default")
+                        .arg(defaultValueTextOf(item)))
                 .done());
     }
 
@@ -202,13 +244,11 @@ public final class CommandGeoConfig {
                 try {
                     ConfigurationLoader.save();
                 }catch (final @Nonnull RuntimeException e){
-                    GeoCraft.getLogger().error(e);
-                    ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.set.save_fail")
+                    GeoCraft.getLogger().error("Save Config Item Failed:",e);
+                    throw new NickelRuntimeException(translation("geocraft.command.geoconfig.set.save_fail")
                             .arg(valueTextOf(item))
                             .arg(e.getMessage())
-                            .color(TextFormatting.RED)
-                            .done());
-                    return;
+                            .color(TextFormatting.RED));
                 }
                 ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.set.success")
                         .arg(valueTextOf(item))
@@ -219,6 +259,52 @@ public final class CommandGeoConfig {
             }
         }
         throw new NickelRuntimeException(translation("geocraft.command.geoconfig.set.unsupported"));
+    }
+
+    public static void resetToDefault(@Nonnull final ExecuteContext ctx) throws CommandException {
+        final ConfigItem item = ctx.get("config_entry",ConfigItemNode.class);
+        final UUID request = ctx.get("request_id", UUIDNode.class);
+        if(request == INIT_REQUEST){
+            final UUID uuid = UUID.randomUUID();
+            requestCaches.put(uuid,Boolean.TRUE);
+            ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.reset.confirm.title")
+                    .arg(statusTextOf(item))
+                    .arg(item.getPath())
+                    .color(TextFormatting.GOLD).done());
+            ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.reset.confirm.default").arg(defaultValueTextOf(item)).done());
+            ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.reset.confirm.question")
+                    .arg(plain("[")
+                            .then(translation("geocraft.command.geoconfig.reset.confirm.button"))
+                            .then("]")
+                            .clickTo(ClickEvent.Action.SUGGEST_COMMAND)
+                            .then("/geoconfig "+item.getPath()+" reset "+uuid)
+                            .color(TextFormatting.AQUA))
+                    .done());
+        }else {
+            final Boolean status = requestCaches.getIfPresent(request);
+            if(status == null){
+                throw new NickelRuntimeException(translation("geocraft.command.geoconfig.reset.invalid_request").arg(request));
+            }
+            requestCaches.invalidate(request);
+            try{
+                item.setValue(item.getDefaultValue());
+            }catch (final RuntimeException e){
+                GeoCraft.getLogger().error("Reset Config Item Failed:",e);
+                throw new NickelRuntimeException(translation("geocraft.command.geoconfig.reset.failed_set").arg(e.getMessage()));
+            }
+            try {
+                ConfigurationLoader.save();
+            }catch (final @Nonnull RuntimeException e){
+                GeoCraft.getLogger().error("Save Reset Config Item Failed:",e);
+                throw new NickelRuntimeException(translation("geocraft.command.geoconfig.reset.save_fail")
+                        .arg(e.getMessage())
+                        .color(TextFormatting.RED));
+            }
+            ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.reset.success")
+                    .arg(modeTextOf(item))
+                    .color(TextFormatting.GREEN)
+                    .done());
+        }
     }
 
     @FunctionalInterface

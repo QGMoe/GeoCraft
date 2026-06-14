@@ -177,5 +177,10 @@ public interface HoverEventBuilder<S extends HoverEventBuilder<S>> {
         public P content(final @Nonnull ITextComponent text){
             return finalisation.apply(new HoverEvent(action,text));
         }
+
+        @Nonnull
+        public P content(final @Nonnull String text){
+            return finalisation.apply(new HoverEvent(action,plain(text).done()));
+        }
     }
 }

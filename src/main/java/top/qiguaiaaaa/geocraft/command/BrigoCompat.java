@@ -31,8 +31,7 @@ import dev.xhyrom.brigo.accessor.CommandHandlerExtras;
 import dev.xhyrom.brigo.command.CommandSource;
 import dev.xhyrom.brigo.shadow.brigadier.Command;
 import dev.xhyrom.brigo.shadow.brigadier.CommandDispatcher;
-import dev.xhyrom.brigo.shadow.brigadier.arguments.ArgumentType;
-import dev.xhyrom.brigo.shadow.brigadier.arguments.StringArgumentType;
+import dev.xhyrom.brigo.shadow.brigadier.arguments.*;
 import dev.xhyrom.brigo.shadow.brigadier.builder.ArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.builder.LiteralArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.builder.RequiredArgumentBuilder;
@@ -40,7 +39,11 @@ import dev.xhyrom.brigo.shadow.brigadier.tree.LiteralCommandNode;
 import net.minecraft.command.ICommandManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.LoaderState;
+import scala.Long;
 import top.qiguaiaaaa.geocraft.GeoCraft;
+import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
+import top.qiguaiaaaa.geocraft.configs.ConfigurationLoader;
+import top.qiguaiaaaa.geocraft.test.GeoTest;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -87,6 +90,8 @@ public final class BrigoCompat {
                     .redirect(root)));
         }
         if(manager.getCommands().containsKey(FLUID_PHYSICS_COMMAND_NAME)) registerFluidPhysics();
+        if(manager.getCommands().containsKey(CommandGeoTest.GEOTEST_COMMAND_NAME)) registerGeoTest();
+        if(manager.getCommands().containsKey(CommandGeoConfig.GEO_CONFIG_COMMAND_NAME)) registerGeoConfig();
         GeoCraft.getLogger().info("GeoCraft detected Brigo, Brigadier compat loaded.");
     }
 
@@ -94,21 +99,18 @@ public final class BrigoCompat {
     public static LiteralCommandNode<CommandSource> registerAtmosphere(){
         return register(literal(ATMOSPHERE_COMMAND_NAME)
                 .then(literal("set", Stream.concat(getPropertyList().stream(),CommandAtmosphere.SetConsumer.keySet().stream()).collect(Collectors.toList()),
-                        builder -> builder.then(argument(VALUE, doubleArg())
-                                .then(blockPos())
+                        builder -> builder.then(pos(argument(VALUE, doubleArg()),Function.identity())
                                 .executes(DO_NOTHING)))
                         .then(compatArgs(PROPERTY,VALUE,"x","y","z")))
                 .then(literal("add", Stream.concat(getPropertyList().stream(),CommandAtmosphere.AddConsumer.keySet().stream()).collect(Collectors.toList()),
-                        builder -> builder.then(argument(VALUE, doubleArg())
-                                .then(blockPos())
+                        builder -> builder.then(pos(argument(VALUE, doubleArg()),Function.identity())
                                 .executes(DO_NOTHING)))
                         .then(compatArgs(PROPERTY,VALUE,"x","y","z")))
                 .then(literal("query",new ArrayList<>(CommandAtmosphere.QueryConsumer.keySet()),
-                        builder -> builder.then(blockPos())
+                        builder -> pos(builder,Function.identity())
                                 .executes(DO_NOTHING)))
                 .then(literal("reset")
-                        .then(literal("temp")
-                                .then(blockPos())
+                        .then(pos(literal("temp"),Function.identity())
                                 .executes(DO_NOTHING)))
                 .then(literal("util")
                         .then(literal("block_info")
@@ -119,8 +121,7 @@ public final class BrigoCompat {
                         .then(literal("storage")))
                 .then(literal("track", Stream.concat(getPropertyList().stream(), Stream.of("temp","water","steam")).collect(Collectors.toList()),
                         builder -> builder.then(argument("duration",integer(1))
-                                .then(argument("file name",StringArgumentType.word())
-                                        .then(blockPos())
+                                .then(pos(argument("file name",StringArgumentType.word()),Function.identity())
                                         .executes(DO_NOTHING))))
                         .then(compatArgs(PROPERTY,"duration","file name","x","y","z")))
                 .then(literal("stop")
@@ -131,9 +132,35 @@ public final class BrigoCompat {
     public static void registerFluidPhysics(){
         register(literal(FLUID_PHYSICS_COMMAND_NAME)
                 .then(literal("query").then(literal("mode")))
-                .then(literal("operation").then(literal("evaporate")
-                        .then(compatArgs("x","y","z",DOIT))
-                        .executes(DO_NOTHING))));
+                .then(literal("operation")
+                        .then(pos(literal("evaporate"),posThen ->
+                                posThen.then(literal("do"))
+                                        .executes(DO_NOTHING))
+                                .executes(DO_NOTHING))));
+    }
+
+    public static void registerGeoTest(){
+        register(literal(CommandGeoTest.GEOTEST_COMMAND_NAME)
+                .then(literal("run",GeoTest.queryAll().stream().map(Object::toString).collect(Collectors.toList()), builder ->
+                        pos(builder,posThen ->
+                                posThen.then(argument("target",StringArgumentType.greedyString()))
+                                        .executes(DO_NOTHING))
+                                .executes(DO_NOTHING))));
+    }
+
+    public static void registerGeoConfig(){
+        register(literal(CommandGeoConfig.GEO_CONFIG_COMMAND_NAME)
+                .then(argument("config_item_path",StringArgumentType.word())
+                        .then(literal("query"))
+                        .then(literal("set")
+                                .then(argument("bool", BoolArgumentType.bool()))
+                                .then(argument("int", IntegerArgumentType.integer()))
+                                .then(argument("long", LongArgumentType.longArg()))
+                                .then(argument("double",DoubleArgumentType.doubleArg()))
+                                .then(argument("value",StringArgumentType.greedyString())))
+                        .then(literal("reset")
+                                .then(argument("request_id",StringArgumentType.word()))
+                                .executes(DO_NOTHING))));
     }
 
     @Nonnull
@@ -141,11 +168,6 @@ public final class BrigoCompat {
         final @Nonnull String literal = builder.getLiteral();
         dispatcher.getRoot().getChildren().removeIf(node -> node instanceof LiteralCommandNode<?> && literal.equals(((LiteralCommandNode<CommandSource>) node).getLiteral()));
         return dispatcher.register(builder);
-    }
-
-    @Nonnull
-    public static RequiredArgumentBuilder<CommandSource,String> blockPos(){
-        return argument("x y z", greedyString());
     }
 
     @Nonnull
@@ -178,5 +200,24 @@ public final class BrigoCompat {
     @Nonnull
     public static <T> RequiredArgumentBuilder<CommandSource,T> argument(final @Nonnull String name, final @Nonnull ArgumentType<T> type){
         return RequiredArgumentBuilder.argument(name,type);
+    }
+
+    @Nonnull
+    public static <T extends ArgumentBuilder<CommandSource,T>> T pos(final @Nonnull T builder,
+                                                                     final @Nonnull Function<ArgumentBuilder<CommandSource,? extends ArgumentBuilder<CommandSource,?>>, ArgumentBuilder<CommandSource,? extends ArgumentBuilder<CommandSource,?>>> then){
+        return builder.then(literal("~")
+                        .then(literal("~")
+                                .then(then.apply(literal("~")))
+                                .then(then.apply(argument("z",DoubleArgumentType.doubleArg()))))
+                        .then(argument("y",DoubleArgumentType.doubleArg())
+                                .then(then.apply(literal("~")))
+                                .then(then.apply(argument("z",DoubleArgumentType.doubleArg())))))
+                .then(argument("x",DoubleArgumentType.doubleArg())
+                        .then(literal("~")
+                                .then(then.apply(literal("~")))
+                                .then(then.apply(argument("z",DoubleArgumentType.doubleArg()))))
+                        .then(argument("y",DoubleArgumentType.doubleArg())
+                                .then(then.apply(literal("~")))
+                                .then(then.apply(argument("z",DoubleArgumentType.doubleArg())))));
     }
 }

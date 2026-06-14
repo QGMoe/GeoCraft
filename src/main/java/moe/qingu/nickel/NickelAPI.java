@@ -35,8 +35,8 @@ import org.apache.logging.log4j.Logger;
 
 @Mod(modid = NickelAPI.MODID,version = NickelAPI.VERSION_NAME,acceptableRemoteVersions = "*")
 public final class NickelAPI extends DummyModContainer {
-    public final static long VERSION_ID = -1023;
-    public final static String VERSION_NAME = "0.0.2";
+    public final static long VERSION_ID = -1022;
+    public final static String VERSION_NAME = "0.0.3";
     public final static String MODID = "nickelapi";
     public final static String NAME = "NickelAPI";
     public final static Logger LOGGER = LogManager.getLogger(NAME);
@@ -46,8 +46,8 @@ public final class NickelAPI extends DummyModContainer {
         final ModMetadata meta = this.getMetadata();
         meta.modId = MODID;
         meta.name = NAME;
-        meta.description = "A Experimental Command API inside GeoCraft.";
+        meta.description = "A Experimental Command API inside 天圆地方 GeoCraft.";
         meta.version=VERSION_NAME;
-        meta.authorList.add("QiguaiAAAA");
+        meta.authorList.add("QGMoe");
     }
 }

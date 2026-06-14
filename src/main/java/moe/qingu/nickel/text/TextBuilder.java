@@ -37,6 +37,8 @@ import net.minecraft.util.text.event.HoverEvent;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static moe.qingu.nickel.text.Texts.plain;
+
 /**
  * @author QGMoe
  */
@@ -105,15 +107,13 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
     }
 
     @Nonnull
-    @SuppressWarnings("unchecked")
-    public final S hoverTo(@Nonnull final HoverEventBuilder<?> builder){
-        this.style.setHoverEvent(builder.build());
-        return (S) this;
+    public final S hoverTo(@Nullable final HoverEventBuilder<?> builder){
+        return hoverTo(builder==null?null:builder.build());
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public final S hoverTo(@Nonnull final HoverEvent event){
+    public final S hoverTo(@Nullable final HoverEvent event){
         this.style.setHoverEvent(event);
         return (S) this;
     }
@@ -121,6 +121,11 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
     @Nonnull
     public final ClickEventBuilder clickTo(@Nonnull final ClickEvent.Action action){
         return new ClickEventBuilder(action);
+    }
+
+    @Nonnull
+    public final S then(@Nonnull final String text){
+        return then(plain(text));
     }
 
     @Nonnull

@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.exception;
 
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.ITextComponent;
@@ -48,15 +49,23 @@ public class NickelCommandException extends CommandException implements INickelE
     protected final ITextComponent appendix;
 
     public NickelCommandException(@Nonnull final CommandBranch fromBranch) {
-        this(fromBranch,null,null);
+        this(fromBranch,null,(ITextComponent) null);
     }
 
-    public NickelCommandException(@Nonnull final ITextComponent appendix,@Nonnull final CommandBranch fromBranch) {
+    public NickelCommandException(@Nonnull final CommandBranch fromBranch,@Nonnull final ITextComponent appendix) {
+        this(fromBranch, null,appendix);
+    }
+
+    public NickelCommandException(@Nonnull final CommandBranch fromBranch,@Nonnull final TextBuilder<?,?> appendix) {
         this(fromBranch, null,appendix);
     }
 
     public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode) {
-        this(fromBranch,fromNode,null);
+        this(fromBranch,fromNode,(ITextComponent) null);
+    }
+
+    public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode, @Nullable final TextBuilder<?,?> appendix) {
+        this(fromBranch,fromNode,appendix == null?null: appendix.done());
     }
 
     public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode, @Nullable final ITextComponent appendix) {

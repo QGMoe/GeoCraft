@@ -26,6 +26,7 @@ nickel.command.parameter.checker.resource_location.invalid.slash=命名空間不
 nickel.command.parameter.string.nonMatch=無效的輸入 %s ，該字串參數的輸入必須符合正規表達式 %s
 nickel.command.parameter.string.invalid.white=無效的輸入 %s ，該字串參數僅允許以下輸入：%s
 nickel.command.parameter.string.invalid.black=無效的輸入 %s ，該字串參數不接受以下輸入： %s
+nickel.command.parameter.uuid.invalid=無效的 UUID：%s
 nickel.command.parameter.dimension.not_found=無法根據 ID %s 找到對應的維度，該維度可能不存在或已被卸載
 nickel.command.parameter.block_state.invalid_end=%s 缺少右方括號『[』
 nickel.command.parameter.fluid.invalid=無效的流體 %s
