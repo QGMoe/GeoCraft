@@ -29,6 +29,7 @@ package top.qiguaiaaaa.geocraft.api.configs.item.collection;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
@@ -36,10 +37,7 @@ import top.qiguaiaaaa.geocraft.api.configs.value.collection.IConfigurableCollect
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -88,7 +86,7 @@ public abstract class ConfigCollection<CollectionType extends IConfigurableColle
     public void save() {
         if(property == null) return;
         property.setValues(value.toStringList());
-        property.setComment(comment);
+        property.setComment(getConstructedComment());
     }
 
     @Nonnull
@@ -104,7 +102,7 @@ public abstract class ConfigCollection<CollectionType extends IConfigurableColle
 
     @Override
     public void load(@Nonnull final Configuration config) {
-        property = config.get(category.getPath(),key,defaultValue.toStringList(),comment,sizeRequire.isSizeFixed(),sizeRequire.getMaxListSize(),validatedPattern);
+        property = config.get(category.getPath(),key,defaultValue.toStringList(),getConstructedComment(),sizeRequire.isSizeFixed(),sizeRequire.getMaxListSize(),validatedPattern);
         load(property);
     }
 
@@ -129,6 +127,17 @@ public abstract class ConfigCollection<CollectionType extends IConfigurableColle
     protected Collection<ValueType> getUnmodifiableCollection(){
         if(unmodifiable == null) unmodifiable = Collections.unmodifiableCollection(this.value);
         return unmodifiable;
+    }
+
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        if(sizeRequire instanceof SizeRequirement.Fixed) list.add(Pair.of("固定大小 Size Fixed",null));
+        else if(sizeRequire instanceof SizeRequirement.Range) list.add(Pair.of("大小范围 Size Range",
+                ((SizeRequirement.Range) sizeRequire).min +" ~ "+ ((SizeRequirement.Range) sizeRequire).max));
+        if(validatedPattern != null) list.add(Pair.of("正则表达式限制 Regex Limitation",validatedPattern.toString()));
+        return list;
     }
 
     //**********

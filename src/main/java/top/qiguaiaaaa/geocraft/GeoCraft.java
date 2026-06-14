@@ -58,7 +58,7 @@ import javax.annotation.Nonnull;
 public class GeoCraft {
     public static final String MODID = "geocraft";
     public static final String NAME = "Geo Craft";
-    public static final String VERSION = "0.2.5";
+    public static final String VERSION = "0.2.6";
     @SidedProxy(clientSide = "top.qiguaiaaaa.geocraft.ClientProxy",serverSide = "top.qiguaiaaaa.geocraft.CommonProxy")
     private static CommonProxy proxy;
     private static Logger logger;

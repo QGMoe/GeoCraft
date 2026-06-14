@@ -30,10 +30,12 @@ package top.qiguaiaaaa.geocraft.api.configs.item.number;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * {@link Long}配置项
@@ -84,8 +86,8 @@ public class ConfigLong extends ConfigItem<Long,ConfigLong> {
      */
     @Override
     public void load(@Nonnull final Configuration config) {
-        property = config.get(category.getPath(),key,defaultValue.toString(),comment);
-        property.setComment(getPolishedComment());
+        property = config.get(category.getPath(),key,defaultValue.toString(),null);
+        property.setComment(getConstructedComment());
         load(property);
     }
 
@@ -93,7 +95,7 @@ public class ConfigLong extends ConfigItem<Long,ConfigLong> {
     public void save() {
         if(property == null) return;
         property.setValue(value.toString());
-        property.setComment(getPolishedComment());
+        property.setComment(getConstructedComment());
     }
 
     /**
@@ -107,7 +109,11 @@ public class ConfigLong extends ConfigItem<Long,ConfigLong> {
     }
 
     @Nonnull
-    protected String getPolishedComment(){
-        return (comment == null?"":comment) + " [range: " + minValue + " ~ " + maxValue + ", default: " + defaultValue + "]";
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        list.add(Pair.of("范围 Range",minValue + " ~ "+maxValue));
+        return list;
     }
+
 }

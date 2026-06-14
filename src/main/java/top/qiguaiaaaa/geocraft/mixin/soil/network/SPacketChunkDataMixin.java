@@ -25,19 +25,21 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api;
+package top.qiguaiaaaa.geocraft.mixin.soil.network;
 
-import org.apache.logging.log4j.Logger;
-import top.qiguaiaaaa.geocraft.api.util.APIUtil;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.server.SPacketChunkData;
+import net.minecraft.world.chunk.BlockStateContainer;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import top.qiguaiaaaa.geocraft.util.mixinapi.network.NetworkOverridable;
 
-/**
- * @since 0.1
- * @author QiguaiAAAA
- */
-public final class GeoCraftAPI {
-    public final static long API_VERSION = 4;
-    public final static String API_VERSION_NAME = "0.3.2";
-    public final static String MODID = "geocraft";
-    public final static String PROVIDERS = "GeoCraftAPI";
-    public final static Logger LOGGER = APIUtil.LOGGER;
+@Mixin(value = SPacketChunkData.class)
+public class SPacketChunkDataMixin {
+    @Redirect(method = "extractChunkData",
+            at =@At(value = "INVOKE",target = "Lnet/minecraft/world/chunk/BlockStateContainer;write(Lnet/minecraft/network/PacketBuffer;)V"))
+    public void extractChunkData(BlockStateContainer instance, PacketBuffer buf) {
+        ((NetworkOverridable)instance).networkWrite(buf);
+    }
 }

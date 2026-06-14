@@ -303,8 +303,9 @@ public final class FluidPhysicsConfig {
             new ConfigInteger(CATEGORY_FLUID_PRESSURE_SYSTEM, "maxPauseTimeForPressureSystem",500);
 
     @GeoConfig.Since("0.2.0-beta.1")
-    @Config.Comment("[实验性功能]使用压缩为长整型的 BlockPos 以减少大规模流体更新时的内存开销。\n" +
-            "[Experimental Feature]Use compressed BlockPos (as long) to optimise the usage of memory.")
+    @GeoConfig.Experimental
+    @Config.Comment("使用压缩为长整型的 BlockPos 以减少大规模流体更新时的内存开销。\n" +
+            "Use compressed BlockPos (as long) to optimise the usage of memory.")
     public static final ConfigBoolean USE_COMPRESSED_COORDINATE =
             new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM, "useCompressedCoordinate",false);
 

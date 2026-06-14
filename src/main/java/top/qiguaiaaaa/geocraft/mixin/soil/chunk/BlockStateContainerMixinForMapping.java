@@ -25,33 +25,33 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.groundwater.block;
+package top.qiguaiaaaa.geocraft.mixin.soil.chunk;
 
-import net.minecraft.block.Block;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.ObjectIntIdentityMap;
+import net.minecraft.world.chunk.BlockStateContainer;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import top.qiguaiaaaa.geocraft.handler.RegistryHandler;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-@Mixin(value = Block.class)
-public abstract class BlockMixin {
+@Mixin(BlockStateContainer.class)
+public class BlockStateContainerMixinForMapping {
 
-    @Shadow private static void registerBlock(int id, ResourceLocation textualID, Block block_){}
-
-    @Inject(method = "registerBlock(ILjava/lang/String;Lnet/minecraft/block/Block;)V",at=@At("HEAD"),cancellable = true)
-    private static void 天圆地方$registerBlock(final int id,final String textualID,final Block block_,final CallbackInfo ci){
-        final @Nullable Block overrideBlock = RegistryHandler.queryOverrideVanillaBlock(textualID);
-        if(overrideBlock != null){
-            ci.cancel();
-            registerBlock(id,new ResourceLocation(textualID),overrideBlock);
-        }
+    /**
+     * @reason 让拓展数据值能被正常读取
+     */
+    @Redirect(method = "setDataFromNBT",at = @At(value = "INVOKE", target = "Lnet/minecraft/util/ObjectIntIdentityMap;getByValue(I)Ljava/lang/Object;"))
+    private static Object 天圆地方$redirectWhenMapping(final @Nonnull ObjectIntIdentityMap<?> map, final int id){
+        final @Nullable IBlockState mapping = RegistryHandler.mapToMissingState(id);
+        if(mapping != null) return mapping;
+        return map.getByValue(id);
     }
+
 }

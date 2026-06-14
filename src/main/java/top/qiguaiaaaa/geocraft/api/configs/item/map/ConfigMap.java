@@ -29,6 +29,7 @@ package top.qiguaiaaaa.geocraft.api.configs.item.map;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
@@ -38,6 +39,7 @@ import top.qiguaiaaaa.geocraft.api.configs.value.map.entry.ConfigEntry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -107,7 +109,7 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>,Co
     public void save() {
         if(property == null) return;
         property.setValues(value.toStringList());
-        property.setComment(getPolishedComment());
+        property.setComment(getConstructedComment());
     }
 
     @Nonnull
@@ -118,7 +120,7 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>,Co
 
     @Override
     public void load(@Nonnull final Configuration config) {
-        property = config.get(category.getPath(),key,defaultValue.toStringList(),getPolishedComment());
+        property = config.get(category.getPath(),key,defaultValue.toStringList(),getConstructedComment());
         load(property);
         if(keyFixed){
             defaultValue.forEach(value::putIfAbsent);
@@ -213,21 +215,20 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>,Co
     }
 
     @Nonnull
-    protected String getPolishedComment(){
-        StringBuilder builder = new StringBuilder(comment==null?"":comment);
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
         if(keyClass != null && valClass != null)
-            builder.append('\n')
-                    .append("类型 Type: Map<")
-                    .append(keyClass.getSimpleName())
-                    .append(" -> ")
-                    .append(valClass.getSimpleName())
-                    .append(" >");
-        if(keyComment != null)
-            builder.append("\n键说明 Key Info:\n").append(keyComment);
-        if(valueComment != null)
-            builder.append("\n值说明 Value Info:\n").append(valueComment);
-        return builder.toString();
+            list.add(Pair.of("类型 Type", "Map< " +
+                    keyClass.getSimpleName() +
+                    " -> " +
+                    valClass.getSimpleName() +
+                    " >"));
+        if(keyComment != null) list.add(Pair.of("键说明 Key Info",keyComment));
+        if(valueComment != null) list.add(Pair.of("值说明 Value Info",valueComment));
+        return list;
     }
+
 
     //*****************
     // Map

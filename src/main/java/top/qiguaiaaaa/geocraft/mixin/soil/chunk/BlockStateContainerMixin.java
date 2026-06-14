@@ -25,34 +25,46 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.groundwater.chunk;
+package top.qiguaiaaaa.geocraft.mixin.soil.chunk;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.world.chunk.BlockStatePaletteLinear;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.util.BitArray;
+import net.minecraft.world.chunk.BlockStateContainer;
+import net.minecraft.world.chunk.BlockStatePaletteRegistry;
+import net.minecraft.world.chunk.IBlockStatePalette;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import top.qiguaiaaaa.geocraft.handler.network.NetworkFakeStateManager;
+import top.qiguaiaaaa.geocraft.util.math.ModifyBitArray;
 import top.qiguaiaaaa.geocraft.util.mixinapi.network.NetworkOverridable;
 
-@Mixin(BlockStatePaletteLinear.class)
-public class BlockStatePaletteLinearMixin implements NetworkOverridable {
-    @Final
+@Mixin(BlockStateContainer.class)
+public class BlockStateContainerMixin implements NetworkOverridable {
     @Shadow
-    private IBlockState[] states;
+    protected BitArray storage;
     @Shadow
-    private int arraySize;
+    protected IBlockStatePalette palette;
+    @Shadow
+    private int bits;
 
     @Override
     public void networkWrite(PacketBuffer buf) {
-        buf.writeVarInt(this.arraySize);
-
-        for (int i = 0; i < this.arraySize; ++i) {
-            IBlockState thisState = this.states[i];
-            IBlockState fakeState = NetworkFakeStateManager.overwriteState(thisState);
-            buf.writeVarInt(Block.BLOCK_STATE_IDS.get(fakeState));
+        buf.writeByte(this.bits);
+        if(palette instanceof BlockStatePaletteRegistry){
+            palette.write(buf);
+            long[] arr = this.storage.getBackingLongArray();
+            ModifyBitArray modifiedArray = new ModifyBitArray(bits,4096,arr.clone());
+            for(int i=0;i<4096;i++){
+                int j = modifiedArray.get(i);
+                int modified = NetworkFakeStateManager.overwriteState(j);
+                if(j == modified) continue;
+                modifiedArray.set(i,modified);
+            }
+            buf.writeLongArray(modifiedArray.getLongArray());
+        }else{
+            ((NetworkOverridable)palette).networkWrite(buf);
+            buf.writeLongArray(this.storage.getBackingLongArray());
         }
+
     }
 }

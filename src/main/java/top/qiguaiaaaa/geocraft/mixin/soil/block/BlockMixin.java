@@ -25,35 +25,33 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.groundwater.chunk;
+package top.qiguaiaaaa.geocraft.mixin.soil.block;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.IntIdentityHashBiMap;
-import net.minecraft.world.chunk.BlockStatePaletteHashMap;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.util.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import top.qiguaiaaaa.geocraft.handler.network.NetworkFakeStateManager;
-import top.qiguaiaaaa.geocraft.util.mixinapi.network.NetworkOverridable;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import top.qiguaiaaaa.geocraft.handler.RegistryHandler;
 
-@Mixin(value = BlockStatePaletteHashMap.class)
-public class BlockStatePaletteHashMapMixin implements NetworkOverridable {
-    @Final
-    @Shadow
-    private IntIdentityHashBiMap<IBlockState> statePaletteMap;
+import javax.annotation.Nullable;
 
-    @Override
-    public void networkWrite(PacketBuffer buf) {
-        int i = statePaletteMap.size();
-        buf.writeVarInt(i);
+/**
+ * @author QiguaiAAAA
+ */
+@Mixin(value = Block.class)
+public abstract class BlockMixin {
 
-        for (int j = 0; j < i; ++j) {
-            IBlockState thisState = statePaletteMap.get(j);
-            assert thisState != null;
-            IBlockState fakeState = NetworkFakeStateManager.overwriteState(thisState);
-            buf.writeVarInt(Block.BLOCK_STATE_IDS.get(fakeState));
+    @Shadow private static void registerBlock(int id, ResourceLocation textualID, Block block_){}
+
+    @Inject(method = "registerBlock(ILjava/lang/String;Lnet/minecraft/block/Block;)V",at=@At("HEAD"),cancellable = true)
+    private static void 天圆地方$registerBlock(final int id,final String textualID,final Block block_,final CallbackInfo ci){
+        final @Nullable Block overrideBlock = RegistryHandler.queryOverrideVanillaBlock(textualID);
+        if(overrideBlock != null){
+            ci.cancel();
+            registerBlock(id,new ResourceLocation(textualID),overrideBlock);
         }
     }
 }

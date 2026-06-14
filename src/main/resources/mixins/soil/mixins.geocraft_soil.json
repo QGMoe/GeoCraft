@@ -4,9 +4,6 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.geocraft.refmap.json",
   "mixins": [
-    "block.BlockMixin"
-  ],
-  "client": [
-  "block.BlockModelShapesMixin"
+    "block.BlockFarmlandMixin"
   ]
 }

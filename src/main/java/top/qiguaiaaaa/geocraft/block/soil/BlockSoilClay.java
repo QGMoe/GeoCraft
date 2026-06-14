@@ -27,9 +27,6 @@
 
 package top.qiguaiaaaa.geocraft.block.soil;
 
-import net.minecraft.block.BlockClay;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -45,19 +42,10 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 /**
  * @author QiguaiAAAA
  */
-public class BlockSoilClay extends BlockClay implements IBlockSoil {
+public class BlockSoilClay extends BlockSoilExtends.Clay implements IBlockSoil {
 
     public BlockSoilClay(){
         this.setTickRandomly(true);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(HUMIDITY, 0));
-        this.setSoundType(SoundType.GROUND);
-    }
-
-    @Nonnull
-    @Override
-    public IBlockState getStateFromMeta(final int meta) {
-        if(meta>=5) return this.getDefaultState();
-        return this.getDefaultState().withProperty(HUMIDITY,meta);
     }
 
     @Override
@@ -75,11 +63,6 @@ public class BlockSoilClay extends BlockClay implements IBlockSoil {
         dropWaterWhenBroken(worldIn, pos, state);
     }
 
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this,HUMIDITY);
-    }
 
     //********************
     // IBlockSoil

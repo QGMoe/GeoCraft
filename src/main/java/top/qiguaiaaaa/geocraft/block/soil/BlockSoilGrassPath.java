@@ -28,9 +28,6 @@
 package top.qiguaiaaaa.geocraft.block.soil;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockGrassPath;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
@@ -49,13 +46,10 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 /**
  * @author QiguaiAAAA
  */
-public class BlockSoilGrassPath extends BlockGrassPath implements IBlockSoil, IBlockFalling {
+public class BlockSoilGrassPath extends BlockSoilExtends.GrassPath implements IBlockSoil, IBlockFalling {
 
     public BlockSoilGrassPath(){
         this.setTickRandomly(true);
-        this.setDefaultState((this.blockState.getBaseState().withProperty(HUMIDITY, 0)));
-        this.setSoundType(SoundType.PLANT);
-        this.disableStats();
     }
 
     @Override
@@ -89,15 +83,8 @@ public class BlockSoilGrassPath extends BlockGrassPath implements IBlockSoil, IB
         return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
 
-    @Nonnull
     @Override
-    public IBlockState getStateFromMeta(final int meta) {
-        if(meta>4) return getDefaultState();
-        return this.getDefaultState().withProperty(HUMIDITY,meta);
-    }
-
-    @Override
-    public int getMetaFromState(final IBlockState state) {
+    public int getMetaFromState(@Nonnull final IBlockState state) {
         return state.getValue(HUMIDITY);
     }
 
@@ -118,12 +105,6 @@ public class BlockSoilGrassPath extends BlockGrassPath implements IBlockSoil, IB
     @Override
     public void onPlayerDestroy(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state) {
         dropWaterWhenBroken(worldIn, pos, state);
-    }
-
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this,HUMIDITY);
     }
 
     //********************

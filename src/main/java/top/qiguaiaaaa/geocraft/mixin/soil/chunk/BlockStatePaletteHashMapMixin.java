@@ -25,26 +25,35 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.groundwater.network;
+package top.qiguaiaaaa.geocraft.mixin.soil.chunk;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.SPacketChunkData;
-import net.minecraft.world.chunk.BlockStateContainer;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.util.IntIdentityHashBiMap;
+import net.minecraft.world.chunk.BlockStatePaletteHashMap;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import top.qiguaiaaaa.geocraft.handler.network.NetworkFakeStateManager;
 import top.qiguaiaaaa.geocraft.util.mixinapi.network.NetworkOverridable;
 
-@Mixin(value = SPacketChunkData.class)
-public class SPacketChunkDataMixin {
-    @Redirect(method = "extractChunkData",
-            at =@At(value = "INVOKE",target = "Lnet/minecraft/world/chunk/BlockStateContainer;write(Lnet/minecraft/network/PacketBuffer;)V"))
-    public void extractChunkData(BlockStateContainer instance, PacketBuffer buf) {
-        ((NetworkOverridable)instance).networkWrite(buf);
+@Mixin(value = BlockStatePaletteHashMap.class)
+public class BlockStatePaletteHashMapMixin implements NetworkOverridable {
+    @Final
+    @Shadow
+    private IntIdentityHashBiMap<IBlockState> statePaletteMap;
+
+    @Override
+    public void networkWrite(PacketBuffer buf) {
+        int i = statePaletteMap.size();
+        buf.writeVarInt(i);
+
+        for (int j = 0; j < i; ++j) {
+            IBlockState thisState = statePaletteMap.get(j);
+            assert thisState != null;
+            IBlockState fakeState = NetworkFakeStateManager.overwriteState(thisState);
+            buf.writeVarInt(Block.BLOCK_STATE_IDS.get(fakeState));
+        }
     }
 }

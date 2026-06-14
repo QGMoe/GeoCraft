@@ -27,9 +27,6 @@
 
 package top.qiguaiaaaa.geocraft.block.soil;
 
-import net.minecraft.block.BlockSand;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
@@ -47,30 +44,15 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 /**
  * @author QiguaiAAAA
  */
-public class BlockSoilSand extends BlockSand implements IBlockSoil {
+public class BlockSoilSand extends BlockSoilExtends.Sand implements IBlockSoil {
 
     public BlockSoilSand(){
         this.setTickRandomly(true);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(VARIANT, BlockSand.EnumType.SAND).withProperty(HUMIDITY,0));
-        this.setSoundType(SoundType.SAND);
-    }
-
-    @Nonnull
-    @Override
-    public IBlockState getStateFromMeta(int meta) {
-        if(meta>=10) return this.getDefaultState();
-        return this.getDefaultState().withProperty(VARIANT,BlockSand.EnumType.byMetadata(meta%2)).withProperty(HUMIDITY,meta/2);
     }
 
     @Override
     public int getMetaFromState(@Nonnull final IBlockState state) {
         return state.getValue(VARIANT).getMetadata()+state.getValue(HUMIDITY)*2;
-    }
-
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, VARIANT,HUMIDITY);
     }
 
     @Override

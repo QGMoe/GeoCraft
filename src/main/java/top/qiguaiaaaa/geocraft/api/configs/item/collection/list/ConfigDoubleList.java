@@ -28,11 +28,13 @@
 package top.qiguaiaaaa.geocraft.api.configs.item.collection.list;
 
 import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.ConfigurableList;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
@@ -80,18 +82,22 @@ public class ConfigDoubleList<S extends ConfigDoubleList<S>> extends ConfigList<
     public void save() {
         if(property == null) return;
         property.setValues(toDoubleList(value));
-        property.setComment(getPolishedComment());
+        property.setComment(getConstructedComment());
     }
 
     @Override
     public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,toDoubleList(defaultValue),comment,minValue,maxValue, sizeRequire.isSizeFixed(), sizeRequire.getMaxListSize());
-        property.setComment(getPolishedComment());
+        property = config.get(category.getPath(),key,toDoubleList(defaultValue),null,minValue,maxValue, sizeRequire.isSizeFixed(), sizeRequire.getMaxListSize());
+        property.setComment(getConstructedComment());
         load(property);
     }
 
-    protected String getPolishedComment(){
-        return (comment==null?"":comment)+" [range: " + minValue + " ~ " + maxValue + (sizeRequire.getMaxListSize()>=0?", maxSize: " + sizeRequire.getMaxListSize():"") + "]";
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        list.add(Pair.of("范围 Range",minValue + " ~ "+maxValue));
+        return list;
     }
 
     protected static double[] toDoubleList(@Nonnull final Collection<Double> c){

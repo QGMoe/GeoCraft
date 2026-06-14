@@ -20,6 +20,7 @@ geocraft.config.comment.general.prevent_falling_block_while_generation=在区块
 geocraft.config.comment.general.enable_block_updater=开启BlockUpdater以在1游戏刻内提供额外的方块更新额度和更精细的更新管理
 geocraft.config.comment.fluidphysics.finite.adjustment.boat=是否启用针对船的调整
 geocraft.config.comment.fluidphysics.finite.adjustment.boat_sinking_threshold=船只被判定为处于水底被动下沉的阈值，单位为格（方块）
+geocraft.config.comment.soil.enable_soil=启用土壤系统，注意禁用土壤系统为新功能，可能会破坏存档，请谨慎使用!
 
 geocraft.command.io_error=发生了一个IO异常 (%s)，命令无法继续执行
 geocraft.command.chunk_error.unloaded=(%s,%s) 所在位置并未加载

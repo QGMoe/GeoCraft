@@ -20,6 +20,7 @@ geocraft.config.comment.general.prevent_falling_block_while_generation=Prevent b
 geocraft.config.comment.general.enable_block_updater=Enable BlockUpdater to provide additional block update quotas and more refined update management within a single game tick.
 geocraft.config.comment.fluidphysics.finite.adjustment.boat=Whether to enable adjustments for boat.
 geocraft.config.comment.fluidphysics.finite.adjustment.boat_sinking_threshold=The threshold to determine whether the boat should sink or not, measured in blocks.
+geocraft.config.comment.soil.enable_soil=Enable Soil System. Attention: Disabling Soil System is in experiment and may break your world!
 
 geocraft.command.io_error=An IO Exception Occurred (%s), command couldn't be processed.
 geocraft.command.chunk_error.unloaded=Location (%s,%s) is unloaded

@@ -51,6 +51,7 @@ import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.toFarmlandMoistu
  */
 public final class SoilEventHandler {
     @SubscribeEvent
-    public static void onHoeUseEvent(ExtendedUseHoeEvent event){
+    public static void onHoeUseEvent(final @Nonnull ExtendedUseHoeEvent event){
         World world = event.getWorld();
         BlockPos pos = event.getPos();
         EnumFacing facing = event.getFacing();
@@ -103,7 +104,7 @@ public final class SoilEventHandler {
     /**
      * @see net.minecraft.item.ItemHoe#setBlock(ItemStack, EntityPlayer, World, BlockPos, IBlockState) 
      */
-    private static void setBlock_Hoe(EntityPlayer player, World worldIn, BlockPos pos, IBlockState state) {
+    private static void setBlock_Hoe(final EntityPlayer player,final World worldIn,final BlockPos pos,final IBlockState state) {
         worldIn.playSound(player, pos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1f, 1f);
 
         if (!worldIn.isRemote) {
@@ -111,7 +112,7 @@ public final class SoilEventHandler {
         }
     }
 
-    public static void onPostInit(FMLPostInitializationEvent event){
+    public static void onPostInit(final @Nonnull FMLPostInitializationEvent event){
         for(ConfigurableBiome biome: SoilConfig.GENERATION_BIOME_BLACK_LIST){
             Biome b = biome.getBiome();
             if(b == null) continue;

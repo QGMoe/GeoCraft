@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
+import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import zone.rong.mixinbooter.IEarlyMixinLoader;
 
 import javax.annotation.Nullable;
@@ -92,6 +93,9 @@ public class MixinEarlyInit implements IFMLLoadingPlugin, IEarlyMixinLoader {
             }else mixinList.add("mixins/pressure/async/mixins.geocraft_pressure_async.json");
         }
         mixinList.add("mixins/ground_water/mixins.geocraft_ground_water.json");
+        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()){
+            mixinList.add("mixins/soil/mixins.geocraft_soil.json");
+        }else mixinList.add("mixins/soil/mixins.geocraft_disabled_soil.json");
         mixinList.add("mixins.geocraft_atmosphere.json");
         LOGGER.info("天圆地方(GeoCraft)'s Fluid Physics is using {} mode",mode);
         FluidPhysicsMode.setCurrentMode(mode);

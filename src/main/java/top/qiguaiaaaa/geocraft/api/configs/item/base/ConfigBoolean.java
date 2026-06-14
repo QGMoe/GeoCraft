@@ -52,7 +52,7 @@ public class ConfigBoolean extends ConfigItem<Boolean,ConfigBoolean> {
     public void save() {
         if(property == null) return;
         property.setValue(value);
-        property.setComment(comment);
+        property.setComment(getConstructedComment());
     }
 
     @Nonnull
@@ -67,7 +67,7 @@ public class ConfigBoolean extends ConfigItem<Boolean,ConfigBoolean> {
      */
     @Override
     public void load(@Nonnull final Configuration config) {
-        property = config.get(category.getPath(),key,defaultValue,comment);
+        property = config.get(category.getPath(),key,defaultValue,getConstructedComment());
         load(property);
     }
 

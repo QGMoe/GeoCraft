@@ -38,6 +38,7 @@ import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.block.soil.*;
+import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.test.GeoTestItem;
 
 import javax.annotation.Nonnull;
@@ -60,13 +61,22 @@ public final class SoilMixinTest extends GeoTestItem {
 
     private synchronized void refreshMap(){
         injectionClsMap = new HashMap<>();
-        injectionClsMap.put(Blocks.DIRT, BlockSoilDirt.class);
-        injectionClsMap.put(Blocks.GRASS, BlockSoilGrass.class);
-        injectionClsMap.put(Blocks.SAND, BlockSoilSand.class);
-        injectionClsMap.put(Blocks.CLAY, BlockSoilClay.class);
-        injectionClsMap.put(Blocks.GRAVEL, BlockSoilGravel.class);
-        injectionClsMap.put(Blocks.GRASS_PATH, BlockSoilGrassPath.class);
-        injectionClsMap.put(Blocks.FARMLAND, FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY? BlockSoilFarmland.MoreReality.class: BlockSoilFarmland.class);
+        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()){
+            injectionClsMap.put(Blocks.DIRT, BlockSoilDirt.class);
+            injectionClsMap.put(Blocks.GRASS, BlockSoilGrass.class);
+            injectionClsMap.put(Blocks.SAND, BlockSoilSand.class);
+            injectionClsMap.put(Blocks.CLAY, BlockSoilClay.class);
+            injectionClsMap.put(Blocks.GRAVEL, BlockSoilGravel.class);
+            injectionClsMap.put(Blocks.GRASS_PATH, BlockSoilGrassPath.class);
+            injectionClsMap.put(Blocks.FARMLAND, FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY? BlockSoilFarmland.MoreReality.class: BlockSoilFarmland.class);
+        }else {
+            injectionClsMap.put(Blocks.DIRT, BlockSoilExtends.Dirt.class);
+            injectionClsMap.put(Blocks.GRASS, BlockSoilExtends.Grass.class);
+            injectionClsMap.put(Blocks.SAND, BlockSoilExtends.Sand.class);
+            injectionClsMap.put(Blocks.CLAY, BlockSoilExtends.Clay.class);
+            injectionClsMap.put(Blocks.GRAVEL, BlockSoilExtends.Gravel.class);
+            injectionClsMap.put(Blocks.GRASS_PATH, BlockSoilExtends.GrassPath.class);
+        }
     }
 
     @Nonnull

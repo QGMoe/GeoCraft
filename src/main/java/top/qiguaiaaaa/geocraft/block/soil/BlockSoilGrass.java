@@ -29,9 +29,6 @@ package top.qiguaiaaaa.geocraft.block.soil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
-import net.minecraft.block.BlockGrass;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -53,15 +50,8 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
  * 为了更好的兼容性，采用继承替换而非直接 Mixin
  * @author QiguaiAAAA
  */
-public class BlockSoilGrass extends BlockGrass implements IBlockSoil, IBlockFalling {
+public class BlockSoilGrass extends BlockSoilExtends.Grass implements IBlockSoil, IBlockFalling {
     private final ThreadLocal<Boolean> isRandomTick = ThreadLocal.withInitial(()-> Boolean.FALSE);
-
-    public BlockSoilGrass() {
-        this.setDefaultState(this.blockState.getBaseState()
-                .withProperty(SNOWY, Boolean.FALSE)
-                .withProperty(HUMIDITY, 0));
-        this.setSoundType(SoundType.PLANT);
-    }
 
     @Override
     public void updateTick(@Nonnull final World worldIn, @Nonnull final BlockPos pos, @Nonnull final IBlockState state, @Nonnull final Random rand) {
@@ -136,19 +126,6 @@ public class BlockSoilGrass extends BlockGrass implements IBlockSoil, IBlockFall
     @Override
     public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
         return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
-    }
-
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, SNOWY, HUMIDITY);
-    }
-
-    @Nonnull
-    @Override
-    public IBlockState getStateFromMeta(int meta) {
-        if(meta>4) return this.getDefaultState();
-        return this.getDefaultState().withProperty(HUMIDITY,meta);
     }
 
     //********************

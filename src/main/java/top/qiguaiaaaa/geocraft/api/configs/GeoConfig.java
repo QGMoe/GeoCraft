@@ -89,4 +89,11 @@ public @interface GeoConfig {
     @interface ValueComment{
         String[] value();
     }
+
+    /**
+     * @since 天圆地方 API 0.3.2
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Experimental{}
 }

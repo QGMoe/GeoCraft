@@ -25,36 +25,34 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.groundwater.network;
+package top.qiguaiaaaa.geocraft.mixin.soil.chunk;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.SPacketMultiBlockChange;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.BlockStatePaletteLinear;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.handler.network.NetworkFakeStateManager;
+import top.qiguaiaaaa.geocraft.util.mixinapi.network.NetworkOverridable;
 
-@Mixin(value = SPacketMultiBlockChange.class)
-public class SPacketMultiBlockChangeMixin {
+@Mixin(BlockStatePaletteLinear.class)
+public class BlockStatePaletteLinearMixin implements NetworkOverridable {
+    @Final
     @Shadow
-    private ChunkPos chunkPos;
+    private IBlockState[] states;
     @Shadow
-    private SPacketMultiBlockChange.BlockUpdateData[] changedBlocks;
+    private int arraySize;
 
-    @Inject(method = "writePacketData",at = @At("HEAD"),cancellable = true)
-    public void writePacketData(PacketBuffer buf, CallbackInfo ci) {
-        ci.cancel();
-        buf.writeInt(this.chunkPos.x);
-        buf.writeInt(this.chunkPos.z);
-        buf.writeVarInt(this.changedBlocks.length);
+    @Override
+    public void networkWrite(PacketBuffer buf) {
+        buf.writeVarInt(this.arraySize);
 
-        for (SPacketMultiBlockChange.BlockUpdateData spacketmultiblockchange$blockupdatedata : this.changedBlocks) {
-            buf.writeShort(spacketmultiblockchange$blockupdatedata.getOffset());
-            buf.writeVarInt(Block.BLOCK_STATE_IDS.get(NetworkFakeStateManager.overwriteState(spacketmultiblockchange$blockupdatedata.getBlockState())));
+        for (int i = 0; i < this.arraySize; ++i) {
+            IBlockState thisState = this.states[i];
+            IBlockState fakeState = NetworkFakeStateManager.overwriteState(thisState);
+            buf.writeVarInt(Block.BLOCK_STATE_IDS.get(fakeState));
         }
     }
 }

@@ -48,6 +48,14 @@ public final class SoilConfig {
     @Config.Comment({"土壤系统相关配置","Configs for Soil System"})
     public static final ConfigCategory CATEGORY_SOIL = new ConfigCategory("soil");
 
+    @Config.Comment({"启用土壤系统，注意禁用土壤系统为新功能，可能会破坏存档，请谨慎使用!",
+            "Enable Soil System. Attention: Disabling Soil System is in experiment and may break your world!"})
+    @GeoConfig.Since("0.2.6")
+    @Config.LangKey("geocraft.config.comment.soil.enable_soil")
+    @GeoConfig.Experimental
+    @Config.RequiresMcRestart
+    public static final ConfigBoolean ENABLE_SOIL_SYSTEM = new ConfigBoolean(CATEGORY_SOIL,"enableSoilSystem",true);
+
     @Config.RequiresMcRestart
     @Config.Ignore
     @GeoConfig.Since("0.1")

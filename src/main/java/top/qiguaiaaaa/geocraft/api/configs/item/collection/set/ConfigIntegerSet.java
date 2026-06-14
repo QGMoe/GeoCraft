@@ -28,12 +28,14 @@
 package top.qiguaiaaaa.geocraft.api.configs.item.collection.set;
 
 import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.collection.IConfigIntCollection;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.IConfigurableSet;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
@@ -81,20 +83,24 @@ public class ConfigIntegerSet extends ConfigSet<Integer,ConfigIntegerSet> implem
     public void save() {
         if(property == null) return;
         property.setValues(toIntList(value));
-        property.setComment(getPolishedComment());
+        property.setComment(getConstructedComment());
     }
 
     @Override
-    public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,toIntList(defaultValue),comment,minValue,maxValue,sizeRequire.isSizeFixed(),sizeRequire.getMaxListSize());
-        property.setComment(getPolishedComment());
+    public void load(@Nonnull final Configuration config) {
+        property = config.get(category.getPath(),key,toIntList(defaultValue),null,minValue,maxValue,sizeRequire.isSizeFixed(),sizeRequire.getMaxListSize());
+        property.setComment(getConstructedComment());
         load(property);
     }
 
     @Nonnull
-    protected String getPolishedComment(){
-        return (comment==null?"":comment)+" [range: " + minValue + " ~ " + maxValue + (sizeRequire.getMaxListSize()>=0?", maxSize: " + sizeRequire.getMaxListSize():"") + "]";
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        list.add(Pair.of("范围 Range",minValue + " ~ "+maxValue));
+        return list;
     }
+
 
     @Nonnull
     public static int[] toIntList(@Nonnull final Collection<Integer> c){

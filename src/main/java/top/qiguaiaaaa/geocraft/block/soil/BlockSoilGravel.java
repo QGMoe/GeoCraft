@@ -27,9 +27,6 @@
 
 package top.qiguaiaaaa.geocraft.block.soil;
 
-import net.minecraft.block.BlockGravel;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
@@ -48,19 +45,10 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 /**
  * @author QiguaiAAAA
  */
-public class BlockSoilGravel extends BlockGravel implements IBlockSoil {
+public class BlockSoilGravel extends BlockSoilExtends.Gravel implements IBlockSoil {
 
     public BlockSoilGravel(){
         this.setTickRandomly(true);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(HUMIDITY,0));
-        this.setSoundType(SoundType.GROUND);
-    }
-
-    @Nonnull
-    @Override
-    public IBlockState getStateFromMeta(final int meta) {
-        if(meta>=5) return this.getDefaultState();
-        return this.getDefaultState().withProperty(HUMIDITY,meta);
     }
 
     @Override
@@ -76,12 +64,6 @@ public class BlockSoilGravel extends BlockGravel implements IBlockSoil {
     @Override
     public void onPlayerDestroy(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state) {
         dropWaterWhenBroken(worldIn, pos, state);
-    }
-
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this,HUMIDITY);
     }
 
     @Override

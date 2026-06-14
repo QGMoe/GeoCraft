@@ -28,11 +28,13 @@
 package top.qiguaiaaaa.geocraft.api.configs.item.collection.list;
 
 import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.ConfigurableList;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.IConfigurableList;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -76,6 +78,15 @@ public class ConfigIntegerWeightDistribution extends ConfigIntegerList<ConfigInt
         super.load(config);
         reloadWeights();
     }
+
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        list.add(Pair.of("分布起始值 Distribution Begin",String.valueOf(begin)));
+        return list;
+    }
+
 
     @Nonnull
     @Override
