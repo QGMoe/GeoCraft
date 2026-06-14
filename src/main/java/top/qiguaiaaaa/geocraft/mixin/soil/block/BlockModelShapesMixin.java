@@ -46,8 +46,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.block.BlockProperties;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 @Mixin(BlockModelShapes.class)
@@ -57,21 +59,29 @@ public class BlockModelShapesMixin {
     private BlockStateMapper blockStateMapper;
 
     @Inject(method = "registerBlockWithStateMapper",at = @At("HEAD"),cancellable = true)
-    public void registerBlockWithStateMapper(Block assoc, IStateMapper stateMapper, CallbackInfo ci) {
+    public void registerBlockWithStateMapper(final @Nonnull Block assoc,@Nonnull IStateMapper stateMapper,final @Nonnull CallbackInfo ci) {
         if(assoc == Blocks.DIRT){
             ci.cancel();
             stateMapper = new StateMapperBase() {
+                /**
+                 * 重映射土壤的湿度变种从而让不同湿度的土壤有不同材质,且在天圆地方目录下
+                 */
                 @Override
-                protected ModelResourceLocation getModelResourceLocation(IBlockState state) {
-                    Map<IProperty<?>, Comparable<? >> map = Maps.newLinkedHashMap(state.getProperties());
-                    String s = BlockDirt.VARIANT.getName((BlockDirt.DirtType)map.remove(BlockDirt.VARIANT));
+                @Nonnull
+                protected ModelResourceLocation getModelResourceLocation(final @Nonnull IBlockState state) {
+                    final @Nonnull Map<IProperty<?>, Comparable<? >> map = Maps.newLinkedHashMap(state.getProperties());
+                    @Nonnull String variantName = BlockDirt.VARIANT.getName((BlockDirt.DirtType)map.remove(BlockDirt.VARIANT));
 
                     if (BlockDirt.DirtType.PODZOL != state.getValue(BlockDirt.VARIANT)) {
                         map.remove(BlockDirt.SNOWY);
                     }
-                    map.remove(BlockProperties.HUMIDITY);
 
-                    return new ModelResourceLocation(s, this.getPropertyString(map));
+                    map.remove(BlockProperties.HUMIDITY);
+                    if(state.getValue(BlockProperties.HUMIDITY) > 0){
+                        variantName = GeoCraft.MODID+":"+variantName+"_h"+state.getValue(BlockProperties.HUMIDITY);
+                    }
+
+                    return new ModelResourceLocation(variantName, this.getPropertyString(map));
                 }
             };
             this.blockStateMapper.registerBlockStateMapper(assoc, stateMapper);

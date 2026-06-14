@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "normal": [
+      { "model": "geocraft:dirt_h4" },
+      { "model": "geocraft:dirt_h4", "y": 90 },
+      { "model": "geocraft:dirt_h4", "y": 180 },
+      { "model": "geocraft:dirt_h4", "y": 270 }
+    ]
+  }
+}

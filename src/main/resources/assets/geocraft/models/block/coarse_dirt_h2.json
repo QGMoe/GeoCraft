@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "geocraft:blocks/coarse_dirt_h2"
+  }
+}
