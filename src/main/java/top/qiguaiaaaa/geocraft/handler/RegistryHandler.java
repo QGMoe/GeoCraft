@@ -91,7 +91,7 @@ public final class RegistryHandler {
             gravel = new BlockSoilGravel();
             grass_path = new BlockSoilGrassPath();
             clay = new BlockSoilClay();
-            registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSoilFarmland.MoreReality():new BlockSoilFarmland())
+            registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSoilFarmland.Finite():new BlockSoilFarmland())
                     .setHardness(0.6F).setTranslationKey("farmland"));
         }else {
             grass = new BlockSoilExtends.Grass();
