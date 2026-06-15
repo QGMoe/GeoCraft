@@ -89,7 +89,18 @@ public class BlockModelShapesMixin {
             this.blockStateMapper.registerBlockStateMapper(assoc, stateMapper);
         }else if(assoc == Blocks.SAND){
             ci.cancel();
-            stateMapper = new StateMap.Builder().withName(BlockSand.VARIANT).ignore(BlockProperties.HUMIDITY).build();
+            stateMapper = new StateMapperBase() {
+                @Override
+                @Nonnull
+                protected ModelResourceLocation getModelResourceLocation(final @Nonnull IBlockState state) {
+                    final @Nonnull Map<IProperty<?>, Comparable<? >> map = Maps.newLinkedHashMap(state.getProperties());
+                    @Nonnull String variantName = BlockSand.VARIANT.getName((BlockSand.EnumType)map.remove(BlockSand.VARIANT));
+                    if(state.getValue(BlockProperties.HUMIDITY) > 0)
+                        variantName = GeoCraft.MODID + ":" + variantName;
+                    else map.remove(BlockProperties.HUMIDITY);
+                    return new ModelResourceLocation(variantName, this.getPropertyString(map));
+                }
+            };
             this.blockStateMapper.registerBlockStateMapper(assoc, stateMapper);
         }
 
@@ -107,10 +118,6 @@ public class BlockModelShapesMixin {
                 return new ModelResourceLocation(name,this.getPropertyString(map));
             }
         };
-        assert Blocks.GRASS != null;
-        assert Blocks.GRAVEL != null;
-        assert Blocks.GRASS_PATH != null;
-        assert Blocks.CLAY != null;
         this.blockStateMapper.registerBlockStateMapper(Blocks.GRASS, new StateMapperBase() {
             @Nonnull
             @Override
@@ -122,12 +129,8 @@ public class BlockModelShapesMixin {
                 return new ModelResourceLocation(name,this.getPropertyString(map));
             }
         });
-        this.blockStateMapper.registerBlockStateMapper(Blocks.GRAVEL,(new StateMap.Builder())
-                .ignore(BlockProperties.HUMIDITY)
-                .build());
+        this.blockStateMapper.registerBlockStateMapper(Blocks.GRAVEL,commonHumidityMapper);
         this.blockStateMapper.registerBlockStateMapper(Blocks.GRASS_PATH,commonHumidityMapper);
-        this.blockStateMapper.registerBlockStateMapper(Blocks.CLAY,(new StateMap.Builder()
-                .ignore(BlockProperties.HUMIDITY)
-                .build()));
+        this.blockStateMapper.registerBlockStateMapper(Blocks.CLAY,commonHumidityMapper);
     }
 }
