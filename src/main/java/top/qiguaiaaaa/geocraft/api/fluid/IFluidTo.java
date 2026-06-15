@@ -25,18 +25,11 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.util;
+package top.qiguaiaaaa.geocraft.api.fluid;
 
 /**
- * @since 0.2.0
+ * @since GeoCraftAPI 0.3.1
  * @author QiguaiAAAA
  */
-public final class APIMathUtil {
-    public static long clamp(long num, long min, long max) {
-        if (num < min) {
-            return min;
-        } else {
-            return Math.min(num, max);
-        }
-    }
+public interface IFluidTo {
 }

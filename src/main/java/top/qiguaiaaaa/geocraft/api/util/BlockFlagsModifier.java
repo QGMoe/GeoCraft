@@ -28,15 +28,37 @@
 package top.qiguaiaaaa.geocraft.api.util;
 
 /**
- * @since 0.2.0
- * @author QiguaiAAAA
+ * @since GeoCraftAPI 0.3.1
  */
-public final class APIMathUtil {
-    public static long clamp(long num, long min, long max) {
-        if (num < min) {
-            return min;
-        } else {
-            return Math.min(num, max);
-        }
+public final class BlockFlagsModifier {
+
+    public static final long DISABLED_FLAGS_MASK = 0xffffffffL;
+
+    public static final long MODIFY_NOTHING = 0L;
+
+    private BlockFlagsModifier(){}
+
+    public static long of(final int blockFlags){
+        return ((long) blockFlags<<32) | ~blockFlags;
+    }
+
+    public static long build(final int enabledFlags){
+        return (long) enabledFlags << 32;
+    }
+
+    public static long build(final int enabledFlags,final int disabledFlags){
+        return ((long)enabledFlags << 32) | disabledFlags;
+    }
+
+    public static long enableFor(final long modifier, final int enabledFlags){
+        return modifier | ((long) enabledFlags <<32);
+    }
+
+    public static long disableFor(final long modifier, final int disabledFlags){
+        return modifier | disabledFlags;
+    }
+
+    public static int modify(final int flags, final long modifier){
+        return (int)((flags | (modifier>>>32)) & ~(modifier&DISABLED_FLAGS_MASK));
     }
 }

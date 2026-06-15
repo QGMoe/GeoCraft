@@ -48,6 +48,7 @@ import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.block.StaticLiquidUpdateEvent;
+import top.qiguaiaaaa.geocraft.api.fluid.FluidHostOperation;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.FluidPhysicsCoreVanilla;
 import top.qiguaiaaaa.geocraft.mixin.common.entity.EntityFallingBlockAccessor;
@@ -125,8 +126,8 @@ public final class VanillaEventHandler {
                     permeable = (ILayeredFluidHost) placeBlock;
                 }else break permeable;
 
-                curQuanta = permeable.getLayers(world,pos,replacedState,fluid);
-                canFillQuanta = permeable.addLayer(world,pos,replacedState,fluid,quanta,false);
+                curQuanta = permeable.getLayers(world,pos,replacedState,null,fluid,true);
+                canFillQuanta = permeable.addLayer(world,pos,replacedState,null,fluid,quanta, FluidHostOperation.SIM_WITH_ASSUMPTION);
                 if(canFillQuanta <=0) {
                     break permeable;
                 }
@@ -138,7 +139,7 @@ public final class VanillaEventHandler {
                     if(!(sourceEntity instanceof EntityFallingBlock)){
                         break permeable;
                     }
-                    quantaState = ((IBlockStateLayeredFluidHost)permeable).getLayerState(replacedState,fluid,curQuanta+canFillQuanta);
+                    quantaState = ((IBlockStateLayeredFluidHost)permeable).getLayerState(replacedState,null,fluid,curQuanta+canFillQuanta);
                     if(quantaState == null){
                         break permeable;
                     }
@@ -146,7 +147,7 @@ public final class VanillaEventHandler {
 
                 switch (source) {
                     case PLAYER:
-                        permeable.addLayer(world,pos,replacedState,fluid,quanta,true);
+                        permeable.addLayer(world,pos,replacedState,null,fluid,quanta,FluidHostOperation.DO_WITH_ASSUMPTION);
                         break;
                     case FALLING_BLOCK:
                         ((EntityFallingBlockAccessor)sourceEntity).setFallTile(quantaState);
@@ -177,14 +178,14 @@ public final class VanillaEventHandler {
                     permeable = (ILayeredFluidHost) placeBlock;
                 }else break permeable;
 
-                canFillAmount = permeable.addAmountInQB(world,pos,replacedState,fluid,amount,false);
+                canFillAmount = permeable.addAmountInQB(world,pos,replacedState,null,fluid,amount,FluidHostOperation.SIM_WITH_ASSUMPTION);
                 if(canFillAmount <=0) {
                     break permeable;
                 }
 
                 switch (source) {
                     case PLAYER:
-                        permeable.addAmountInQB(world,pos,replacedState,fluid,amount,true);
+                        permeable.addAmountInQB(world,pos,replacedState,null,fluid,amount,FluidHostOperation.DO_WITH_ASSUMPTION);
                         break;
                     default: {
                         break permeable;

@@ -31,14 +31,13 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntLists;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.IFluidBlock;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
+import top.qiguaiaaaa.geocraft.api.fluid.IFluidFrom;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
 
 import javax.annotation.Nonnull;
@@ -57,27 +56,27 @@ public final class LayeredFluidHostUtil {
      * 默认最大的水位高度,控制着其他方块的同种液体是否能够流入此方块<br/>
      * 此值为1~16所有整数的最小公倍数
      */
-    public static final int DEFAULT_MAX_HEIGHT = 720720;
-    public static final int SECOND_HEIGHT = DEFAULT_MAX_HEIGHT/2,
-            THIRD_HEIGHT = DEFAULT_MAX_HEIGHT/3,
-            FORTH_HEIGHT = DEFAULT_MAX_HEIGHT/4,
-            FIFTH_HEIGHT = DEFAULT_MAX_HEIGHT/5,
-            SIXTH_HEIGHT = DEFAULT_MAX_HEIGHT/6,
-            SEVENTH_HEIGHT = DEFAULT_MAX_HEIGHT/7,
-            EIGHTH_HEIGHT = DEFAULT_MAX_HEIGHT/8,
-            NINTH_HEIGHT = DEFAULT_MAX_HEIGHT/9,
-            TENTH_HEIGHT = DEFAULT_MAX_HEIGHT/10,
-            ELEVENTH_HEIGHT = DEFAULT_MAX_HEIGHT/11,
-            TWELFTH_HEIGHT = DEFAULT_MAX_HEIGHT/12,
-            THIRTEEN_HEIGHT = DEFAULT_MAX_HEIGHT/13,
-            FOURTEENTH_HEIGHT = DEFAULT_MAX_HEIGHT/14,
-            FIFTEENTH_HEIGHT = DEFAULT_MAX_HEIGHT/15,
-            SIXTEENTH_HEIGHT = DEFAULT_MAX_HEIGHT/16,
+    public static final int ONE_BLOCK_HEIGHT = 720720;
+    public static final int SECOND_HEIGHT = ONE_BLOCK_HEIGHT /2,
+            THIRD_HEIGHT = ONE_BLOCK_HEIGHT /3,
+            FORTH_HEIGHT = ONE_BLOCK_HEIGHT /4,
+            FIFTH_HEIGHT = ONE_BLOCK_HEIGHT /5,
+            SIXTH_HEIGHT = ONE_BLOCK_HEIGHT /6,
+            SEVENTH_HEIGHT = ONE_BLOCK_HEIGHT /7,
+            EIGHTH_HEIGHT = ONE_BLOCK_HEIGHT /8,
+            NINTH_HEIGHT = ONE_BLOCK_HEIGHT /9,
+            TENTH_HEIGHT = ONE_BLOCK_HEIGHT /10,
+            ELEVENTH_HEIGHT = ONE_BLOCK_HEIGHT /11,
+            TWELFTH_HEIGHT = ONE_BLOCK_HEIGHT /12,
+            THIRTEEN_HEIGHT = ONE_BLOCK_HEIGHT /13,
+            FOURTEENTH_HEIGHT = ONE_BLOCK_HEIGHT /14,
+            FIFTEENTH_HEIGHT = ONE_BLOCK_HEIGHT /15,
+            SIXTEENTH_HEIGHT = ONE_BLOCK_HEIGHT /16,
             EMPTY_HEIGHT = 0;
 
     public static final IntList HEIGHTS = IntLists.unmodifiable(new IntArrayList(new int[]{
-            DEFAULT_MAX_HEIGHT
-            ,DEFAULT_MAX_HEIGHT
+            ONE_BLOCK_HEIGHT
+            , ONE_BLOCK_HEIGHT
             ,SECOND_HEIGHT
             ,THIRD_HEIGHT
             ,FORTH_HEIGHT
@@ -97,11 +96,16 @@ public final class LayeredFluidHostUtil {
     private static final ThreadLocal<Set<FlowChoice>> FULL_FLOW_CHOICES = ThreadLocal.withInitial(HashSet::new);
     private static final ToIntFunction<FlowChoice> SORT_BY_NEXT_HEIGHT = FlowChoice::getNextLayerHeight;
 
-    public static boolean isFluidAccepted(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state,@Nonnull Fluid fluid, boolean allowAir) {
+    @Deprecated
+    public static boolean isFluidAccepted(@Nonnull final World world,
+                                          @Nonnull final BlockPos pos,
+                                          @Nonnull final IBlockState state,
+                                          @Nonnull final Fluid fluid,
+                                          final boolean allowAir) {
         Block block = state.getBlock();
 
         if(block instanceof ILayeredFluidHost){
-            return ((ILayeredFluidHost)block).isAcceptedFluid(world,pos,state,fluid);
+            return ((ILayeredFluidHost)block).isAcceptedFluid(world,pos,state,null,fluid);
         }
 
         if(allowAir){
@@ -111,9 +115,14 @@ public final class LayeredFluidHostUtil {
         return false;
     }
 
-    public static int getFluidLayers(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, boolean allowAir){
+    @Deprecated
+    public static int getFluidLayers(@Nonnull final World worldIn,
+                                     @Nonnull final BlockPos pos,
+                                     @Nonnull final IBlockState state,
+                                     @Nonnull final Fluid fluid,
+                                     final boolean allowAir){
         if(state.getBlock() instanceof ILayeredFluidHost){
-            return ((ILayeredFluidHost)state.getBlock()).getLayers(worldIn,pos,state,fluid);
+            return ((ILayeredFluidHost)state.getBlock()).getLayers(worldIn,pos,state,null,fluid);
         }
         return allowAir? FluidUtil.getFluidQuanta(worldIn, pos, state):0;
     }
@@ -127,8 +136,12 @@ public final class LayeredFluidHostUtil {
      * @param choices 四周的流动选择
      * @return 中心剩下的层数
      */
-    public static int averageFlow(int centralLayers,int heightPerLayer, long QBPerLayer,int minLayers, @Nonnull List<FlowChoice> choices) {
-        final Set<FlowChoice> fullChoices = FULL_FLOW_CHOICES.get();
+    public static int averageFlow(int centralLayers,
+                                  int heightPerLayer,
+                                  final long QBPerLayer,
+                                  final int minLayers,
+                                  final @Nonnull List<FlowChoice> choices) {
+        final @Nonnull Set<FlowChoice> fullChoices = FULL_FLOW_CHOICES.get();
         fullChoices.clear();
         if (choices.isEmpty()) return centralLayers;
         if(centralLayers <= minLayers) return centralLayers;
@@ -175,9 +188,10 @@ public final class LayeredFluidHostUtil {
         return block instanceof ILayeredFluidHost;
     }
 
+    @Deprecated
     public static class Sources{
         private static final IBlockState ATMOSPHERE = Blocks.AIR.getDefaultState();
-        public static boolean isAtmosphere(final IBlockState source){
+        public static boolean isAtmosphere(final IFluidFrom source){
             return source == ATMOSPHERE;
         }
         public static boolean isFluid(final IBlockState source){
@@ -188,4 +202,5 @@ public final class LayeredFluidHostUtil {
             return LayeredFluidHostUtil.isLayeredFluidHost(source);
         }
     }
+
 }

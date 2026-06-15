@@ -46,10 +46,9 @@ import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
-import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
-import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
-import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
-import top.qiguaiaaaa.geocraft.api.util.QBUtil;
+import top.qiguaiaaaa.geocraft.api.fluid.FluidHostOperation;
+import top.qiguaiaaaa.geocraft.api.fluid.IFluidFrom;
+import top.qiguaiaaaa.geocraft.api.util.*;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.RealitySnowUpdater;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
@@ -139,7 +138,7 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
                     world.setBlockState(downPos,downState.withProperty(BlockSnow.LAYERS,8));
                 }
             }else{ //否则，将多余的水冻结成冰
-                final int totalWater = isMixture? getLayers(world,pos,state, FluidRegistry.WATER): getLayers(world,downPos,downState,FluidRegistry.WATER);
+                final int totalWater = isMixture? getLayers(state,null, FluidRegistry.WATER): getLayers(downState,EnumFacing.UP,FluidRegistry.WATER);
                 if(newLayers<=8){
                     world.setBlockToAir(pos);
                     world.setBlockState(downPos,downState
@@ -160,13 +159,13 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
         }
         else if(downBlock instanceof ILayeredFluidHost){ //雪和其他方块
             ILayeredFluidHost host = (ILayeredFluidHost) downState.getBlock();
-            final int curLayers_F = getLayers(world,pos,state,null); //这里的 layer为雪的载流方块单位
-            long curAmountSnow = getAmountInQB(world,pos,state, GeoFluids.SNOW);
+            final int curLayers_F = state.getValue(LAYERS)<<1; //这里的 layer为雪的载流方块单位
+            long curAmountSnow = getAmountInQB(world,pos,state,null, GeoFluids.SNOW);
             if (isMixture) {
                 final boolean hasHalfQuanta = (curLayers_F >> 1 & 1) != 0;
 
                 try (final @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world, pos, true)) {
-                    long curAmountWater = getAmountInQB(world, pos, state, FluidRegistry.WATER);
+                    long curAmountWater = getAmountInQB(world, pos, state,null, FluidRegistry.WATER);
 
                     final boolean melting, doMelted;
                     if (hasHalfQuanta) {
@@ -176,7 +175,8 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
                     boolean changed;
 
                     assert curAmountWater > 0;
-                    final long filledAmountWater = host.addAmountInQB(world, downPos, downState, FluidRegistry.WATER, curAmountWater, true);
+                    final long filledAmountWater = host.addAmountInQB(world, downPos, downState, EnumFacing.UP, FluidRegistry.WATER, curAmountWater,
+                            FluidHostOperation.DO_WITH_CERTAINTY);
                     curAmountWater -= filledAmountWater; //减去已经填充的量
                     changed = filledAmountWater > 0;
                     //现在，若剩余的量大于等于刚才融化以补充成整数层的量，说明没有用到融化的部分，因此不需要融化一部分雪以补充水。但若小于，则直接当成融化，并扣除相应热量。
@@ -205,7 +205,8 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
                         } else freezing = false;
 
                         assert curAmountSnow > 0;
-                        final long filledAmountSnow = host.addAmountInQB(world, downPos, downState, GeoFluids.SNOW, curAmountSnow, true);
+                        final long filledAmountSnow = host.addAmountInQB(world, downPos, downState, EnumFacing.UP,GeoFluids.SNOW, curAmountSnow,
+                                FluidHostOperation.DO_WITH_CERTAINTY);
                         curAmountSnow -= filledAmountSnow;
                         changed |= filledAmountSnow > 0;
                         doFreeze = freezing && curAmountSnow < QBUtil.HALF_QUANTA_VOLUME;
@@ -244,7 +245,8 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
 
                 return true;
             }else { //非混合物，很简单，直接像普通流体一样流入即可
-                final long filledAmountSnow = host.addAmountInQB(world,downPos,downState,GeoFluids.SNOW,curAmountSnow,true);
+                final long filledAmountSnow = host.addAmountInQB(world,downPos,downState,EnumFacing.UP,GeoFluids.SNOW,curAmountSnow,
+                        FluidHostOperation.DO_WITH_CERTAINTY);
                 curAmountSnow = curAmountSnow-filledAmountSnow;
                 if(curAmountSnow<=0) world.setBlockToAir(pos);
                 else {
@@ -269,26 +271,29 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
     //**********
 
     @Override
-    public boolean isAcceptedFluid(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
+    public boolean isAcceptedFluid(@Nonnull final IBlockState state,
+                                   @Nullable final EnumFacing side,
+                                   @Nonnull final Fluid fluid) {
         return fluid == FluidRegistry.WATER || fluid == GeoFluids.SNOW;
     }
 
     @Override
-    public int getLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
+    public int getLayers(@Nonnull final IBlockState state,
+                         @Nullable final EnumFacing side,
+                         @Nonnull final Fluid fluid) {
         if(fluid == FluidRegistry.WATER){
             return state.getValue(MIXTURE)?state.getValue(LAYERS):0;
         }else if(fluid == GeoFluids.SNOW){
             return state.getValue(MIXTURE)?state.getValue(LAYERS):state.getValue(LAYERS)<<1;
-        }else if(fluid == null){
-            return state.getValue(LAYERS)<<1;
         }
         return 0;
     }
 
     @Override
-    public int getMaxLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        if(fluid == null) return 16;
-        if(!isAcceptedFluid(world, pos, state, fluid)) return 0;
+    public int getMaxLayers(@Nonnull final IBlockState state,
+                            @Nullable final EnumFacing side,
+                            @Nonnull final Fluid fluid) {
+        if(!isAcceptedFluid(state, side, fluid)) return 0;
         final boolean mixture = state.getValue(MIXTURE);
         final int layer = state.getValue(LAYERS);
         if(mixture) return 16-layer;
@@ -296,34 +301,53 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
     }
 
     @Override
-    public int getEmptyHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
+    public int getEmptyHeight(@Nonnull final IBlockState state,
+                              @Nullable final EnumFacing side,
+                              @Nonnull final Fluid fluid) {
         if(fluid == FluidRegistry.WATER){
             return 0;
         }else if(fluid == GeoFluids.SNOW){
-            return state.getValue(MIXTURE)?state.getValue(LAYERS)* getHeightPerLayer(world,pos,state):0;
+            return state.getValue(MIXTURE)?state.getValue(LAYERS)* getHeightPerLayer(state,side):0;
         }
         return 0;
     }
 
     @Override
-    public int getHeightPerLayer(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state) {
+    public int getMaxHeight(@Nonnull IBlockState state, @Nullable EnumFacing side, @Nonnull Fluid fluid) {
+        return 0;
+    }
+
+    @Override
+    public int getHeightPerLayer(@Nonnull final IBlockState state,@Nullable final EnumFacing side) {
         return LayeredFluidHostUtil.SIXTEENTH_HEIGHT;
     }
 
     @Override
-    public long getAmountInQBPerLayer(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
+    public long getAmountInQBPerLayer(@Nonnull final IBlockState state,
+                                      @Nullable final EnumFacing side,
+                                      @Nonnull final Fluid fluid) {
         return QBUtil.HALF_QUANTA_VOLUME;
     }
 
+    //TODO: Fix Snow's Add Layer
     @Override
-    public void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int 添加的层数〇载流方块层, @Nullable NBTTagCompound nbt, int disabledBlockFlags, int enabledBlockFlags) {
-        if(!isAcceptedFluid(world, pos, state, fluid)) return;
-        if(添加的层数〇载流方块层== 0) return;
+    public int addLayer(@Nonnull final World world,
+                        @Nonnull final BlockPos pos,
+                        @Nonnull final IBlockState state,
+                        @Nullable final EnumFacing side,
+                        @Nonnull final Fluid fluid,
+                        int 添加的层数〇载流方块层,
+                        @Nonnull final FluidHostOperation operation,
+                        @Nullable final NBTTagCompound nbt,
+                        @Nullable final IFluidFrom from,
+                         final long blockFlagsModifier) {
+        if(!isAcceptedFluid(state , side, fluid)) return 0;
+        if(添加的层数〇载流方块层== 0) return 0;
         final boolean mixture = state.getValue(MIXTURE);
 
         try(final @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)){
 
-            final int flag = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
+            final int flag = BlockFlagsModifier.modify(Constants.BlockFlags.DEFAULT,blockFlagsModifier);
 
             final int 雪本身层〇雪层 = state.getValue(LAYERS);
             int 总层数〇载流方块层 = 雪本身层〇雪层<<1;
@@ -397,18 +421,19 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
     }
 
     @Override
-    public int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, @Nullable NBTTagCompound nbt, int disabledBlockFlags, int enabledBlockFlags, boolean doAdd) {
-        layer = (layer>>1)<<1;
-        return IBlockStateLayeredFluidHost.super.addLayer(world, pos, state, fluid, layer, nbt, disabledBlockFlags, enabledBlockFlags, doAdd);
-    }
-
-    @Override
-    public boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int 新的层数〇载流方块层,@Nullable NBTTagCompound nbt,final int disabledBlockFlags,final int enabledBlockFlags) {
-        if(!isAcceptedFluid(world, pos, state, fluid)) return false;
+    public boolean setLayer(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nullable final EnumFacing side,
+                            @Nonnull final Fluid fluid,
+                            final int 新的层数〇载流方块层,
+                            @Nullable final NBTTagCompound nbt,
+                            final long blockFlagsModifier) {
+        if(!isAcceptedFluid(state, side, fluid)) return false;
         if(新的层数〇载流方块层<0 || 新的层数〇载流方块层 > 16) return false;
         final boolean mixture = state.getValue(MIXTURE);
 
-        final int flag = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
+        final int flag = BlockFlagsModifier.modify(Constants.BlockFlags.DEFAULT,blockFlagsModifier);
 
         final int 雪本身层〇雪层 = state.getValue(LAYERS);
         int 总层数〇载流方块层 = 雪本身层〇雪层<<1;
@@ -471,8 +496,11 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
 
     @Nullable
     @Override
-    public IBlockState getLayerState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int 新的层数〇载流方块层) {
-        if(!isAcceptedFluid(null,null,state,fluid)) return null;
+    public IBlockState getLayerState(@Nonnull final IBlockState state,
+                                     @Nullable final EnumFacing side,
+                                     @Nonnull final Fluid fluid,
+                                     final int 新的层数〇载流方块层) {
+        if(!isAcceptedFluid(state,side,fluid)) return null;
         if(新的层数〇载流方块层<0 || 新的层数〇载流方块层 > 16) return null;
         final boolean mixture = state.getValue(MIXTURE);
         final int 雪本身层〇雪层 = state.getValue(LAYERS);
@@ -527,5 +555,11 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLay
                 }
             }
         }
+    }
+
+    @Nullable
+    @Override
+    public EnumFacing getDefaultSide(@Nonnull IBlockState state) {
+        return null;
     }
 }

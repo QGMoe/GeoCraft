@@ -25,18 +25,35 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.util;
+package top.qiguaiaaaa.geocraft.api.fluid;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * @since 0.2.0
+ * @since GeoCraftAPI 0.3.1
  * @author QiguaiAAAA
  */
-public final class APIMathUtil {
-    public static long clamp(long num, long min, long max) {
-        if (num < min) {
-            return min;
-        } else {
-            return Math.min(num, max);
+public interface IFluidFrom {
+    @Nonnull IFluidFrom ATMOSPHERE = new IFluidFrom() {
+        @Override
+        public String toString() {
+            return "[Atmosphere Source]";
         }
+    };
+
+    @Nonnull IFluidFrom SURFACE_RUNOFF = new IFluidFrom() {
+        @Override
+        public String toString() {
+            return "[Surface Run-off]";
+        }
+    };
+
+    static boolean isAtmosphere(final @Nullable IFluidFrom from){
+        return from == ATMOSPHERE;
+    }
+
+    static boolean isSurfaceRunoff(final @Nullable IFluidFrom from){
+        return from == SURFACE_RUNOFF;
     }
 }

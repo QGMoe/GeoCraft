@@ -35,7 +35,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fluids.Fluid;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -43,7 +42,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.block.finite.IBlockLiquidFinite;
-import top.qiguaiaaaa.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
@@ -54,7 +52,7 @@ import javax.annotation.Nonnull;
 import java.util.*;
 
 @Mixin(value = BlockDynamicLiquid.class)
-public class BlockDynamicLiquidMixin extends BlockLiquid implements IBlockLiquidFinite, ILayeredFluidHostFiniteLiquid {
+public class BlockDynamicLiquidMixin extends BlockLiquid implements IBlockLiquidFinite{
     @Unique
     private FiniteFlowingVanilla 天圆地方$FINITE$flowingHandler;
 
@@ -103,17 +101,6 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements IBlockLiquid
         if (!this.checkForMixing(worldIn, pos, state)) {
             MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
         }
-    }
-
-    //*********
-    // 载流方块
-    //*********
-
-    @Nonnull
-    @Override
-    @Unique
-    public Fluid 天圆地方$getFluid() {
-        return this.天圆地方$FINITE$flowingHandler.fluid;
     }
 
     // **************

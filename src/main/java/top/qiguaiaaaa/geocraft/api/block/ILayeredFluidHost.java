@@ -28,16 +28,16 @@
 package top.qiguaiaaaa.geocraft.api.block;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
-import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
-import top.qiguaiaaaa.geocraft.api.util.QBUtil;
+import top.qiguaiaaaa.geocraft.api.fluid.FluidHostOperation;
+import top.qiguaiaaaa.geocraft.api.fluid.IFluidFrom;
+import top.qiguaiaaaa.geocraft.api.fluid.IFluidTo;
+import top.qiguaiaaaa.geocraft.api.util.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,510 +45,1141 @@ import javax.annotation.Nullable;
 /**
  * 载流方块，全称分层流体承载方块，英文名 Layered Fluid Host Block <br/>
  * 注意这和含水方块有本质区别，含水方块是载流方块的子集。例如，泥土不是含水方块，但应该为载流方块。<br/>
+ * 载流方块的结构有三层，分别为最外层的方块，中层的流体容器，底层的流体层。一个方块在同一时刻，每个方向都对应一个流体容器，一个流体容器可以对应多个方向。
+ * 每个流体容器可以容纳多种流体，相同流体以层为单位在垂直方向上堆叠形成流体柱，同一个流体容器每层的高度是一致的，但同一个流体容器的不同液体其每层可以含有不同的流体量。
+ * 对于一个流体容器内某特定流体形成的流体柱，其在空间位置上仅由 Y 坐标体现，并可以在同一流体容器内和其他不同流体柱存在高度范围上的重叠。不同流体容器也可以在高度范围上重叠。
  * @author QiguaiAAAA
+ * @implNote 对于依赖外部数据进行状态存储的方块，例如状态实体、流体状态（FluidloggedAPI）之类的方块，建议在假设情况下以默认的状态为准。
+ * 当然如果觉得实现非常复杂，可以干脆在假设情况下完全返回 false，就目前为止，这样的实现下不会有太大的问题。
  */
 public interface ILayeredFluidHost {
 
     /**
-     * 当前方块是否允许存储对应流体
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态
-     * @param fluid 流体
-     * @return 若可以,则返回true
-     */
-    boolean isAcceptedFluid(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nonnull Fluid fluid);
-
-    /**
-     * 查询指定位置载流方块的指定流体的层数。<br/>
-     * 请注意，有可能当前位置的方块不是该方块，因此请注意判断当前位置的方块状态。
-     * @param world 世界
-     * @param pos 位置
-     * @param state 方块状态
-     * @param fluid 流体，若为null则表示查询当前方块所有流体的合层数
-     * @return 对应流体的层数
-     */
-    int getLayers(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid);
-
-    /**
-     * 查询指定流体的量，以QB为单位
-     * @param world 世界
-     * @param pos 位置
-     * @param state 方块状态
-     * @param fluid 需要查询的流体
-     * @return 对应流体的量，以QB为单位
-     */
-    default long getAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
-        return getLayers(world, pos, state, fluid)* getAmountInQBPerLayer(world, pos, state,fluid);
-    }
-
-    /**
-     * 查询指定位置方块的指定流体的最大层数。
-     * @param world 世界
-     * @param pos 位置
-     * @param state 方块状态
-     * @param fluid 流体，若为null则表示查询当前方块所有流体的合层数最大值
-     * @return 对应流体的层数最大值
-     */
-    default int getMaxLayers(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid){
-        return (LayeredFluidHostUtil.DEFAULT_MAX_HEIGHT -getEmptyHeight(world,pos,state,fluid))/ getHeightPerLayer(world,pos,state);
-    }
-
-    /**
-     * 查询指定流体最大含量，单位QB
-     * @param world 世界
-     * @param pos 位置
-     * @param state 方块状态
-     * @param fluid 需要查询的流体，若为null则表示查询当前方块所有流体的最大值
-     * @return 对应流体的含量最大值，单位QB
-     */
-    default long getMaxAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
-        return getMaxLayers(world, pos, state, fluid)* getAmountInQBPerLayer(world, pos, state,fluid);
-    }
-
-    /**
-     * 返回液面高度。
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块在没有提供面参数时，默认使用作为流体容器的面
+     * @since GeoCraftAPI 0.3.1
      * @param world 所在世界
-     * @param pos 所在位置
-     * @param state 方块状态
-     * @return 液面高度，数字越大越高。
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @return 在给定条件下，默认使用作为流体容器的面，可以为 null。
+     * 特别的，当为 null 时表示该方块只有且只能有一个流体容器。
      */
-    default int getHeight(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nullable Fluid fluid){
-        return getEmptyHeight(world,pos,state,fluid)+ getLayers(world,pos,state,fluid)* getHeightPerLayer(world,pos,state);
+    @Nullable
+    default EnumFacing getDefaultSide(@Nonnull final World world,
+                              @Nonnull final BlockPos pos,
+                              @Nonnull final IBlockState state){
+        return getDefaultSide(world,pos,state,false);
     }
 
     /**
-     * 返回若没有指定液体的情况下的基准高度。含水方块或一般的流体方块固定为0。
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块在没有提供面参数时，默认使用作为流体容器的面
+     * @since GeoCraftAPI 0.3.1
      * @param world 所在世界
-     * @param pos 查询位置
-     * @param state 方块状态
-     * @param fluid 流体，若为null则意思是没有含有任何流体时的基准高度
-     * @return 基准高度，单位和液面高度一样
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，默认使用作为流体容器的面，可以为 null。
+     * 特别的，当为 null 时表示该方块一定只有且只能有一个流体容器。
      */
-    int getEmptyHeight(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nullable Fluid fluid);
+    @Nullable
+    EnumFacing getDefaultSide(@Nonnull final World world,
+                              @Nonnull final BlockPos pos,
+                              @Nonnull final IBlockState state,
+                              final boolean isAssumed);
 
     /**
-     * 返回指定位置方块状态下指定流体能够有的最高液面高度
-     * @param state 方块状态
-     * @param fluid 流体，若为null则意思是含有任意流体时所能达到的最高液面高度
-     * @return 最高液面高度
+     * 在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器是否能够承载指定的流体
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 指定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 询问的流体
+     * @return 给定的流体在当前条件下是否被允许流入指定的方块
      */
-    default int getMaxHeight(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nullable Fluid fluid){
-        return getEmptyHeight(world,pos,state,fluid) + getMaxLayers(world,pos,state,fluid)* getHeightPerLayer(world,pos,state);
+    default boolean isAcceptedFluid(@Nonnull final World world,
+                                    @Nonnull final BlockPos pos,
+                                    @Nonnull final IBlockState state,
+                                    @Nullable final EnumFacing side,
+                                    @Nonnull final Fluid fluid){
+        return isAcceptedFluid(world,pos,state,side,fluid,false);
     }
 
     /**
-     * 对于指定位置的方块状态来说,每层液体的高度，必须是{@link #getMaxHeight}的因数
-     * @param world 世界
-     * @param pos 位置
-     * @param state 方块状态
-     * @return 每层的高度
+     * 在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器是否能够承载指定的流体
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 指定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 询问的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的方块状态一致，则应为 true，否则为 false
+     * @return 给定的流体在当前条件下是否被允许流入指定的方块
+     * @apiNote 例如，isAcceptedFluid(主世界,{1,2,3},土壤[humidity=1],水,false) 就表示确定主世界位于(1,2,3)的方块是湿度为 1 的土壤，并询问在这样的条件下，水是否可以被土壤承载。
+     * 如果最后的 false 改为 true，则表示调用者不确定这个位置是否真的是土壤，它可能是其他方块，例如空气、水甚至石头，此时返回的结果就表示假设这个位置是湿度为 1 的土壤，这时候是否能承载水分。
+     * 后面这种情况可见于玩家放置方块时的检测。比如玩家要在水中放置一个土壤，在土壤放下去之前需要检查玩家手中的土壤是否能填入水，这时候就需要假设一下了。
      */
-    int getHeightPerLayer(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state);
+    boolean isAcceptedFluid(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nullable final EnumFacing side,
+                            @Nonnull final Fluid fluid,
+                            final boolean isAssumed);
 
     /**
-     * 获取每层的以QB为单位的液体量
-     * @param world 世界
-     * @param pos 位置
-     * @param state 方块状态
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器承载指定流体的层数
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
      * @param fluid 查询的流体
-     * @return QB为单位的液体量
+     * @return 在给定条件下，方块承载指定流体的层数
      */
-    long getAmountInQBPerLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid);
-
-    /**
-     * @see #addLayer(World, BlockPos, IBlockState, Fluid, int, int)
-     */
-    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer){
-        addLayer(world, pos, state, fluid, layer,null,0,0);
-    }
-
-    /**
-     * 添加或移除指定层(layer)指定的流体<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}<br/>
-     * 一般请使用{@link #addLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}，因为该方法会直接添加而不返回具体添加了多少。
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，必须是当前方块的状态
-     * @param fluid 需要添加或移除的流体
-     * @param layer 层数,若为负值则为提取(remove or drain).建议使用{@link #drainLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     */
-    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags){
-        addLayer(world, pos, state, fluid, layer,null, disabledBlockFlags,0);
+    default int getLayers(@Nonnull final World world,
+                          @Nonnull final BlockPos pos,
+                          @Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side,
+                          @Nonnull final Fluid fluid){
+        return getLayers(world,pos,state,side,fluid,false);
     }
 
     /**
-     * 添加或移除指定层(layer)指定的流体<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}<br/>
-     * 一般请使用{@link #addLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}，因为该方法会直接添加而不返回具体添加了多少。<br/>
-     * 和 {@link #setLayer(World, BlockPos, IBlockState, Fluid, int, int, int)}不同的是，addLayer要求指定位置的方块状态一定是state。
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，必须是当前方块的状态
-     * @param fluid 需要添加或移除的流体
-     * @param layer 层数,若为负值则为提取(remove or drain).建议使用{@link #drainLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param enabledBlockFlags 需要的方块更新 flags
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器承载指定流体的层数
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，方块承载指定流体的层数
      */
-    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags,final int enabledBlockFlags){
-        addLayer(world, pos, state, fluid, layer,null, disabledBlockFlags, enabledBlockFlags);
+    default int getLayers(@Nonnull final World world,
+                  @Nonnull final BlockPos pos,
+                  @Nonnull final IBlockState state,
+                  @Nullable final EnumFacing side,
+                  @Nonnull final Fluid fluid,
+                  final boolean isAssumed){
+        if(!isAcceptedFluid(world, pos, state, side, fluid,isAssumed)) return 0;
+        return (getMaxHeight(world, pos, state, side, fluid, isAssumed) - getEmptyHeight(world, pos, state, side, fluid, isAssumed))
+                /getHeightPerLayer(world, pos, state, side, isAssumed);
     }
 
     /**
-     * 添加或移除指定层(layer)指定的流体<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}<br/>
-     * 一般请使用{@link #addLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}，因为该方法会直接添加而不返回具体添加了多少。<br/>
-     * 和 {@link #setLayer(World, BlockPos, IBlockState, Fluid, int, int, int)}不同的是，addLayer要求指定位置的方块状态一定是state。
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
-     * @param fluid 需要添加或移除的流体
-     * @param layer 层数,若为负值则为提取(remove or drain).建议使用{@link #drainLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}
-     * @param nbt NBT标签
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param enabledBlockFlags 需要的方块更新 flags
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器承载指定流体所用的每层容量大小，以 QB 为单位
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 在给定条件下，单层指定流体以 QB 为单位记的容量
      */
-    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags){
-        if(layer == 0) return;
-        final int curLayer = getLayers(world, pos, state, fluid),maxLayer = getMaxLayers(world, pos, state, fluid);
-        layer = MathHelper.clamp(layer,-curLayer,maxLayer-curLayer);
-        if(layer == 0) return;
-        setLayer(world, pos, state, fluid, curLayer+layer,nbt, disabledBlockFlags,enabledBlockFlags);
+    default long getAmountInQBPerLayer(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid){
+        return getAmountInQBPerLayer(world,pos,state,side,fluid,false);
     }
 
     /**
-     * 添加指定层液体。<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
-     * @param fluid 要添加的流体
-     * @param layer 层数
-     * @param doAdd 是否真的添加
-     * @return 实际添加的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器承载指定流体所用的每层容量大小，以 QB 为单位
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，单层指定流体以 QB 为单位记的容量
      */
-    default int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, boolean doAdd){
-        return addLayer(world, pos, state, fluid, layer,null, 0,0,doAdd);
+    long getAmountInQBPerLayer(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid,
+                               final boolean isAssumed);
+
+    /**
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器承载指定流体的量，以 QB 为单位
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 在给定条件下，方块承载指定流体的量，以 QB 为单位
+     */
+    default long getAmountInQB(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid){
+        return getLayers(world, pos, state, side,fluid,false)* getAmountInQBPerLayer(world, pos, state,side,fluid,false);
     }
 
     /**
-     * 添加指定层液体。<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
-     * @param fluid 要添加的流体
-     * @param layer 层数
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param doAdd 是否真的添加
-
-     * @return 实际添加的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器承载指定流体的量，以 QB 为单位
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，方块承载指定流体的量，以 QB 为单位
      */
-    default int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags, boolean doAdd){
-        return addLayer(world, pos, state, fluid, layer,null, disabledBlockFlags,0, doAdd);
+    default long getAmountInQB(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid,
+                               final boolean isAssumed){
+        return getLayers(world, pos, state, side,fluid,isAssumed) * getAmountInQBPerLayer(world, pos, state,side,fluid,isAssumed);
     }
 
     /**
-     * 添加指定层液体。<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
-     * @param fluid 要添加的流体
-     * @param layer 层数
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param enabledBlockFlags 启用的方块更新 flags
-     * @param doAdd 是否真的添加
-
-     * @return 实际添加的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器每层流体的高度
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @return 在给定条件下，方块承载指定流体的量，以 QB 为单位
+     * @implSpec 返回的值必须是 {@link #getMaxHeight} 的因数
      */
-    default int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags,final int enabledBlockFlags, boolean doAdd){
-        return addLayer(world, pos, state, fluid, layer,null, disabledBlockFlags, enabledBlockFlags, doAdd);
+    default int getHeightPerLayer(@Nonnull final World world,
+                                  @Nonnull final BlockPos pos,
+                                  @Nonnull final IBlockState state,
+                                  @Nullable final EnumFacing side){
+        return getHeightPerLayer(world,pos,state,side,false);
     }
 
     /**
-     * 添加指定层液体。<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
-     * @param fluid 要添加的流体
-     * @param layer 层数
-     * @param nbt NBT标签
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param enabledBlockFlags 启用的方块更新 flags
-     * @param doAdd 是否真的添加
-
-     * @return 实际添加的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器每层流体的高度
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，方块承载指定流体的量，以 QB 为单位
+     * @implSpec 返回的值必须是 {@link #getMaxHeight} 的因数
      */
-    default int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,@Nullable NBTTagCompound nbt,final int disabledBlockFlags,final int enabledBlockFlags, boolean doAdd){
-        if(layer == 0) return 0;
-        int curLayer = getLayers(world,pos,state,fluid);
-        int layerInFact = MathHelper.clamp(layer,-curLayer, getMaxLayers(world,pos,state,fluid)-curLayer);
-        if(layerInFact == 0) return 0;
-        if(doAdd) addLayer(world, pos, state, fluid,layerInFact,nbt,disabledBlockFlags,enabledBlockFlags);
-        return layerInFact;
+    int getHeightPerLayer(@Nonnull final World world,
+                          @Nonnull final BlockPos pos,
+                          @Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side,
+                          final boolean isAssumed);
+
+    /**
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器，指定流体被承载时的基准高度。
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 在给定条件下，指定流体的基准高度。
+     */
+    default int getEmptyHeight(@Nonnull final World world,
+                       @Nonnull final BlockPos pos,
+                       @Nonnull final IBlockState state,
+                       @Nullable final EnumFacing side,
+                       @Nonnull final Fluid fluid){
+        return getEmptyHeight(world,pos,state,side,fluid,false);
     }
 
     /**
-     * 添加指定量液体，以QB为单位。<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
-     * @param fluid 要添加的流体
-     * @param amount 液体量
-     * @param doAdd 是否真的添加
-     * @return 实际添加的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器，指定流体被承载时的基准高度。
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，指定流体的基准高度。
      */
-    default long addAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount, boolean doAdd){
-        return addAmountInQB(world, pos, state, fluid, amount,null,0,0, doAdd);
+    int getEmptyHeight(@Nonnull final World world,
+                       @Nonnull final BlockPos pos,
+                       @Nonnull final IBlockState state,
+                       @Nullable final EnumFacing side,
+                       @Nonnull final Fluid fluid,
+                       final boolean isAssumed);
+
+
+    /**
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体的表面高度
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 在给定条件下，流体表面的高度。
+     * @apiNote 反重力流体在考虑时不用反转，仍然当成普通流体看待。
+     */
+    default int getHeight(@Nonnull final World world,
+                          @Nonnull final BlockPos pos,
+                          @Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side,
+                          @Nonnull final Fluid fluid){
+        return getEmptyHeight(world,pos,state,side,fluid,false)+
+                getLayers(world,pos,state,side,fluid,false)* getHeightPerLayer(world,pos,state,side,false);
     }
 
     /**
-     * 添加指定量液体，以QB为单位。<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
-     * @param fluid 要添加的流体
-     * @param amount 液体量
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param doAdd 是否真的添加
-     * @return 实际添加的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体的表面高度
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，流体表面的高度。
+     * @apiNote 反重力流体在考虑时不用反转，仍然当成普通流体看待。
      */
-    default long addAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount, final int disabledBlockFlags, boolean doAdd){
-        return addAmountInQB(world, pos, state, fluid, amount,null, disabledBlockFlags,0, doAdd);
+    default int getHeight(@Nonnull final World world,
+                          @Nonnull final BlockPos pos,
+                          @Nonnull final IBlockState state,
+                          @Nullable final EnumFacing side,
+                          @Nonnull final Fluid fluid,
+                          final boolean isAssumed){
+        return getEmptyHeight(world,pos,state,side,fluid,isAssumed)+
+                getLayers(world,pos,state,side,fluid,isAssumed)* getHeightPerLayer(world,pos,state,side,isAssumed);
     }
 
     /**
-     * 添加指定量液体，以QB为单位。<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
-     * @param fluid 要添加的流体
-     * @param amount 液体量
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param enabledBlockFlags 允许的方块更新 flags
-     * @param doAdd 是否真的添加
-     * @return 实际添加的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体能够有的最高表面高度
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 在给定条件下，指定流体能够有的最高表面高度。
+     * @apiNote 反重力流体在考虑时不用反转，仍然当成普通流体看待。
      */
-    default long addAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount, final int disabledBlockFlags,final int enabledBlockFlags, boolean doAdd){
-        return addAmountInQB(world, pos, state, fluid, amount,null, disabledBlockFlags, enabledBlockFlags, doAdd);
+    default int getMaxHeight(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid){
+        return getMaxHeight(world,pos,state,side,fluid,false);
     }
 
     /**
-     * 添加指定量液体，以QB为单位。<br/>
-     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
-     * @param fluid 要添加的流体
-     * @param amount 液体量
-     * @param nbt NBT
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param enabledBlockFlags 允许的方块更新 flags
-     * @param doAdd 是否真的添加
-     * @return 实际添加的量
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体能够有的最高表面高度
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，指定流体能够有的最高表面高度。
+     * @apiNote 反重力流体在考虑时不用反转，仍然当成普通流体看待。
      */
-    default long addAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount,@Nullable NBTTagCompound nbt, final int disabledBlockFlags,final int enabledBlockFlags, boolean doAdd){
-        if(amount == 0L) return 0L;
-        if(amount < 0L) return -drainAmountInQB(world, pos, state, fluid, -amount, doAdd);
-        final long amountPerLayer = getAmountInQBPerLayer(world, pos, state,fluid);
-        amount -= (amount%amountPerLayer);
-        if(amount == 0L) return 0L;
-        long curAmount = getAmountInQB(world, pos, state, fluid);
-        long amountInFact = Math.min(amount, getMaxAmountInQB(world, pos, state, fluid)-curAmount);
-        if(amountInFact == 0L) return 0L;
-        return addLayer(world,pos,state,fluid,(int)(amount/amountPerLayer),nbt,disabledBlockFlags,enabledBlockFlags,doAdd)*amountPerLayer;
+    int getMaxHeight(@Nonnull final World world,
+                     @Nonnull final BlockPos pos,
+                     @Nonnull final IBlockState state,
+                     @Nullable final EnumFacing side,
+                     @Nonnull final Fluid fluid,
+                     final boolean isAssumed);
+
+    /**
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体的最大层数。
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 在给定条件下，对应流体的层数最大值
+     */
+    default int getMaxLayers(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid){
+        return (getMaxHeight(world,pos,state,side,fluid,false) - getEmptyHeight(world,pos,state,side,fluid,false))
+                / getHeightPerLayer(world,pos,state,side,false);
     }
 
     /**
-     * 吸取指定层流体<br/>
-     * 在吸取前一般需要先检查{@link #canDrain(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，需要和 world#getBlockState 一致
-     * @param fluid 要吸取的流体
-     * @param layer 层数
-     * @param doDrain 是否真的吸取
-     * @return 实际吸取的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体的最大层数。
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，对应流体的层数最大值
      */
-    default int drainLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, boolean doDrain){
-        return drainLayer(world, pos, state, fluid, layer,0,0, doDrain);
+    default int getMaxLayers(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid,
+                             final boolean isAssumed){
+        return (getMaxHeight(world,pos,state,side,fluid,isAssumed) - getEmptyHeight(world,pos,state,side,fluid,isAssumed))
+                / getHeightPerLayer(world,pos,state,side,isAssumed);
     }
 
     /**
-     * 吸取指定层流体<br/>
-     * 在吸取前一般需要先检查{@link #canDrain(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，需要和 world#getBlockState 一致
-     * @param fluid 要吸取的流体
-     * @param layer 层数
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param doDrain 是否真的吸取
-     * @return 实际吸取的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体的最大含量，单位为 QB
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 在给定条件下，对应流体的最大含量，单位为 QB
      */
-    default int drainLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags, boolean doDrain){
-        return drainLayer(world, pos, state, fluid, layer, disabledBlockFlags,0, doDrain);
+    default long getMaxAmountInQB(@Nonnull final World world,
+                                  @Nonnull final BlockPos pos,
+                                  @Nonnull final IBlockState state,
+                                  @Nullable final EnumFacing side,
+                                  @Nonnull final Fluid fluid){
+        return getMaxLayers(world, pos, state, side, fluid, false)* getAmountInQBPerLayer(world, pos, state, side, fluid, false);
     }
 
     /**
-     * 吸取指定层流体<br/>
-     * 在吸取前一般需要先检查{@link #canDrain(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态，需要和 world#getBlockState 一致
-     * @param fluid 要吸取的流体
-     * @param layer 层数
-     * @param disabledBlockFlags 禁止的方块更新 flags
-     * @param enabledBlockFlags 允许的方块更新 flags
-     * @param doDrain 是否真的吸取
-     * @return 实际吸取的层数
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体的最大含量，单位为 QB
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，对应流体的最大含量，单位为 QB
      */
-    default int drainLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags,final int enabledBlockFlags, boolean doDrain){
-        if(layer == 0) return 0;
-        return -addLayer(world, pos, state, fluid, -layer,disabledBlockFlags,enabledBlockFlags, doDrain);
-    }
-
-    default long drainAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount, boolean doDrain){
-        return drainAmountInQB(world, pos, state, fluid, amount, 0,0, doDrain);
-    }
-
-    default long drainAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount, final int disabledBlockFlags, boolean doDrain){
-        return drainAmountInQB(world, pos, state, fluid, amount, disabledBlockFlags,0 ,doDrain);
-    }
-
-    default long drainAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount, final int disabledBlockFlags,final int enabledBlockFlags, boolean doDrain){
-        if(amount == 0L) return 0L;
-        if(amount < 0L) return -addAmountInQB(world, pos, state, fluid, -amount, doDrain);
-        final long amountPerLayer = getAmountInQBPerLayer(world, pos, state,fluid);
-        amount += (amountPerLayer-(amount%amountPerLayer));
-        long curAmount = getAmountInQB(world, pos, state, fluid);
-        long amountInFact = Math.min(amount,curAmount);
-        if(amountInFact == 0) return 0;
-        return drainLayer(world,pos,state,fluid,(int) (amount/amountPerLayer),disabledBlockFlags,enabledBlockFlags,doDrain)*amountPerLayer;
-    }
-
-    default FluidStack drainAmountInMB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull FluidStack stack, boolean doDrain){
-        return new FluidStack(stack,QBUtil.toMB(drainAmountInQB(world,pos,state, stack.getFluid(),QBUtil.toQBFromMB(stack.amount),doDrain)));
-    }
-
-    default FluidStack drainAmountInMB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull FluidStack stack, final int disabledBlockFlags, boolean doDrain){
-        return new FluidStack(stack,QBUtil.toMB(drainAmountInQB(world,pos,state, stack.getFluid(),QBUtil.toQBFromMB(stack.amount),disabledBlockFlags,doDrain)));
-    }
-
-    default FluidStack drainAmountInMB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull FluidStack stack, final int disabledBlockFlags,final int enabledBlockFlags, boolean doDrain){
-        return new FluidStack(stack,QBUtil.toMB(drainAmountInQB(world,pos,state, stack.getFluid(),QBUtil.toQBFromMB(stack.amount),disabledBlockFlags,enabledBlockFlags,doDrain)));
+    default long getMaxAmountInQB(@Nonnull final World world,
+                                  @Nonnull final BlockPos pos,
+                                  @Nonnull final IBlockState state,
+                                  @Nullable final EnumFacing side,
+                                  @Nonnull final Fluid fluid,
+                                  final boolean isAssumed){
+        return getMaxLayers(world, pos, state, side, fluid, isAssumed)* getAmountInQBPerLayer(world, pos, state, side, fluid, isAssumed);
     }
 
     /**
-     * 将指定流体流体层数设置到指定层数。和 addLayer 的区别在于 setLayer 不应该考虑流体状态变化而导致的变化。<br/>
-     * @see top.qiguaiaaaa.geocraft.block.BlockSnowFinite#setLayer(World, BlockPos, IBlockState, Fluid, int, NBTTagCompound, int, int)
-     * @param world 世界
-     * @param pos 当前位置
-     * @param state 方块状态，不一定和 world#getBlockState 一致，例如放置方块的时候
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体存储的 NBT 数据
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 在给定条件下，对应流体存储的 NBT 数据，可能为 null
+     */
+    @Nullable
+    default NBTTagCompound getFluidNBTData(@Nonnull final World world,
+                                   @Nonnull final BlockPos pos,
+                                   @Nonnull final IBlockState state,
+                                   @Nullable final EnumFacing side,
+                                   @Nonnull final Fluid fluid){
+        return getFluidNBTData(world,pos,state,side,fluid,false);
+    }
+
+    /**
+     * 查询在指定位置的方块状态是给定的属于该载流方块的方块状态时，该方块指定面对应的流体容器指定流体存储的 NBT 数据
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 在给定条件下，对应流体存储的 NBT 数据，可能为 null
+     */
+    @Nullable
+    NBTTagCompound getFluidNBTData(@Nonnull final World world,
+                                   @Nonnull final BlockPos pos,
+                                   @Nonnull final IBlockState state,
+                                   @Nullable final EnumFacing side,
+                                   @Nonnull final Fluid fluid,
+                                   final boolean isAssumed);
+
+    /**
+     * 在指定位置，以给定的方块状态，将指定面对应的流体容器的指定流体的层数设置为指定层数。
+     * @since GeoCraftAPI 0.3.1
+     * @apiNote 当原位置不是同种载流方块时，该方法会像 {@link World#setBlockState(BlockPos, IBlockState)} 一样覆盖原有的方块及其数据。
+     * 如果原位置是同种的载流方块，则该方法应当只会修改指定的流体容器的指定流体的层数。在大多数情况下，同位置的其他流体容器以及其他流体的含量不会发生变化。
+     * 但在特殊情况下，方块发生变化是允许的，甚至可能会与其他游戏机制相互作用导致方块变成其他方块，因此在操作完成之后务必调用 {@link World#getBlockState(BlockPos)} 获取实际状态。
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 方块状态，该方块状态是指示性的，不代表指定位置的确是指定的方块状态
+     * @param side 方块的面，当为 null 时表示默认的面，决定了要操作的流体容器
      * @param fluid 指定流体
      * @param newLayer 新的层数
-     * @return 是否成功
+     * @return 操作是否成功
      */
-    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer){
-        return setLayer(world, pos, state, fluid, newLayer,null,0,0);
+    default boolean setLayer(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid,
+                             final int newLayer){
+        return setLayer(world, pos, state, side, fluid, newLayer,null, BlockFlagsModifier.MODIFY_NOTHING);
     }
 
     /**
-     * 将指定流体流体层数设置到指定层数
-     * @param world 世界
-     * @param pos 当前位置
-     * @param state 方块状态，不一定和 world#getBlockState 一致，例如放置方块的时候
+     * 在指定位置，以给定的方块状态，将指定面对应的流体容器的指定流体的层数设置为指定层数。
+     * @since GeoCraftAPI 0.3.1
+     * @apiNote 当原位置不是同种载流方块时，该方法会像 {@link World#setBlockState(BlockPos, IBlockState)} 一样覆盖原有的方块及其数据。
+     * 如果原位置是同种的载流方块，则该方法应当只会修改指定的流体容器的指定流体的层数。在大多数情况下，同位置的其他流体容器以及其他流体的含量不会发生变化。
+     * 但在特殊情况下，方块发生变化是允许的，甚至可能会与其他游戏机制相互作用导致方块变成其他方块，因此在操作完成之后务必调用 {@link World#getBlockState(BlockPos)} 获取实际状态。
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 方块状态，该方块状态是指示性的，不代表指定位置的确是指定的方块状态
+     * @param side 方块的面，当为 null 时表示默认的面，决定了要操作的流体容器
      * @param fluid 指定流体
      * @param newLayer 新的层数
-     * @param disabledBlockFlags 禁止的BlockFlags
-     * @return 是否成功
+     * @param nbt 流体的 NBT 标签，会覆盖原有的数据（如有）
+     * @return 操作是否成功
      */
-    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,final int disabledBlockFlags){
-        return setLayer(world, pos, state, fluid, newLayer,null, disabledBlockFlags,0);
+    default boolean setLayer(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid,
+                             final int newLayer,
+                             @Nullable final NBTTagCompound nbt){
+        return setLayer(world, pos, state, side, fluid, newLayer,null, BlockFlagsModifier.MODIFY_NOTHING);
     }
 
     /**
-     * 在世界某处放置具有指定流体层数的方块
-     * @param world 世界
-     * @param pos 当前位置
-     * @param state 方块状态，该方块状态是指示性的，不代表指定位置的确是本方块
+     * 在指定位置，以给定的方块状态，将指定面对应的流体容器的指定流体的层数设置为指定层数。
+     * @since GeoCraftAPI 0.3.1
+     * @apiNote 当原位置不是同种载流方块时，该方法会像 {@link World#setBlockState(BlockPos, IBlockState)} 一样覆盖原有的方块及其数据。
+     * 如果原位置是同种的载流方块，则该方法应当只会修改指定的流体容器的指定流体的层数。在大多数情况下，同位置的其他流体容器以及其他流体的含量不会发生变化。
+     * 但在特殊情况下，方块发生变化是允许的，甚至可能会与其他游戏机制相互作用导致方块变成其他方块，因此在操作完成之后务必调用 {@link World#getBlockState(BlockPos)} 获取实际状态。
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 方块状态，该方块状态是指示性的，不代表指定位置的确是指定的方块状态
+     * @param side 方块的面，当为 null 时表示默认的面，决定了要操作的流体容器
      * @param fluid 指定流体
      * @param newLayer 新的层数
-     * @param disabledBlockFlags 禁止的BlockFlags
-     * @return 是否成功
+     * @param nbt 流体的 NBT 标签，会覆盖原有的数据（如有）
+     * @param blockFlagsModifier 方块更新操作的修改器，用一个 long 表示，可通过 {@link BlockFlagsModifier} 构建
+     * @return 操作是否成功
      */
-    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,final int disabledBlockFlags,final int enabledBlockFlags){
-        return setLayer(world, pos, state, fluid, newLayer,null, disabledBlockFlags, enabledBlockFlags);
-    }
+    boolean setLayer(@Nonnull final World world,
+                     @Nonnull final BlockPos pos,
+                     @Nonnull final IBlockState state,
+                     @Nullable final EnumFacing side,
+                     @Nonnull final Fluid fluid,
+                     final int newLayer,
+                     @Nullable final NBTTagCompound nbt,
+                     final long blockFlagsModifier);
 
     /**
-     * 在世界某处放置具有指定流体层数的方块。需要注意，提供的方块状态是指示性的。若提供的方块状态已经存储了一部分流体，并且当前方块支持多流体存储，并且设置的是另一个流体，那么放置时一般会放置同时含有存储流体+设置流体的方块。
-     * @param world 世界
-     * @param pos 当前位置
-     * @param state 方块状态，该方块状态是指示性的，不代表指定位置的确是本方块
-     * @param fluid 指定流体
-     * @param newLayer 新的层数
-     * @param disabledBlockFlags 禁止的BlockFlags
-     * @return 是否成功
-     */
-    boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,@Nullable NBTTagCompound nbt,final int disabledBlockFlags,final int enabledBlockFlags);
-
-    /**
-     * 指定流体以指定条件是否能够流入当前方块
-     * @param world 世界
-     * @param pos 位置
-     * @param state 方块状态
+     * 在指定位置，以给定的方块状态，指定流体是否能够以指定条件流入当前载流方块的指定面对应的流体容器
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 流入方块的面，当为 null 时表示默认的面
      * @param fluid 需要流入的流体
-     * @param side 流入的面
-     * @param source 来源。若来源为{@link Blocks#AIR}则表示为大气。
-     * @return 若可以，则返回true
+     * @param from 流体来源
+     * @return 若可以，则返回 true
      */
-    default boolean canFill(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, @Nonnull EnumFacing side, @Nullable IBlockState source){
-        return !isFull(world,pos,state, fluid);
+    default boolean canFill(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nullable final EnumFacing side,
+                            @Nonnull final Fluid fluid,
+                            @Nullable final IFluidFrom from){
+        return this.canFill(world,pos,state,side,fluid,from,false);
     }
 
     /**
-     * 以指定条件是否能够吸取当前方块的流体
-     * @param world 世界
-     * @param pos 位置
-     * @param state 方块状态
-     * @param fluid 需要吸取的流体
-     * @param side 吸取的面
-     * @param source 来源。
-     * @return 若可以，返回true。
+     * 在指定位置，以给定的方块状态，指定流体是否能够以指定条件流入当前载流方块的指定面对应的流体容器
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 流入方块的面，当为 null 时表示默认的面
+     * @param fluid 需要流入的流体
+     * @param from 流体来源
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 若可以，则返回 true
      */
-    default boolean canDrain(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nonnull Fluid fluid,@Nonnull EnumFacing side,@Nullable IBlockState source){
-        return getLayers(world,pos,state, fluid) != 0;
+    default boolean canFill(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nullable final EnumFacing side,
+                            @Nonnull final Fluid fluid,
+                            @Nullable final IFluidFrom from,
+                            final boolean isAssumed){
+        return !isFull(world,pos,state,side, fluid);
     }
 
     /**
-     * 指定流体含量是否已满
-     * @param world 世界
-     * @param pos 位置
-     * @param state 方块状态
-     * @param fluid 流体
-     * @return 若当前方块不支持含有该流体或当前流体已满，则返回true，否则为false
+     * 在指定位置，以给定的方块状态，是否能够以指定条件从当前载流方块的指定面对应的流体容器抽取指定的流体
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 抽取方块的面，当为 null 时表示默认的面
+     * @param fluid 需要抽取的流体
+     * @param to 流体去向
+     * @return 若可以，则返回 true
      */
-    default boolean isFull(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nullable Fluid fluid){
-        return getLayers(world,pos,state,fluid) >= getMaxLayers(world,pos,state,fluid);
+    default boolean canDrain(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid,
+                             @Nullable final IFluidTo to){
+        return getLayers(world,pos,state,side,fluid,false) != 0;
     }
 
     /**
-     * 指定液体是否是空的
-     * @param world 世界
-     * @param pos 位置
-     * @param state 状态
-     * @param fluid 液体
-     * @return 若液体的 {@link #getMaxLayers(World, BlockPos, IBlockState, Fluid)}为0或{@link #getLayers(World, BlockPos, IBlockState, Fluid)}不为0则为false，否则为true
+     * 在指定位置，以给定的方块状态，是否能够以指定条件从当前载流方块的指定面对应的流体容器抽取指定的流体
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 抽取方块的面，当为 null 时表示默认的面
+     * @param fluid 需要抽取的流体
+     * @param to 流体去向
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 若可以，则返回 true
      */
-    default boolean isEmpty(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nullable Fluid fluid){
-        if(isFull(world,pos,state,fluid)) return false;
-        return getLayers(world,pos,state,fluid) <= 0;
+    default boolean canDrain(@Nonnull final World world,
+                             @Nonnull final BlockPos pos,
+                             @Nonnull final IBlockState state,
+                             @Nullable final EnumFacing side,
+                             @Nonnull final Fluid fluid,
+                             @Nullable final IFluidTo to,
+                             final boolean isAssumed){
+        return getLayers(world,pos,state,side,fluid,isAssumed) != 0;
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，该载流方块在指定面对应的流体容器的指定流体是否已经装满
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 若指定的流体容器不支持含有该流体或当前流体已满，则返回true，否则为false
+     */
+    default boolean isFull(@Nonnull final World world,
+                           @Nonnull final BlockPos pos,
+                           @Nonnull final IBlockState state,
+                           @Nullable final EnumFacing side,
+                           @Nonnull final Fluid fluid){
+        return getLayers(world,pos,state,side,fluid,false) >= getMaxLayers(world,pos,state,side,fluid,false);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，该载流方块在指定面对应的流体容器的指定流体是否已经装满
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @param isAssumed 是否是假设的条件。如果无法确定当前位置的实际方块状态是否和给定的状态一致，则应为 true，否则为 false。
+     * @return 若指定的流体容器不支持含有该流体或当前流体已满，则返回true，否则为false
+     */
+    default boolean isFull(@Nonnull final World world,
+                           @Nonnull final BlockPos pos,
+                           @Nonnull final IBlockState state,
+                           @Nullable final EnumFacing side,
+                           @Nonnull final Fluid fluid,
+                           final boolean isAssumed){
+        return getLayers(world,pos,state,side,fluid,isAssumed) >= getMaxLayers(world,pos,state,side,fluid,isAssumed);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，该载流方块在指定面对应的流体容器的指定流体是否是空的，且还有空间存入该流体
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，必须要满足与该位置实际的方块状态一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 若在指定流体容器中，指定流体是空的，且还有空间存入该流体，则返回 true，否则返回 false
+     */
+    default boolean isEmpty(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nullable final EnumFacing side,
+                            @Nonnull final Fluid fluid){
+        if(isFull(world,pos,state,side,fluid,false)) return false;
+        return getLayers(world,pos,state,side,fluid,false) <= 0;
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，该载流方块在指定面对应的流体容器的指定流体是否是空的，且还有空间存入该流体
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态，可能和实际位置的方块状态不一致
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 查询的流体
+     * @return 若在指定流体容器中，指定流体是空的，且还有空间存入该流体，则返回 true，否则返回 false
+     */
+    default boolean isEmpty(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nullable final EnumFacing side,
+                            @Nonnull final Fluid fluid,
+                            final boolean isAssumed){
+        if(isFull(world,pos,state,side,fluid,isAssumed)) return false;
+        return getLayers(world,pos,state,side,fluid,isAssumed) <= 0;
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面输入指定层数的指定液体。
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidFrom, boolean)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要添加的流体
+     * @param layer 层数
+     * @param operation 操作
+     * @return 在给定条件下，实际添加的层数
+     */
+    default int addLayer(@Nonnull final World world,
+                         @Nonnull final BlockPos pos,
+                         @Nonnull final IBlockState state,
+                         @Nullable final EnumFacing side,
+                         @Nonnull final Fluid fluid,
+                         final int layer,
+                         @Nonnull final FluidHostOperation operation){
+        return addLayer(world, pos, state, side, fluid, layer, operation, null, null, BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面输入指定层数的指定液体。
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidFrom, boolean)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要添加的流体
+     * @param layer 层数
+     * @param operation 操作
+     * @param nbt 添加的流体的 NBT 复合标签
+     * @return 在给定条件下，实际添加的层数
+     */
+    default int addLayer(@Nonnull final World world,
+                         @Nonnull final BlockPos pos,
+                         @Nonnull final IBlockState state,
+                         @Nullable final EnumFacing side,
+                         @Nonnull final Fluid fluid,
+                         final int layer,
+                         @Nonnull final FluidHostOperation operation,
+                         @Nullable final NBTTagCompound nbt){
+        return addLayer(world, pos, state, side, fluid, layer, operation, nbt,null, BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面输入指定层数的指定液体。
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidFrom, boolean)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要添加的流体
+     * @param layer 层数
+     * @param operation 操作
+     * @param nbt 添加的流体的 NBT 复合标签
+     * @param from 流体来源
+     * @return 在给定条件下，实际添加的层数
+     */
+    default int addLayer(@Nonnull final World world,
+                         @Nonnull final BlockPos pos,
+                         @Nonnull final IBlockState state,
+                         @Nullable final EnumFacing side,
+                         @Nonnull final Fluid fluid,
+                         final int layer,
+                         @Nonnull final FluidHostOperation operation,
+                         @Nullable final NBTTagCompound nbt,
+                         @Nullable final IFluidFrom from){
+        return addLayer(world,pos,state,side,fluid,layer,operation,nbt,from,BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面输入指定层数的指定液体。
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidFrom, boolean)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要添加的流体
+     * @param layer 层数
+     * @param operation 操作
+     * @param nbt 添加的流体的 NBT 复合标签
+     * @param from 流体来源
+     * @param blockFlagsModifier 方块更新操作的修改器，用一个 long 表示，可通过 {@link BlockFlagsModifier} 构建
+     * @return 在给定条件下，实际添加的层数
+     */
+    default int addLayer(@Nonnull final World world,
+                         @Nonnull final BlockPos pos,
+                         @Nonnull final IBlockState state,
+                         @Nullable final EnumFacing side,
+                         @Nonnull final Fluid fluid,
+                         final int layer,
+                         @Nonnull final FluidHostOperation operation,
+                         @Nullable final NBTTagCompound nbt,
+                         @Nullable final IFluidFrom from,
+                         final long blockFlagsModifier){
+        if(layer <= 0) return 0;
+        final int curLayer = getLayers(world,pos,state,side,fluid,operation.isAssumed);
+        final int addedInFact = Math.min(layer, getMaxLayers(world,pos,state,side,fluid,operation.isAssumed)-curLayer);
+        if(addedInFact <= 0) return 0;
+        if(operation.doOperate){
+            final int newLayer = curLayer + addedInFact;
+            final @Nullable NBTTagCompound newNBTDat = nbt == null? getFluidNBTData(world, pos, state, side, fluid,operation.isAssumed):nbt;
+            this.setLayer(world,pos,state,side,fluid,newLayer,newNBTDat,blockFlagsModifier);
+        }
+        return addedInFact;
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面输入指定量的指定液体，单位为 QB。
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidFrom, boolean)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要添加的流体
+     * @param amount 流体量，单位为 QB
+     * @param operation 操作
+     * @return 在给定条件下，实际添加的流体量，单位为 QB
+     */
+    default long addAmountInQB(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid,
+                               final long amount,
+                               @Nonnull final FluidHostOperation operation){
+        return addAmountInQB(world, pos, state, side, fluid, amount,operation,null,null, BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面输入指定量的指定液体，单位为 QB。
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidFrom, boolean)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要添加的流体
+     * @param amount 流体量，单位为 QB
+     * @param operation 操作
+     * @param nbt 添加的流体的 NBT 复合标签
+     * @return 在给定条件下，实际添加的流体量，单位为 QB
+     */
+    default long addAmountInQB(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid,
+                               final long amount,
+                               @Nonnull final FluidHostOperation operation,
+                               @Nullable final NBTTagCompound nbt){
+        return addAmountInQB(world, pos, state, side, fluid, amount,operation,nbt,null,BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面输入指定量的指定液体，单位为 QB。
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidFrom, boolean)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要添加的流体
+     * @param amount 流体量，单位为 QB
+     * @param operation 操作
+     * @param nbt 添加的流体的 NBT 复合标签
+     * @param from 流体来源
+     * @return 在给定条件下，实际添加的流体量，单位为 QB
+     */
+    default long addAmountInQB(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid,
+                               long amount,
+                               @Nonnull final FluidHostOperation operation,
+                               @Nullable final NBTTagCompound nbt,
+                               @Nullable final IFluidFrom from){
+        return addAmountInQB(world, pos, state, side, fluid, amount,operation, nbt, from,BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面输入指定量的指定液体，单位为 QB。
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidFrom, boolean)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要添加的流体
+     * @param amount 流体量，单位为 QB
+     * @param operation 操作
+     * @param nbt 添加的流体的 NBT 复合标签
+     * @param from 流体来源
+     * @param blockFlagsModifier 方块更新操作的修改器，用一个 long 表示，可通过 {@link BlockFlagsModifier} 构建
+     * @return 在给定条件下，实际添加的流体量，单位为 QB
+     */
+    default long addAmountInQB(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState state,
+                               @Nullable final EnumFacing side,
+                               @Nonnull final Fluid fluid,
+                               long amount,
+                               @Nonnull final FluidHostOperation operation,
+                               @Nullable final NBTTagCompound nbt,
+                               @Nullable final IFluidFrom from,
+                               final long blockFlagsModifier){
+        if(amount <= 0L) return 0L;
+        final long amountPerLayer = getAmountInQBPerLayer(world, pos, state, side, fluid,operation.isAssumed);
+        amount -= (amount%amountPerLayer);
+        if(amount <= 0L) return 0L;
+        final long curAmount = getAmountInQB(world, pos, state, side, fluid, operation.isAssumed);
+        final long amountInFact = Math.min(amount, getMaxAmountInQB(world, pos, state, side, fluid, operation.isAssumed)-curAmount);
+        if(amountInFact <= 0L) return 0L;
+        return addLayer(world,pos,state,side,fluid,(int)(amount/amountPerLayer),operation,nbt,from,blockFlagsModifier)*amountPerLayer;
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面抽取指定层数的指定液体。
+     * 在抽取前一般需要检测{@link #canDrain(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidTo)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要抽取的流体
+     * @param layer 层数
+     * @param operation 操作
+     * @return 在给定条件下，实际抽取的流体层数
+     */
+    default int drainLayer(@Nonnull final World world,
+                           @Nonnull final BlockPos pos,
+                           @Nonnull final IBlockState state,
+                           @Nullable final EnumFacing side,
+                           @Nonnull final Fluid fluid,
+                           final int layer,
+                           @Nonnull final FluidHostOperation operation){
+        return drainLayer(world, pos, state, side, fluid, layer,operation,null, BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面抽取指定层数的指定液体。
+     * 在抽取前一般需要检测{@link #canDrain(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidTo)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要抽取的流体
+     * @param layer 层数
+     * @param operation 操作
+     * @param to 流体去向
+     * @return 在给定条件下，实际抽取的流体层数
+     */
+    default int drainLayer(@Nonnull final World world,
+                           @Nonnull final BlockPos pos,
+                           @Nonnull final IBlockState state,
+                           @Nonnull final Fluid fluid,
+                           @Nullable final EnumFacing side,
+                           final int layer,
+                           @Nonnull final FluidHostOperation operation,
+                           @Nullable final IFluidTo to){
+        return drainLayer(world, pos, state, side, fluid, layer, operation,to, BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    /**
+     * 在指定位置，以给定的方块状态，尝试从指定的面抽取指定层数的指定液体。
+     * 在抽取前一般需要检测{@link #canDrain(World, BlockPos, IBlockState, EnumFacing, Fluid, IFluidTo)}
+     * @since GeoCraftAPI 0.3.1
+     * @param world 所在世界
+     * @param pos 方块位置
+     * @param state 给定的方块状态。
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 true 的操作，则可以和实际位置的方块状态不一致；
+     *              如果选择 {@link FluidHostOperation#isAssumed} 为 false 的操作，则必须要满足与该位置实际的方块状态一致。
+     * @param side 方块的面，当为 null 时表示默认的面
+     * @param fluid 要抽取的流体
+     * @param layer 层数
+     * @param operation 操作
+     * @param to 流体去向
+     * @param blockFlagsModifier 方块更新操作的修改器，用一个 long 表示，可通过 {@link BlockFlagsModifier} 构建
+     * @return 在给定条件下，实际抽取的流体层数
+     */
+    default int drainLayer(@Nonnull final World world,
+                           @Nonnull final BlockPos pos,
+                           @Nonnull final IBlockState state,
+                           @Nullable final EnumFacing side,
+                           @Nonnull final Fluid fluid,
+                           final int layer,
+                           @Nonnull final FluidHostOperation operation,
+                           @Nullable final IFluidTo to,
+                           final long blockFlagsModifier){
+        if(layer <= 0) return 0;
+        final int curLayer = getLayers(world,pos,state,side,fluid,operation.isAssumed);
+        final int drainedInFact = Math.min(layer, curLayer);
+        if(drainedInFact <= 0) return 0;
+        if(operation.doOperate){
+            final int newLayer = curLayer - drainedInFact;
+            final @Nullable NBTTagCompound nbt = getFluidNBTData(world, pos, state, side, fluid,operation.isAssumed);
+            this.setLayer(world,pos,state,side,fluid,newLayer,nbt,blockFlagsModifier);
+        }
+        return drainedInFact;
+    }
+
+    default long drainAmountInQB(@Nonnull final World world,
+                                 @Nonnull final BlockPos pos,
+                                 @Nonnull final IBlockState state,
+                                 @Nullable final EnumFacing side,
+                                 @Nonnull final Fluid fluid,
+                                 long amount,
+                                 @Nonnull final FluidHostOperation operation){
+        return drainAmountInQB(world,pos,state,side,fluid,amount,operation,null,BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    default long drainAmountInQB(@Nonnull final World world,
+                                 @Nonnull final BlockPos pos,
+                                 @Nonnull final IBlockState state,
+                                 @Nullable final EnumFacing side,
+                                 @Nonnull final Fluid fluid,
+                                 long amount,
+                                 @Nonnull final FluidHostOperation operation,
+                                 @Nullable final IFluidTo to){
+        return drainAmountInQB(world,pos,state,side,fluid,amount,operation,to,BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    default long drainAmountInQB(@Nonnull final World world,
+                                 @Nonnull final BlockPos pos,
+                                 @Nonnull final IBlockState state,
+                                 @Nullable final EnumFacing side,
+                                 @Nonnull final Fluid fluid,
+                                 long amount,
+                                 @Nonnull final FluidHostOperation operation,
+                                 @Nullable final IFluidTo to,
+                                 final long blockFlagsModifier){
+        if(amount <= 0L) return 0L;
+        final long amountPerLayer = getAmountInQBPerLayer(world, pos, state, side, fluid,operation.isAssumed);
+        amount += (amountPerLayer-(amount%amountPerLayer));
+        final long curAmount = getAmountInQB(world, pos, state,side, fluid,operation.isAssumed);
+        final long drainedInFact = Math.min(amount,curAmount);
+        if(drainedInFact <= 0) return 0;
+        return drainLayer(world,pos,state,side,fluid,(int) (amount/amountPerLayer),operation,to,blockFlagsModifier)*amountPerLayer;
+    }
+
+    @Nonnull
+    default FluidStack drainAmountInMB(@Nonnull final World world,
+                                       @Nonnull final BlockPos pos,
+                                       @Nonnull final IBlockState state,
+                                       @Nullable final EnumFacing side,
+                                       @Nonnull final Fluid fluid,
+                                       final int amount,
+                                       @Nonnull final FluidHostOperation operation){
+        return drainAmountInMB(world, pos, state, side, fluid, amount, operation,null,BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    @Nonnull
+    default FluidStack drainAmountInMB(@Nonnull final World world,
+                                       @Nonnull final BlockPos pos,
+                                       @Nonnull final IBlockState state,
+                                       @Nullable final EnumFacing side,
+                                       @Nonnull final Fluid fluid,
+                                       final int amount,
+                                       @Nonnull final FluidHostOperation operation,
+                                       @Nullable final IFluidTo to){
+        return drainAmountInMB(world, pos, state, side, fluid, amount, operation,to,BlockFlagsModifier.MODIFY_NOTHING);
+    }
+
+    @Nonnull
+    default FluidStack drainAmountInMB(@Nonnull final World world,
+                                       @Nonnull final BlockPos pos,
+                                       @Nonnull final IBlockState state,
+                                       @Nullable final EnumFacing side,
+                                       @Nonnull final Fluid fluid,
+                                       final int amount,
+                                       @Nonnull final FluidHostOperation operation,
+                                       @Nullable final IFluidTo to,
+                                       final long blockFlagsModifier){
+        final @Nullable NBTTagCompound nbt = getFluidNBTData(world,pos,state,side,fluid,operation.isAssumed);
+        return new FluidStack(fluid,
+                QBUtil.toMB(drainAmountInQB(world,pos,state,side, fluid,QBUtil.toQBFromMB(amount),operation,to,blockFlagsModifier)),
+                nbt);
+    }
+
+    @Nonnull
+    default FluidStack drainAmountInMB(@Nonnull final World world,
+                                       @Nonnull final BlockPos pos,
+                                       @Nonnull final IBlockState state,
+                                       @Nullable final EnumFacing side,
+                                       @Nonnull final FluidStack stack,
+                                       @Nonnull final FluidHostOperation operation){
+        return new FluidStack(stack,
+                QBUtil.toMB(drainAmountInQB(world,pos,state,side, stack.getFluid(),QBUtil.toQBFromMB(stack.amount),operation,null,BlockFlagsModifier.MODIFY_NOTHING)));
+    }
+
+    @Nonnull
+    default FluidStack drainAmountInMB(@Nonnull final World world,
+                                       @Nonnull final BlockPos pos,
+                                       @Nonnull final IBlockState state,
+                                       @Nullable final EnumFacing side,
+                                       @Nonnull final FluidStack stack,
+                                       @Nonnull final FluidHostOperation operation,
+                                       @Nullable final IFluidTo to){
+        return new FluidStack(stack,
+                QBUtil.toMB(drainAmountInQB(world,pos,state,side, stack.getFluid(),QBUtil.toQBFromMB(stack.amount),operation,to,BlockFlagsModifier.MODIFY_NOTHING)));
+    }
+
+    @Nonnull
+    default FluidStack drainAmountInMB(@Nonnull final World world,
+                                       @Nonnull final BlockPos pos,
+                                       @Nonnull final IBlockState state,
+                                       @Nullable final EnumFacing side,
+                                       @Nonnull final FluidStack stack,
+                                       @Nonnull final FluidHostOperation operation,
+                                       @Nullable final IFluidTo to,
+                                       final long blockFlagsModifier){
+        return new FluidStack(stack,
+                QBUtil.toMB(drainAmountInQB(world,pos,state,side, stack.getFluid(),QBUtil.toQBFromMB(stack.amount),operation,to,blockFlagsModifier)));
     }
 }
