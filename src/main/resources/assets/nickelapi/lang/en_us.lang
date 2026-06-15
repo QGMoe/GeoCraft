@@ -26,6 +26,7 @@ nickel.command.parameter.checker.resource_location.invalid.slash=Namespace of Re
 nickel.command.parameter.string.nonMatch=Invalid input %s , which requires input to match %s
 nickel.command.parameter.string.invalid.white=Invalid input %s , which only allows the following values: %s
 nickel.command.parameter.string.invalid.black=Invalid input %s , which disallows the following values: %s
+nickel.command.parameter.uuid.invalid=Invalid UUID: %s
 nickel.command.parameter.dimension.not_found=Dimension %s not found. Maybe it is unloaded?
 nickel.command.parameter.block_state.invalid_end=%s misses right square bracket "]"
 nickel.command.parameter.fluid.invalid=Invalid fluid %s
@@ -56,3 +57,4 @@ nickel.command.exception.base.node.sub=
 nickel.command.exception.base.details=Details: 
 nickel.command.exception.base.branch=Branch: 
 #行末空格结束
+nickel.command.exception.runtime.message=Error occurred when the command was running: %s

@@ -28,38 +28,51 @@
 package top.qiguaiaaaa.geocraft.api.configs.item.collection.list;
 
 import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.collection.IConfigIntCollection;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.IConfigurableList;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
+
+import java.util.List;
+
+import static top.qiguaiaaaa.geocraft.api.configs.item.collection.set.ConfigIntegerSet.toIntList;
 
 
-public class ConfigIntegerList extends ConfigList<Integer> implements IConfigIntCollection {
-    protected int minValue = Integer.MIN_VALUE,
-            maxValue = Integer.MAX_VALUE;
-    public ConfigIntegerList(ConfigCategory category, String configKey, IConfigurableList<Integer> defaultValue) {
-        this(category, configKey, defaultValue,null);
+public class ConfigIntegerList<S extends ConfigIntegerList<S>> extends ConfigList<Integer,S> implements IConfigIntCollection<S> {
+    protected int minValue = Integer.MIN_VALUE;
+    protected int maxValue = Integer.MAX_VALUE;
+
+    protected ConfigIntegerList(final @Nonnull ConfigCategory category,
+                             final @Nonnull String configKey,
+                             final @Nonnull IConfigurableList<Integer> defaultValue) {
+        super(category, configKey, defaultValue, Integer::parseInt);
     }
 
-    public ConfigIntegerList(ConfigCategory category, String configKey, IConfigurableList<Integer> defaultValue, String comment) {
-        this(category, configKey, defaultValue, comment,false);
+    @Nonnull
+    public static ConfigIntegerList<? extends ConfigIntegerList<?>> create(final @Nonnull ConfigCategory category,
+                                       final @Nonnull String configKey,
+                                       final @Nonnull IConfigurableList<Integer> defaultValue){
+        return new Impl(category, configKey, defaultValue);
     }
 
-    public ConfigIntegerList(ConfigCategory category, String configKey, IConfigurableList<Integer> defaultValue, String comment, boolean isFinal) {
-        super(category, configKey, defaultValue, comment,Integer::parseInt, isFinal);
-    }
+    @Nonnull
     @Override
-    public ConfigIntegerList setMinValue(int minValue) {
+    @SuppressWarnings("unchecked")
+    public S setMinValue(final int minValue) {
         this.minValue = minValue;
-        return this;
+        return (S) this;
     }
+
+    @Nonnull
     @Override
-    public ConfigIntegerList setMaxValue(int maxValue) {
+    @SuppressWarnings("unchecked")
+    public S setMaxValue(final int maxValue) {
         this.maxValue = maxValue;
-        return this;
+        return (S) this;
     }
+
     @Override
     public int getMinValue() {
         return minValue;
@@ -70,35 +83,38 @@ public class ConfigIntegerList extends ConfigList<Integer> implements IConfigInt
     }
 
     @Override
-    public ConfigIntegerList setMaxListSize(int maxListSize) {
-        super.setMaxListSize(maxListSize);
-        return this;
-    }
-
-    @Override
     public void save() {
         if(property == null) return;
         property.setValues(toIntList(value));
-        property.setComment(getPolishedComment());
+        property.setComment(getConstructedComment());
     }
 
     @Override
     public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,toIntList(defaultValue),comment,minValue,maxValue,isListSizeFixed,maxListSize);
-        property.setComment(getPolishedComment());
+        property = config.get(category.getPath(),key,toIntList(defaultValue),null,minValue,maxValue, sizeRequire.isSizeFixed(), sizeRequire.getMaxListSize());
+        property.setComment(getConstructedComment());
         load(property);
     }
 
-    protected String getPolishedComment(){
-        return (comment==null?"":comment)+" [range: " + minValue + " ~ " + maxValue + (maxListSize>=0?", maxSize: " + maxListSize:"") + "]";
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        list.add(Pair.of("范围 Range",minValue + " ~ "+maxValue));
+        return list;
     }
 
-    protected int[] toIntList(@Nonnull Collection<Integer> c){
-        int[] ints = new int[c.size()];
-        int i=0;
-        for(Integer integer:c){
-            ints[i++]=integer;
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.list.int";
+    }
+
+    private static final class Impl extends ConfigIntegerList<Impl>{
+
+        public Impl(@Nonnull final ConfigCategory category, @Nonnull final String configKey, @Nonnull final IConfigurableList<Integer> defaultValue) {
+            super(category, configKey, defaultValue);
         }
-        return ints;
     }
 }

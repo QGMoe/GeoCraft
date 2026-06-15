@@ -28,9 +28,6 @@
 package top.qiguaiaaaa.geocraft.block.soil;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockDirt;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
@@ -50,23 +47,10 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
  * 为了更好的兼容性，采用继承替换而非直接 Mixin
  * @author QiguaiAAAA
  */
-public class BlockSoilDirt extends BlockDirt implements IBlockSoil, IBlockFalling {
+public class BlockSoilDirt extends BlockSoilExtends.Dirt implements IBlockSoil, IBlockFalling {
 
     public BlockSoilDirt(){
         this.setTickRandomly(true);
-        this.setDefaultState((this.blockState.getBaseState().
-                withProperty(VARIANT, BlockDirt.DirtType.DIRT)
-                .withProperty(SNOWY, Boolean.FALSE)
-                .withProperty(HUMIDITY, 0)));
-        this.setSoundType(SoundType.GROUND);
-    }
-
-    @Nonnull
-    @Override
-    public IBlockState getStateFromMeta(final int meta) {
-        return this.getDefaultState()
-                .withProperty(VARIANT, BlockDirt.DirtType.byMetadata(meta%3))
-                .withProperty(HUMIDITY,Math.min(meta/3,4));
     }
 
     @Override
@@ -82,12 +66,6 @@ public class BlockSoilDirt extends BlockDirt implements IBlockSoil, IBlockFallin
         this.onRandomTick(worldIn, pos, state, random);
     }
 
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, VARIANT, SNOWY, HUMIDITY);
-    }
-
     @Override
     public void updateTick(@Nonnull final World worldIn, @Nonnull final BlockPos pos,final IBlockState state, @Nonnull final Random rand) {
         if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
@@ -100,6 +78,7 @@ public class BlockSoilDirt extends BlockDirt implements IBlockSoil, IBlockFallin
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void neighborChanged(final IBlockState state,
                                 final @Nonnull World worldIn,
                                 final @Nonnull BlockPos pos,

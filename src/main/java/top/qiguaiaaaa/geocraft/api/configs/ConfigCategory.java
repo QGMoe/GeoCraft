@@ -29,40 +29,54 @@ package top.qiguaiaaaa.geocraft.api.configs;
 
 import net.minecraftforge.common.config.Configuration;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+
 /**
  * @author QiguaiAAAA
  */
-public class ConfigCategory {
-    public static final ConfigCategory GENERAL = new ConfigCategory(Configuration.CATEGORY_GENERAL);
+public final class ConfigCategory {
     public final String name;
-    public final ConfigCategory parent;
-    protected String comment;
+    public final @Nullable ConfigCategory parent;
+    private final HashMap<String,ConfigCategory> children = new HashMap<>();
+    private @Nullable String comment;
 
-
-    public ConfigCategory(String name) {
+    public ConfigCategory(final @Nonnull String name) {
         this(null,name);
     }
-    public ConfigCategory(ConfigCategory parent,String name){
+
+    public ConfigCategory(final @Nullable ConfigCategory parent, final @Nonnull String name){
         this.parent = parent;
         this.name = name;
     }
 
-    public ConfigCategory setComment(String comment) {
+    @Nonnull
+    public ConfigCategory setComment(final @Nullable String comment) {
         this.comment = comment;
         return this;
     }
 
+    @Nullable
     public String getComment() {
         return comment;
     }
 
-    public ConfigCategory getChildCategory(String name){
-        return new ConfigCategory(this,name);
+    @Nonnull
+    public ConfigCategory getChildCategory(final @Nonnull String name){
+        return children.computeIfAbsent(name,k -> new ConfigCategory(this,k));
     }
 
+    @Nonnull
+    public Collection<ConfigCategory> getChildren() {
+        return children.values();
+    }
+
+    @Nonnull
     public String getPath(){
         if(parent == null) return name;
-        return parent.getPath()+ Configuration.CATEGORY_SPLITTER+name;
+        return parent.getPath()+ Configuration.CATEGORY_SPLITTER + name;
     }
 
     @Override

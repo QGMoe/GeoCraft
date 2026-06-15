@@ -1,0 +1,9 @@
+{
+  "package": "top.qiguaiaaaa.geocraft.mixin.finite.entity",
+  "required": false,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "EntityBoatMixin"
+  ]
+}

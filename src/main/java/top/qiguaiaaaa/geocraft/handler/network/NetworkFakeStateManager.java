@@ -78,10 +78,13 @@ public final class NetworkFakeStateManager {
     }
 
     public static void registerDefaultConfig(){
+        registerRule(Blocks.SNOW_LAYER,state -> state.withProperty(MIXTURE,false),(id,meta)->(id<<4)|(meta&7));
+
+        if(!SoilConfig.ENABLE_SOIL_SYSTEM.getValue()) return;
+
         final Function<IBlockState,IBlockState> removeHumidity = state -> state.withProperty(HUMIDITY,0);
         registerRule(Blocks.DIRT,removeHumidity,(id, meta)->(id<<4)|(meta%3));
         registerRule(Blocks.SAND,removeHumidity,(id,meta)->(id<<4)|(meta&1));
-        registerRule(Blocks.SNOW_LAYER,state -> state.withProperty(MIXTURE,false),(id,meta)->(id<<4)|(meta&7));
         if(SoilConfig.ALLOW_CLIENT_TO_READ_HUMIDITY_DATA.getValue()) return;
         registerRule(Blocks.GRASS,removeHumidity,REMOVE_META_RULE);
         registerRule(Blocks.GRASS_PATH,removeHumidity,REMOVE_META_RULE);

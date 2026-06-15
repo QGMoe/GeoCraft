@@ -1,0 +1,17 @@
+---
+name: A
+ver: 1
+default: 土0
+ext:
+  drain_at: [2,2,2]
+  expected:
+    unit: mB
+    drained: 1000
+---
+略
+
+石石石
+石㵘石
+石石石
+
+略

@@ -1,8 +1,31 @@
 nickel.command.parameter.geocraft.atmosphere_accessor=AtmosphereAccessor
+nickel.command.parameter.geocraft.config_item=天圆地方 Config Item
+
+geocraft.config.type.string=String
+geocraft.config.type.int=Integer
+geocraft.config.type.long=Long
+geocraft.config.type.double=Double
+geocraft.config.type.boolean=Boolean
+geocraft.config.type.custom=Custom
+geocraft.config.type.collection.list=List
+geocraft.config.type.collection.list.double=Double Array
+geocraft.config.type.collection.list.int=Integer Array
+geocraft.config.type.collection.list.int.distribution=整型权重式概率分布
+geocraft.config.type.collection.set=Set
+geocraft.config.type.collection.set.int=Integer Set
+geocraft.config.type.collection.map=Map
+
+geocraft.config.comment.atmosphere.enable_detailed_logging=Enable Detailed Logging
+geocraft.config.comment.general.prevent_falling_block_while_generation=Prevent blocks from falling during chunk generation, which may help reduce lag caused by massive fluid updates.
+geocraft.config.comment.general.enable_block_updater=Enable BlockUpdater to provide additional block update quotas and more refined update management within a single game tick.
+geocraft.config.comment.fluidphysics.finite.adjustment.boat=Whether to enable adjustments for boat.
+geocraft.config.comment.fluidphysics.finite.adjustment.boat_sinking_threshold=The threshold to determine whether the boat should sink or not, measured in blocks.
+geocraft.config.comment.soil.enable_soil=Enable Soil System. Attention: Disabling Soil System is in experiment and may break your world!
 
 geocraft.command.io_error=An IO Exception Occurred (%s), command couldn't be processed.
 geocraft.command.chunk_error.unloaded=Location (%s,%s) is unloaded
 geocraft.command.atmosphere_system.null=Current world doesn't exist an Atmosphere System.
+geocraft.command.config_item_not_found=配置项 %s 不存在
 
 geocraft.command.common.arg.pos=Position
 geocraft.command.common.arg.value=Value
@@ -13,6 +36,11 @@ geocraft.command.atmosphere.arg.block_to_query=需要查询的方块状态
 geocraft.command.atmosphere.arg.util_name=Util Name
 geocraft.command.atmosphere.arg.time=Duration
 geocraft.command.atmosphere.arg.file_name=File Name
+geocraft.command.geotest.arg.test_id=Test Entry ID
+geocraft.command.geotest.arg.target=测试目标
+geocraft.command.geoconfig.arg.config_entry=Config Item
+geocraft.command.geoconfig.arg.config_value=Config Value
+geocraft.command.geoconfig.arg.request_id=Request ID
 
 geocraft.command.common.comment.doit=是否真的执行此项操作
 geocraft.command.atmosphere.comment.time=追踪的时长，单位为大气刻
@@ -90,5 +118,52 @@ geocraft.command.fluidphysics.evapration.amount=Estimated Amount:
 #行末空格 结束
 geocraft.command.fluidphysics.evapration.evaporated=%s mB Water (%s Quanta) is evaporated
 geocraft.command.fluidphysics.evapration.vanilla.evaporated=%s mB Water is evaporated
+
+geocraft.command.geotest.run.failed=测试 %s 失败
+geocraft.command.geotest.run.success=测试 %s 成功
+geocraft.command.geotest.run.pass=环境条件未满足，测试 %s 并未进行
+
+geocraft.command.geoconfig.info.title=[%s Config Item %s Info]
+geocraft.command.geoconfig.info.title.experimental=Experimental
+geocraft.command.geoconfig.info.title.deprecation=Deprecated
+geocraft.command.geoconfig.info.no_comment=This item doesn't have any comments.
+geocraft.command.geoconfig.info.type=Type：%s
+geocraft.command.geoconfig.info.cur_value=Current：%s
+geocraft.command.geoconfig.info.default=Default: %s
+geocraft.command.geoconfig.info.cur_value.out_of_range=Too long to display
+geocraft.command.geoconfig.info.mode=After modification, %s
+geocraft.command.geoconfig.info.mode.instant=it'll take effects instantly
+geocraft.command.geoconfig.info.mode.world=it'll need a world restart
+geocraft.command.geoconfig.info.mode.mc=it'll need a game restart
+
+geocraft.command.geoconfig.set.custom.error=Failed to set : %s
+geocraft.command.geoconfig.set.boolean.synatx_error=%s isn't a valid boolean.
+geocraft.command.geoconfig.set.int.synatx_error=%s isn't a valid integer.
+geocraft.command.geoconfig.set.long.synatx_error=%s isn't a valid long integer.
+geocraft.command.geoconfig.set.double.synatx_error=%s isn't a valid double number.
+geocraft.command.geoconfig.set.num.too_min=%s is less than the min value %s of the config item.
+geocraft.command.geoconfig.set.num.too_max=%s is larger than the max value %s of the config item.
+geocraft.command.geoconfig.set.unsupported=The type of this config item is currently unsupported to be modified. Sit back and wait updates!
+geocraft.command.geoconfig.set.success=Modification succeeded. Current: %s . After modification, %s
+geocraft.command.geoconfig.set.save_fail=Modification succeeded in memory. Current: %s . However, error occurred when saving it to file: %s
+geocraft.command.geoconfig.reset.confirm.title=确定要重置%s配置项 %s 吗？
+geocraft.command.geoconfig.reset.confirm.default=该配置项的默认值为：%s
+geocraft.command.geoconfig.reset.confirm.question=如确定要重置，请点击%s并运行该命令
+geocraft.command.geoconfig.reset.confirm.button=HERE
+geocraft.command.geoconfig.reset.invalid_request=无效的重置请求 %s，该请求可能不存在或已过期
+geocraft.command.geoconfig.reset.failed_set=重置未成功：%s
+geocraft.command.geoconfig.reset.save_fail=Reset succeeded in memory. However, error occurred when saving it to file: %s
+geocraft.command.geoconfig.reset.success=Reset succeeded. After modification, %s
+
+geocraft.geotest.finite_fluid_drain_mixin_test.pass_because_mode=当前流体物理模式 %s 不是有限模式
+geocraft.geotest.finite_fluid_drain_mixin_test.pass=位置 %s 的方块状态为 %s，不是 BlockLiquid 或其子类,或对应流体不是水或熔岩
+geocraft.geotest.finite_fluid_drain_mixin_test.pass_because_config=位置 %s 的流体为 %s，在配置中保留了原版的桶效果或流体物理,不能进行测试
+geocraft.geotest.finite_fluid_drain_mixin_test.handler=位置 %s 的 IFluidHandler 为 %s 的实现
+geocraft.geotest.finite_fluid_drain_mixin_test.failed=注入校验失败，获得的对象不为 %s 类或其子类
+
+geocraft.geotest.soil_mixin_test.success=方块 %s 被期望的 %s 类正确实现
+geocraft.geotest.soil_mixin_test.failed=方块 %s 为类 %s 实现，但期望为 %s 类
+
+geocraft.geomessages.report_at_github=Go to GitHub to report issues to the author.
 
 geocraft.fluid.carbon_dioxide=Carbon Dioxide

@@ -27,6 +27,9 @@
 
 package top.qiguaiaaaa.geocraft.util.fluid;
 
+import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -37,11 +40,15 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.GeoCraft;
+import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.PlaceChoice;
+import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.mixin.common.block.BlockFluidBaseAccessor;
+import top.qiguaiaaaa.geocraft.util.math.MathUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -311,74 +318,81 @@ public final class FluidSearchUtil {
 
     /**
      * 寻找放置指定流体的可选位置集合
-     * BFS广度优先搜索，优先水平，其次往上或下
-     * 返回一个PlaceChoice集合，按照水平<垂值，进<远排列
+     * 返回一个PlaceChoice集合
      * @param world 世界
      * @param origin 开始搜寻位置
      * @param fluid 流体
      * @param maxOptions 最大可选项
      * @param ignoreBeginPos 是否忽略开始搜索的位置
-     * @param dir 指定垂直搜寻方向，若为null则默认会按照下->上优先级搜寻（负密度流体反之）
-     * @return 一个PlaceChoice集合，按照水平<垂值，进<远排列
+     * @param dir 指定垂直搜寻方向
+     * @return 一个PlaceChoice集合，按照进<远排列
      */
-    public static Set<PlaceChoice> findPlaceableLocations(@Nonnull World world,
-                                                          @Nonnull BlockPos origin,
-                                                          @Nonnull Fluid fluid,
-                                                          int maxOptions,
-                                                          boolean ignoreBeginPos,
-                                                          @Nullable EnumFacing dir) {
-        Set<PlaceChoice> res = new LinkedHashSet<>();
-        Set<BlockPos> visited = new HashSet<>();
-        Deque<BlockPos> queue = new ArrayDeque<>();
-        if (maxOptions <= 0) return res;
+    @Nonnull
+    public static Set<PlaceChoice> findPlaceableLocations(final @Nonnull World world,
+                                                          final @Nonnull BlockPos origin,
+                                                          final @Nonnull Fluid fluid,
+                                                          final int maxOptions,
+                                                          final boolean ignoreBeginPos,
+                                                          final @Nullable EnumFacing dir) {
+        final @Nonnull Set<PlaceChoice> res = Sets.newLinkedHashSet();
+        final @Nonnull Set<BlockPos> visited = SearchVisitedSet.get();
+        final @Nonnull Object2LongMap<BlockPos> dis = new Object2LongOpenHashMap<>();
+        final @Nonnull PriorityQueue<Pair<BlockPos,Long>> queue = new PriorityQueue<>(Comparator.comparing(Pair::getRight));
+        visited.clear();
+        dis.defaultReturnValue(Long.MAX_VALUE);
+        dis.put(origin,0L);
+        queue.add(Pair.of(origin,0L));
 
-        if (!world.isBlockLoaded(origin)) return res;
+        final double gravity = dir == EnumFacing.UP?-GeoFluidSetting.getGravity(world):GeoFluidSetting.getGravity(world);
+        final long valueInfo = getPlaceableSearchNodeValues(gravity == 0?0:1d/gravity);
+        final short v_down = (short) (valueInfo>>(Short.SIZE<<1));
+        final short v_0 = (short) ((valueInfo>>Short.SIZE) & 0xffffL);
+        final short v_up = (short) (valueInfo & 0xffffL);
 
-        if(!ignoreBeginPos){
-            if (FluidUtil.isFluidPlaceable(world,origin,fluid))
-                res.add(new PlaceChoice(FluidUtil.getFluidQuanta(world,origin,world.getBlockState(origin)),origin));
-            else if(FluidUtil.getFluid(world.getBlockState(origin)) != fluid) return res;
-            if (res.size() >= maxOptions) return res;
-        }
-
-        queue.add(origin);
-        visited.add(origin);
-
-        while (!queue.isEmpty() && res.size() < maxOptions) {
-            BlockPos current = queue.poll();
-
-            for (int[] d : DIRS4) {
-                BlockPos p = current.add(d[0], 0, d[1]);
-                if (visited.contains(p)) continue;
-                visited.add(p);
-
-                if (!world.isBlockLoaded(p)) continue;
-
-                if (FluidUtil.isFluidPlaceable(world,p,fluid)) {
-                    res.add(new PlaceChoice(FluidUtil.getFluidQuanta(world,origin,world.getBlockState(p)),p));
+        while (!queue.isEmpty()){
+            final @Nonnull BlockPos cur = queue.poll().getLeft();
+            if(visited.contains(cur)) continue;
+            visited.add(cur);
+            if(MathUtil.manhattanDistance(cur,origin)>16 || !world.isBlockLoaded(cur)) continue;
+            if(cur != origin || !ignoreBeginPos){
+                if (FluidUtil.isFluidPlaceable(world,cur,fluid)) {
+                    res.add(new PlaceChoice(FluidUtil.getFluidQuanta(world,cur,world.getBlockState(cur)),cur));
                     if (res.size() >= maxOptions) break;
-                    queue.add(p);
-                }else if(FluidUtil.getFluid(world.getBlockState(p)) == fluid) {
-                    queue.add(p);
+                }else if(FluidUtil.getFluid(world.getBlockState(cur)) != fluid) {
+                    continue;
                 }
             }
+            final long costHorizontal =  dis.getLong(cur) + v_0;
+            for(final @Nonnull EnumFacing facing:EnumFacing.HORIZONTALS) queueIfBetterCost(cur.offset(facing),costHorizontal,queue,dis);
+            if(cur.getY()>0) queueIfBetterCost(cur.down(),dis.getLong(cur) + v_down,queue,dis);
+            if(cur.getY()<world.getHeight()) queueIfBetterCost(cur.up(),dis.getLong(cur) + v_up,queue,dis);
         }
-        if (res.size() >= maxOptions) return res;
-        if(dir == null && fluid.getDensity() >=0){
-            if(origin.getY() > 0) res.addAll(findPlaceableLocations(world,origin.down(),fluid,maxOptions-res.size(),false,EnumFacing.DOWN));
-            if (res.size() >= maxOptions) return res;
-            if(origin.getY() < world.getHeight()-1) res.addAll(findPlaceableLocations(world,origin.up(),fluid,maxOptions-res.size(),false,EnumFacing.UP));
-        }else if(dir == null){
-            if(origin.getY() < world.getHeight()-1) res.addAll(findPlaceableLocations(world,origin.up(),fluid,maxOptions-res.size(),false,EnumFacing.UP));
-            if (res.size() >= maxOptions) return res;
-            if(origin.getY() > 0) res.addAll(findPlaceableLocations(world,origin.down(),fluid,maxOptions-res.size(),false,EnumFacing.DOWN));
-        }else if(dir == EnumFacing.DOWN && origin.getY() > 0){
-            res.addAll(findPlaceableLocations(world,origin.down(),fluid,maxOptions-res.size(),false,EnumFacing.DOWN));
-        }else if(dir == EnumFacing.UP && origin.getY() < world.getHeight()-1){
-            res.addAll(findPlaceableLocations(world,origin.up(),fluid,maxOptions-res.size(),false,EnumFacing.UP));
-        }
-
         return res;
+    }
+
+    private static void queueIfBetterCost(final @Nonnull BlockPos pos,
+                                          final long newCost,
+                                          final @Nonnull PriorityQueue<Pair<BlockPos,Long>> queue,
+                                          final @Nonnull Object2LongMap<BlockPos> dis){
+        if(dis.getLong(pos) > newCost){
+            dis.put(pos,newCost);
+            queue.add(Pair.of(pos,newCost));
+        }
+    }
+
+    /**
+     * 基于相对重力大小计算寻找可放置流体位置时，向下/向上/水平方向的移动代价
+     * @param gravity 相对重力大小
+     * @return 一个 long，第1-16位无作用，17-32位为向下代价，33-48为水平代价，49-64为向上代价
+     */
+    public static long getPlaceableSearchNodeValues(final double gravity){
+        final double a = FluidPhysicsConfig.PLACE_ALGORITHM_MAX_COST_FACTOR.getValue();
+        final double m = FluidPhysicsConfig.PLACE_ALGORITHM_COST_SMOOTHNESS.getValue();
+        final double d = FluidPhysicsConfig.PLACE_ALGORITHM_COST_MIDPOINT.getValue();
+        final short v_down = (short) MathUtil.tanh(-gravity,a,m,d);
+        final short v_0 = (short) MathUtil.tanh(0,a,m,d);
+        final short v_up = (short) MathUtil.tanh(gravity,a,m,d);
+        return (long) v_down <<(Short.SIZE<<1) | v_0<<Short.SIZE | v_up;
     }
 
     /**
@@ -393,6 +407,8 @@ public final class FluidSearchUtil {
      * @param dir 指定垂直搜寻方向，若为null则默认会按照下->上优先级搜寻（负密度流体反之）
      * @return 一个PlaceChoice集合，按照水平<垂值，进<远排列
      */
+    @Deprecated
+    @Nonnull
     public static Set<PlaceChoice> findPlaceableLocationsPermeable(@Nonnull World world,
                                                           @Nonnull BlockPos origin,
                                                           @Nonnull Fluid fluid,

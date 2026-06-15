@@ -28,41 +28,48 @@
 package top.qiguaiaaaa.geocraft.api.configs.item.collection.set;
 
 import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.collection.IConfigIntCollection;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.IConfigurableSet;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public class ConfigIntegerSet extends ConfigSet<Integer> implements IConfigIntCollection {
-    protected int minValue = Integer.MIN_VALUE,
-            maxValue = Integer.MAX_VALUE;
-    public ConfigIntegerSet(ConfigCategory category, String configKey, IConfigurableSet<Integer> defaultValue) {
-        this(category, configKey, defaultValue,null);
+public class ConfigIntegerSet extends ConfigSet<Integer,ConfigIntegerSet> implements IConfigIntCollection<ConfigIntegerSet> {
+    protected int minValue = Integer.MIN_VALUE;
+    protected int maxValue = Integer.MAX_VALUE;
+
+    public ConfigIntegerSet(final @Nonnull ConfigCategory category,
+                            final @Nonnull String configKey,
+                            final @Nonnull IConfigurableSet<Integer> defaultValue) {
+        super(category, configKey, defaultValue,Integer::parseInt);
     }
 
-    public ConfigIntegerSet(ConfigCategory category, String configKey, IConfigurableSet<Integer> defaultValue, String comment) {
-        this(category, configKey, defaultValue, comment,false);
-    }
-
-    public ConfigIntegerSet(ConfigCategory category, String configKey, IConfigurableSet<Integer> defaultValue, String comment, boolean isFinal) {
-        super(category, configKey, defaultValue, comment,Integer::parseInt, isFinal);
-    }
-
+    @Nonnull
     @Override
-    public ConfigIntegerSet setMinValue(int minValue) {
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.set.int";
+    }
+
+    @Nonnull
+    @Override
+    public ConfigIntegerSet setMinValue(final int minValue) {
         this.minValue = minValue;
         return this;
     }
+
+    @Nonnull
     @Override
-    public ConfigIntegerSet setMaxValue(int maxValue) {
+    public ConfigIntegerSet setMaxValue(final int maxValue) {
         this.maxValue = maxValue;
         return this;
     }
+
     @Override
     public int getMinValue() {
         return minValue;
@@ -73,30 +80,30 @@ public class ConfigIntegerSet extends ConfigSet<Integer> implements IConfigIntCo
     }
 
     @Override
-    public ConfigIntegerSet setMaxListSize(int maxListSize) {
-        super.setMaxListSize(maxListSize);
-        return this;
-    }
-
-    @Override
     public void save() {
         if(property == null) return;
         property.setValues(toIntList(value));
-        property.setComment(getPolishedComment());
+        property.setComment(getConstructedComment());
     }
 
     @Override
-    public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,toIntList(defaultValue),comment,minValue,maxValue,isListSizeFixed,maxListSize);
-        property.setComment(getPolishedComment());
+    public void load(@Nonnull final Configuration config) {
+        property = config.get(category.getPath(),key,toIntList(defaultValue),null,minValue,maxValue,sizeRequire.isSizeFixed(),sizeRequire.getMaxListSize());
+        property.setComment(getConstructedComment());
         load(property);
     }
 
-    protected String getPolishedComment(){
-        return (comment==null?"":comment)+" [range: " + minValue + " ~ " + maxValue + (maxListSize>=0?", maxSize: " + maxListSize:"") + "]";
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        list.add(Pair.of("范围 Range",minValue + " ~ "+maxValue));
+        return list;
     }
 
-    protected int[] toIntList(@Nonnull Collection<Integer> c){
+
+    @Nonnull
+    public static int[] toIntList(@Nonnull final Collection<Integer> c){
         int[] ints = new int[c.size()];
         int i=0;
         for(Integer integer:c){

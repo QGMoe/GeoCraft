@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "geocraft:blocks/red_sand_h1"
+  }
+}

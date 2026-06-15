@@ -30,6 +30,8 @@ package top.qiguaiaaaa.geocraft.compat;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.LoaderState;
 import top.qiguaiaaaa.geocraft.GeoCraft;
+import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import top.qiguaiaaaa.geocraft.handler.MixinHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,7 +54,10 @@ public final class GeoCompatLoader {
     private GeoCompatLoader(){}
 
     static {
-        registerCompat("brigo","top.qiguaiaaaa.geocraft.command.BrigoCompat");
+        final @Nonnull FluidPhysicsMode mode = FluidPhysicsMode.getCurrentMode();
+        MixinHandler.FLUID_PHYSICS_TO_COMPATS[mode.ordinal()].stream()
+                .filter(compat -> compat.compatClass != null && compat.getEnableCondition().getAsBoolean())
+                .forEach(compat -> registerCompat(compat.modid,compat.compatClass));
     }
 
     public static void loadCompats(@Nonnull final LoaderState state){

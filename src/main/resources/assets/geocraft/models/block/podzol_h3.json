@@ -1,0 +1,8 @@
+{
+  "parent": "block/cube_bottom_top",
+  "textures": {
+    "bottom": "geocraft:blocks/dirt_h3",
+    "top": "blocks/dirt_podzol_top",
+    "side": "geocraft:blocks/dirt_podzol_side_h3"
+  }
+}

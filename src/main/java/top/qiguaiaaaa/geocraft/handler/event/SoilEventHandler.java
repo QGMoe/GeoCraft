@@ -29,6 +29,7 @@ package top.qiguaiaaaa.geocraft.handler.event;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -46,11 +47,13 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBiome;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockState;
 import top.qiguaiaaaa.geocraft.api.event.player.ExtendedUseHoeEvent;
+import top.qiguaiaaaa.geocraft.api.event.player.UseSpadeEvent;
 import top.qiguaiaaaa.geocraft.api.setting.GeoSoilSetting;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -63,26 +66,26 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.toFarmlandMoistu
  */
 public final class SoilEventHandler {
     @SubscribeEvent
-    public static void onHoeUseEvent(ExtendedUseHoeEvent event){
-        World world = event.getWorld();
-        BlockPos pos = event.getPos();
-        EnumFacing facing = event.getFacing();
-        EntityPlayer player = event.getEntityPlayer();
-        IBlockState curState = world.getBlockState(pos);
-        Block block = curState.getBlock();
+    public static void onHoeUseEvent(final @Nonnull ExtendedUseHoeEvent event){
+        final World world = event.getWorld();
+        final BlockPos pos = event.getPos();
+        final EnumFacing facing = event.getFacing();
+        final EntityPlayer player = event.getEntityPlayer();
+        final IBlockState curState = world.getBlockState(pos);
+        final Block block = curState.getBlock();
 
         if(!(block instanceof IBlockSoil)) return;
 
         if (facing != EnumFacing.DOWN && world.isAirBlock(pos.up())) {
             if (block == Blocks.GRASS || block == Blocks.GRASS_PATH) {
-                int humidity = curState.getValue(HUMIDITY);
+                final int humidity = curState.getValue(HUMIDITY);
                 setBlock_Hoe(player, world, pos, Blocks.FARMLAND.getDefaultState().withProperty(MOISTURE,toFarmlandMoistureFromHumidity(humidity)));
                 event.setResult(Event.Result.ALLOW);
                 return;
             }
 
             if (block == Blocks.DIRT) {
-                int humidity = curState.getValue(HUMIDITY);
+                final int humidity = curState.getValue(HUMIDITY);
                 switch (curState.getValue(BlockDirt.VARIANT)) {
                     case PODZOL:return;
                     case DIRT:
@@ -103,7 +106,7 @@ public final class SoilEventHandler {
     /**
      * @see net.minecraft.item.ItemHoe#setBlock(ItemStack, EntityPlayer, World, BlockPos, IBlockState) 
      */
-    private static void setBlock_Hoe(EntityPlayer player, World worldIn, BlockPos pos, IBlockState state) {
+    private static void setBlock_Hoe(final EntityPlayer player,final World worldIn,final BlockPos pos,final IBlockState state) {
         worldIn.playSound(player, pos, SoundEvents.ITEM_HOE_TILL, SoundCategory.BLOCKS, 1f, 1f);
 
         if (!worldIn.isRemote) {
@@ -111,7 +114,29 @@ public final class SoilEventHandler {
         }
     }
 
-    public static void onPostInit(FMLPostInitializationEvent event){
+    @SubscribeEvent
+    public static void onSpadeUseEvent(final @Nonnull UseSpadeEvent event){
+        final World world = event.getWorld();
+        final BlockPos pos = event.getPos();
+        final EnumFacing facing = event.getFacing();
+        final EntityPlayer player = event.getEntityPlayer();
+        final IBlockState curState = world.getBlockState(pos);
+        final Block block = curState.getBlock();
+
+        if(!(block instanceof IBlockSoil)) return;
+
+        if(facing != EnumFacing.DOWN && world.getBlockState(pos.up()).getMaterial() == Material.AIR && block == Blocks.GRASS){
+            final int humidity = curState.getValue(HUMIDITY);
+            final @Nonnull IBlockState state = Blocks.GRASS_PATH.getDefaultState().withProperty(HUMIDITY,humidity);
+            world.playSound(player, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1f, 1f);
+
+            if (!world.isRemote) world.setBlockState(pos, state, Constants.BlockFlags.DEFAULT_AND_RERENDER);
+
+            event.setResult(Event.Result.ALLOW);
+        }
+    }
+
+    public static void onPostInit(final @Nonnull FMLPostInitializationEvent event){
         for(ConfigurableBiome biome: SoilConfig.GENERATION_BIOME_BLACK_LIST){
             Biome b = biome.getBiome();
             if(b == null) continue;

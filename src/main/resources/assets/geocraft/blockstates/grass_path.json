@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "humidity=1": { "model": "geocraft:grass_path_h1" },
+    "humidity=2": { "model": "geocraft:grass_path_h2" },
+    "humidity=3": { "model": "geocraft:grass_path_h3" },
+    "humidity=4": { "model": "geocraft:grass_path_h4" }
+  }
+}

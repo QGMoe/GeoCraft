@@ -78,14 +78,15 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.FluidPhysicsCoreFinite;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.IPostEventInitFinite;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
 import top.qiguaiaaaa.geocraft.mixin.common.entity.EntityFallingBlockAccessor;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidMixinUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 import top.qiguaiaaaa.geocraft.util.wrappers.InfiniteFluidBucketWrapper;
-import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsBlockLiquidWrapper;
-import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsFluidBlockWrapper;
+import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
+import top.qiguaiaaaa.geocraft.util.wrappers.FiniteFluidBlockWrapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -113,6 +114,7 @@ public final class FiniteEventHandler {
         IBlockState state = worldIn.getBlockState(pos);
         if (item == Items.BUCKET) {
             if(!FluidUtil.isFluid(state)) pos = pos.offset(raytraceresult.sideHit); //非满的水方块会透过去
+            /// 上面的逻辑可能可以去掉了，因为{@link top.qiguaiaaaa.geocraft.mixin.finite.block.BlockLiquidMixin#天圆地方$redirectCollideCheck(Integer)}
             if (!worldIn.isBlockModifiable(playerIn, pos)) return;
 
             FluidStack stack = FluidOperationUtil.tryDrainFluid(worldIn,pos, Fluid.BUCKET_VOLUME,bucketFindFluidMaxDistance.getValue(),false);
@@ -149,7 +151,7 @@ public final class FiniteEventHandler {
         if(item != Items.WATER_BUCKET && item != Items.LAVA_BUCKET) return;
         boolean blockReplaceable = state.getBlock().isReplaceable(worldIn,pos);
         if(!FluidUtil.isFluid(state) && (!blockReplaceable || raytraceresult.sideHit != EnumFacing.UP))
-            pos = pos.offset(raytraceresult.sideHit);
+            pos = pos.offset(raytraceresult.sideHit); //同理，这个可能也要去掉
         else if(FluidUtil.isFullFluid(worldIn,pos,state)) pos = pos.offset(raytraceresult.sideHit);
         if (!playerIn.canPlayerEdit(pos, raytraceresult.sideHit, itemstack)) {
             return;
@@ -211,7 +213,7 @@ public final class FiniteEventHandler {
         if(fluid == null) return true;
         final Block block = currentState.getBlock();
         if(block instanceof BlockLiquid){
-            final PhysicsBlockLiquidWrapper wrapper = new PhysicsBlockLiquidWrapper((BlockLiquid) block,world,pos);
+            final FiniteBlockLiquidWrapper wrapper = new FiniteBlockLiquidWrapper(FiniteFlowingVanilla.getFlowingByMaterial(currentState.getMaterial()),world,pos);
             wrapper.setIgnoreCurrentPos(true);
             int quanta = FluidUtil.getFluidQuanta(world, pos,currentState);
             long QB = QBUtil.toQBFromQuanta(quanta);
@@ -279,10 +281,9 @@ public final class FiniteEventHandler {
 
             quanta = QBUtil.toQuanta(QB-canFillQB);
 
-            int amount = quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME;
-            wrapper.setExpectedQuanta(quanta);
-            FluidStack stack = new FluidStack(fluid,amount);
-            int available = wrapper.fill(stack,false);
+            final int amount = quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME;
+            final @Nonnull FluidStack stack = new FluidStack(fluid,amount);
+            final int available = wrapper.fill(stack,false);
             if(available < amount){
                 return false;
             }
@@ -301,7 +302,7 @@ public final class FiniteEventHandler {
                 }
             }
         }else if(block instanceof BlockFluidBase){
-            PhysicsFluidBlockWrapper wrapper = new PhysicsFluidBlockWrapper((IFluidBlock) block,world,pos);
+            FiniteFluidBlockWrapper wrapper = new FiniteFluidBlockWrapper((BlockFluidBase) block,world,pos);
             wrapper.setIgnoreCurrentPos(true);
             int amount = FluidMixinUtil.getAmountForBlockFluidBase(currentState);
             FluidStack stack = new FluidStack(fluid,amount);
@@ -339,7 +340,7 @@ public final class FiniteEventHandler {
         }
         IBlockState state = worldIn.getBlockState(blockpos);
         if(!FluidUtil.isFluid(state)){
-            blockpos = blockpos.offset(rayTraceResult.sideHit);
+            blockpos = blockpos.offset(rayTraceResult.sideHit); //同理，这个可能也要去掉
             state = worldIn.getBlockState(blockpos);
         }
         if(!worldIn.isBlockModifiable(player, blockpos))

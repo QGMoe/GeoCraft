@@ -61,13 +61,13 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.layer.UnderlyingLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
 import top.qiguaiaaaa.geocraft.api.atmosphere.tracker.InformationLoggingTracker;
-import top.qiguaiaaaa.nickel.command.builder.CommandBuilder;
-import top.qiguaiaaaa.nickel.command.builder.INodeBuilder;
-import top.qiguaiaaaa.nickel.command.builder.execute.CommandExecutor;
-import top.qiguaiaaaa.nickel.command.builder.execute.RelayExecuteNodeBuilder;
-import top.qiguaiaaaa.nickel.command.context.ExecuteContext;
-import top.qiguaiaaaa.nickel.command.node.ISmartNode;
-import top.qiguaiaaaa.nickel.command.node.parameter.minecraft.DimensionNode;
+import moe.qingu.nickel.command.builder.CommandBuilder;
+import moe.qingu.nickel.command.builder.INodeBuilder;
+import moe.qingu.nickel.command.builder.execute.CommandExecutor;
+import moe.qingu.nickel.command.builder.execute.RelayExecuteNodeBuilder;
+import moe.qingu.nickel.command.context.ExecuteContext;
+import moe.qingu.nickel.command.node.ISmartNode;
+import moe.qingu.nickel.command.node.parameter.minecraft.DimensionNode;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockState;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
@@ -100,9 +100,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static moe.qingu.nickel.command.Nodes.*;
 import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.AtmosphereCommandContext.*;
 import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
-import static top.qiguaiaaaa.nickel.command.Nodes.*;
 
 public final class CommandAtmosphere {
     public static final String ATMOSPHERE_COMMAND_NAME = "atmosphere";

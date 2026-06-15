@@ -27,14 +27,15 @@
 
 package top.qiguaiaaaa.geocraft.api.configs.item.collection;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 
 /**
  * @author QiguaiAAAA
  */
-public interface IConfigIntCollection extends Collection<Integer>{
-    IConfigIntCollection setMinValue(int min);
-    IConfigIntCollection setMaxValue(int max);
+public interface IConfigIntCollection<S extends IConfigIntCollection<S>> extends Collection<Integer>{
+    @Nonnull S setMinValue(final int min);
+    @Nonnull S setMaxValue(final int max);
     int getMinValue();
     int getMaxValue();
 }

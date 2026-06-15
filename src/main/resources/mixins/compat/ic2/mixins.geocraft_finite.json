@@ -1,0 +1,12 @@
+{
+  "package": "top.qiguaiaaaa.geocraft.mixin.finite.mod.ic2",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "LiquidUtilMixin",
+    "PumpUtilMixin"
+  ],
+  "client": [
+  ]
+}

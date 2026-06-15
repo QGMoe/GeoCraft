@@ -54,9 +54,12 @@ public final class AtmosphereConfig {
 
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_ATMOSPHERE = new ConfigCategory("atmosphere");
+
     @GeoConfig.Since("0.1")
-    public static final ConfigBoolean ENABLE_DETAIL_LOGGING = new ConfigBoolean(CATEGORY_ATMOSPHERE,"enableDetailLogging",
-            false,"开启详细的大气日志记录",true){
+    @Config.Comment("开启详细的大气日志记录")
+    @Config.LangKey("geocraft.config.comment.atmosphere.enable_detailed_logging")
+    @Config.RequiresMcRestart
+    public static final ConfigBoolean ENABLE_DETAIL_LOGGING = new ConfigBoolean(CATEGORY_ATMOSPHERE,"enableDetailLogging", false){
         @Override
         public void load(@Nonnull Configuration config) {
             super.load(config);
@@ -65,17 +68,29 @@ public final class AtmosphereConfig {
     };
 
     @Config.RangeInt(min = 1)
+    @Config.Comment("[自 0.2.0-beta.1 开始弃用]大气加载的最大距离，单位为区块。\n" +
+            "The max loaded distance for Atmosphere, measured in chunks.")
     @GeoConfig.Since("0.1")
     @Deprecated
-    public static final ConfigInteger ATMOSPHERE_MAX_LOAD_DISTANCE = new ConfigInteger(CATEGORY_ATMOSPHERE,"maxLoadDistance",100,
-            "[自 0.2.0-beta.1 开始弃用]大气加载的最大距离，单位为区块。\n" +
-                    "The max loaded distance for Atmosphere, measured in chunks.");
+    public static final ConfigInteger ATMOSPHERE_MAX_LOAD_DISTANCE = new ConfigInteger(CATEGORY_ATMOSPHERE,"maxLoadDistance",100);
 
     @GeoConfig.Since("0.1")
+    @Config.Comment("配置每个维度使用的大气系统。注意，切换大气系统后原大气系统的数据可能丢失，建议提前备份。\n" +
+            "Configure the atmosphere system for each dimension. ATTENTION: Changing of atmosphere system may cause data loss on old atmosphere system, and a backup is recommended.\n")
+    @GeoConfig.KeyComment("维度ID Dimension ID")
+    @GeoConfig.ValueComment("大气系统信息，为一个JSON对象。Atmosphere system information, which is a JSON object.\n" +
+            "id - 当前维度采用的大气系统ID。The atmosphere system ID used by the current dimension.\n" +
+            "   可选值 Available values:\n" +
+            "   surface - 主世界大气系统，类似现实的地球大气系统 An Earth-like atmosphere system.\n" +
+            "   vanilla - 原版大气系统，基于Minecraft原版的生物群系 An atmosphere system based on biomes.\n" +
+            "   close - 地狱大气系统 Atmosphere system designed for Hall.\n" +
+            "   第三方大气系统ID - 更改此值为第三方大气系统ID以使用第三方模组提供的大气系统. Change this value to a third-party atmosphere system ID to use atmosphere systems provided by third-party mods.\n" +
+            "   none - 无大气系统. No atmosphere system.\n" +
+            "不同大气系统有不同的配置项，请参阅相关文档获取详细信息。\n" +
+            "Different atmosphere systems have different configuration items. Please refer to the relevant documentation for detailed information.")
+    @Config.RequiresWorldRestart
     public static final ConfigMap<Integer, AtmosphereSystemInfo> ATMOSPHERE_SYSTEM_TYPES =
             new ConfigMap<Integer, AtmosphereSystemInfo>(CATEGORY_ATMOSPHERE,"customAtmosphereSystem",
-                    "配置每个维度使用的大气系统。注意，切换大气系统后原大气系统的数据可能丢失，建议提前备份。\n" +
-                            "Configure the atmosphere system for each dimension. ATTENTION: Changing of atmosphere system may cause data loss on old atmosphere system, and a backup is recommended.\n",
                     Integer::parseInt,AtmosphereSystemInfo::new,
                     new ConfigEntry<>(0, SurfaceAtmosphereSystemInfo.create()
                             .waterEvaporate(true)
@@ -106,23 +121,13 @@ public final class AtmosphereConfig {
                     super.load(config);
                     GeoAtmosphereSetting.setAtmosphereSystemInfoMap(value);
                 }
-            }.setKeyClass(Integer.class)
-                    .setValueClass(AtmosphereSystemInfo.class)
-                    .setKeyComment("维度ID Dimension ID")
-                    .setValueComment("大气系统信息，为一个JSON对象。Atmosphere system information, which is a JSON object.\n" +
-                            "id - 当前维度采用的大气系统ID。The atmosphere system ID used by the current dimension.\n" +
-                            "   可选值 Available values:\n" +
-                            "   surface - 主世界大气系统，类似现实的地球大气系统 An Earth-like atmosphere system.\n" +
-                            "   vanilla - 原版大气系统，基于Minecraft原版的生物群系 An atmosphere system based on biomes.\n" +
-                            "   close - 地狱大气系统 Atmosphere system designed for Hall.\n" +
-                            "   第三方大气系统ID - 更改此值为第三方大气系统ID以使用第三方模组提供的大气系统. Change this value to a third-party atmosphere system ID to use atmosphere systems provided by third-party mods.\n" +
-                            "   none - 无大气系统. No atmosphere system.\n" +
-                            "不同大气系统有不同的配置项，请参阅相关文档获取详细信息。\n" +
-                            "Different atmosphere systems have different configuration items. Please refer to the relevant documentation for detailed information.");
+    }.setKeyClass(Integer.class).setValueClass(AtmosphereSystemInfo.class);
 
     @GeoConfig.Since("0.1")
+    @Config.Comment("方块每1立方分米的热容，默认为2000，单位为FE/(dm^3·K),可以用 比热容*密度/1000 计算(国际标准单位)")
+    @Config.RequiresMcRestart
     public static final ConfigMap<ConfigurableBlockState,Integer> SPECIFIC_HEAT_CAPACITIES =
-            new ConfigMap<ConfigurableBlockState,Integer>(CATEGORY_ATMOSPHERE,"specificHeatCapacities","方块每1立方分米的热容，默认为2000，单位为FE/(dm^3·K),可以用 比热容*密度/1000 计算(国际标准单位)",ConfigurableBlockState::getInstanceByString, Integer::parseInt,
+            new ConfigMap<ConfigurableBlockState,Integer>(CATEGORY_ATMOSPHERE,"specificHeatCapacities",ConfigurableBlockState::getInstanceByString, Integer::parseInt,
                     //水
                     new BlockIntegerEntry("minecraft:water",4200),
                     new BlockIntegerEntry("minecraft:flowing_water",4200),
@@ -256,17 +261,19 @@ public final class AtmosphereConfig {
                     //其他
                     new BlockIntegerEntry("minecraft:air",200)){
                 @Override
-                public void load(@Nonnull Configuration config) {
+                public void load(@Nonnull final Configuration config) {
                     super.load(config);
-                    for(Map.Entry<ConfigurableBlockState,Integer> entry: getValue().entrySet()){
+                    for(@Nonnull final Map.Entry<ConfigurableBlockState,Integer> entry: getValue().entrySet()){
                         GeoBlockSetting.setBlockHeatCapacity(entry.getKey(),entry.getValue());
                     }
                 }
             };
 
     @GeoConfig.Since("0.1")
+    @Config.Comment("下垫面方块的反射率，默认为12%，单位为%")
+    @Config.RequiresMcRestart
     public static final ConfigMap<ConfigurableBlockState,Integer> UNDERLYING_REFLECTIVITY =
-            new ConfigMap<ConfigurableBlockState,Integer>(CATEGORY_ATMOSPHERE,"underlyingReflectivity","下垫面方块的反射率，默认为12%，单位为%", ConfigurableBlockState::getInstanceByString,Integer::parseInt,
+            new ConfigMap<ConfigurableBlockState,Integer>(CATEGORY_ATMOSPHERE,"underlyingReflectivity", ConfigurableBlockState::getInstanceByString,Integer::parseInt,
                     //水
                     new BlockIntegerEntry("minecraft:water",5),
                     new BlockIntegerEntry("minecraft:flowing_water",3),
@@ -432,21 +439,22 @@ public final class AtmosphereConfig {
             };
 
     @GeoConfig.Since("0.1")
-    public static final ConfigBoolean ALLOW_CAULDRON_GET_INFINITE_WATER = new ConfigBoolean(CATEGORY_ATMOSPHERE,"allowCauldronGetInfiniteWater",
-            false,"是否允许炼药锅接无限量的水，即在接水时不会消耗大气水");
+    @Config.Comment("是否允许炼药锅接无限量的水，即在接水时不会消耗大气水")
+    public static final ConfigBoolean ALLOW_CAULDRON_GET_INFINITE_WATER = new ConfigBoolean(CATEGORY_ATMOSPHERE,"allowCauldronGetInfiniteWater", false);
 
     @Config.RangeInt(min = 2)
     @GeoConfig.Since("0.1")
-    public static final ConfigInteger ATMOSPHERE_UNDERLYING_RECALCULATE_GAP = new ConfigInteger(CATEGORY_ATMOSPHERE,
-            "atmosphereUnderlyingRecalculateGap",400,"大气重新计算下垫面性质的间隔时间，单位为大气刻"){
+    @Config.Comment("大气重新计算下垫面性质的间隔时间，单位为大气刻")
+    @Config.RequiresMcRestart
+    public static final ConfigInteger ATMOSPHERE_UNDERLYING_RECALCULATE_GAP = new ConfigInteger(CATEGORY_ATMOSPHERE, "atmosphereUnderlyingRecalculateGap",400){
         @Override
-        public void load(@Nonnull Configuration config) {
+        public void load(@Nonnull final Configuration config) {
             super.load(config);
             GeoAtmosphereSetting.setUnderlyingReloadGap(value);
         }
 
         @Override
-        public void setValue(@Nonnull Integer newValue) {
+        public void setValue(@Nonnull final Integer newValue) {
             super.setValue(newValue);
             GeoAtmosphereSetting.setUnderlyingReloadGap(value);
         }

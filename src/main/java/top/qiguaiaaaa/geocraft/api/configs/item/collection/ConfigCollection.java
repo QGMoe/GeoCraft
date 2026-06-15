@@ -29,15 +29,15 @@ package top.qiguaiaaaa.geocraft.api.configs.item.collection;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.IConfigurableCollection;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -46,55 +46,47 @@ import java.util.regex.Pattern;
 /**
  * @author QiguaiAAAA
  */
-public abstract class ConfigCollection<CollectionType extends IConfigurableCollection<ValueType>,ValueType> extends ConfigItem<CollectionType> implements Collection<ValueType> {
+public abstract class ConfigCollection<CollectionType extends IConfigurableCollection<ValueType>,
+        ValueType,
+        SELF extends ConfigCollection<CollectionType,ValueType,SELF>>
+        extends ConfigItem<CollectionType,SELF> implements Collection<ValueType> {
     protected final Function<String,ValueType> parser;
     protected final Supplier<CollectionType> factory;
 
-    protected int maxListSize = -1;
+    protected SizeRequirement sizeRequire = SizeRequirement.NONE;
+    protected @Nullable Pattern validatedPattern = null;
 
-    protected boolean isListSizeFixed = false;
+    protected @Nullable Collection<ValueType> unmodifiable = null;
 
-    protected Pattern validatedPattern = null;
-
-    public ConfigCollection(ConfigCategory category, String configKey, CollectionType defaultValue, Function<String,ValueType> parser, Supplier<CollectionType> factory) {
-        this(category, configKey, defaultValue,null,parser,factory);
-    }
-
-    public ConfigCollection(ConfigCategory category, String configKey, CollectionType defaultValue, String comment, Function<String,ValueType> parser, Supplier<CollectionType> factory) {
-        this(category,configKey,defaultValue,comment,parser,factory,false);
-    }
-
-    public ConfigCollection(ConfigCategory category, String configKey, CollectionType defaultValue, String comment, Function<String,ValueType> parser, Supplier<CollectionType> factory, boolean isFinal) {
-        this(category, configKey, defaultValue, comment,-1,parser,factory,isFinal);
-    }
-
-    public ConfigCollection(ConfigCategory category, String configKey,CollectionType defaultValue, String comment, int maxListSize, Function<String,ValueType> parser, Supplier<CollectionType> factory, boolean isFinal) {
-        super(category, configKey, defaultValue, comment, isFinal);
+    public ConfigCollection(final @Nonnull ConfigCategory category,
+                            final @Nonnull String configKey,
+                            final @Nonnull CollectionType defaultValue,
+                            final @Nonnull Function<String,ValueType> parser,
+                            final @Nonnull Supplier<CollectionType> factory) {
+        super(category, configKey, defaultValue);
         this.parser = parser;
-        this.maxListSize = maxListSize;
         this.factory = factory;
     }
 
-    public ConfigCollection<CollectionType,ValueType> setMaxListSize(int maxListSize) {
-        this.maxListSize = maxListSize;
-        return this;
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SELF requireSize(final @Nonnull SizeRequirement requirement) {
+        this.sizeRequire = Objects.requireNonNull(requirement);
+        return (SELF) this;
     }
 
-    public ConfigCollection<CollectionType,ValueType> setListSizeFixed(boolean listSizeFixed) {
-        isListSizeFixed = listSizeFixed;
-        return this;
-    }
-
-    public ConfigCollection<CollectionType,ValueType> setValidatedPattern(Pattern validatedPattern) {
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SELF setPattern(final @Nonnull Pattern validatedPattern) {
         this.validatedPattern = validatedPattern;
-        return this;
+        return (SELF) this;
     }
 
     @Override
     public void save() {
         if(property == null) return;
         property.setValues(value.toStringList());
-        property.setComment(comment);
+        property.setComment(getConstructedComment());
     }
 
     @Nonnull
@@ -102,33 +94,50 @@ public abstract class ConfigCollection<CollectionType extends IConfigurableColle
     public abstract CollectionType getValue();
 
     @Override
-    public void setValue(@Nonnull CollectionType newValue) {
-        if(isFinal) return;
-        if(newValue.size() != value.size() && isListSizeFixed) throw new IllegalArgumentException();
-        if(maxListSize >=0 && newValue.size()>maxListSize) throw new IllegalArgumentException();
+    public void setValue(@Nonnull final CollectionType newValue) {
+        if(!sizeRequire.validate(newValue.size())) throw new IllegalArgumentException();
+        this.unmodifiable = null;
         super.setValue(newValue);
     }
 
     @Override
-    public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,defaultValue.toStringList(),comment,isListSizeFixed,maxListSize,validatedPattern);
+    public void load(@Nonnull final Configuration config) {
+        property = config.get(category.getPath(),key,defaultValue.toStringList(),getConstructedComment(),sizeRequire.isSizeFixed(),sizeRequire.getMaxListSize(),validatedPattern);
         load(property);
     }
 
     @Override
-    protected void load(@Nonnull Property property) {
+    protected void load(@Nonnull final Property property) {
+        this.unmodifiable = null;
         value = factory.get();
 
-        String[] strings = property.getStringList();
-        for(String string:strings){
+        final @Nonnull String[] strings = property.getStringList();
+        for(final @Nonnull String string:strings){
             try {
-                ValueType loadedVal = parser.apply(string);
+                final @Nonnull ValueType loadedVal = parser.apply(string);
                 value.add(loadedVal);
-            }catch (Throwable e){
+            }catch (final @Nonnull Exception e){
                 GeoCraftAPI.LOGGER.warn("loading configuration {} in {} error",string,category);
                 GeoCraftAPI.LOGGER.warn("Error Detailed:",e);
             }
         }
+    }
+
+    @Nonnull
+    protected Collection<ValueType> getUnmodifiableCollection(){
+        if(unmodifiable == null) unmodifiable = Collections.unmodifiableCollection(this.value);
+        return unmodifiable;
+    }
+
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        if(sizeRequire instanceof SizeRequirement.Fixed) list.add(Pair.of("固定大小 Size Fixed",null));
+        else if(sizeRequire instanceof SizeRequirement.Range) list.add(Pair.of("大小范围 Size Range",
+                ((SizeRequirement.Range) sizeRequire).min +" ~ "+ ((SizeRequirement.Range) sizeRequire).max));
+        if(validatedPattern != null) list.add(Pair.of("正则表达式限制 Regex Limitation",validatedPattern.toString()));
+        return list;
     }
 
     //**********
@@ -146,70 +155,73 @@ public abstract class ConfigCollection<CollectionType extends IConfigurableColle
     }
 
     @Override
-    public boolean contains(Object o) {
+    public boolean contains(final @Nullable Object o) {
         return value.contains(o);
     }
 
+    @Nonnull
     @Override
     public Iterator<ValueType> iterator() {
-        if(isFinal || isListSizeFixed) return Collections.unmodifiableCollection(value).iterator();
+        if(sizeRequire.getMaxListSize() != -1) return getUnmodifiableCollection().iterator();
         return value.iterator();
     }
 
+    @Nonnull
     @Override
     public Object[] toArray() {
         return value.toArray();
     }
 
+    @Nonnull
     @Override
-    public <T> T[] toArray(@Nonnull T[] a) {
+    public <T> T[] toArray(@Nonnull final T[] a) {
         return value.toArray(a);
     }
 
     @Override
-    public boolean add(@Nonnull ValueType type) {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+    public boolean add(@Nonnull final ValueType type) {
+        if(!sizeRequire.validate(value.size()+1)) throw new UnsupportedOperationException();
         return value.add(type);
     }
 
     @Override
-    public boolean remove(Object o) {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+    public boolean remove(final @Nonnull Object o) {
+        if(!sizeRequire.validate(value.size()-1)) throw new UnsupportedOperationException();
         return value.remove(o);
     }
 
     @Override
-    public boolean containsAll(@Nonnull Collection<?> c) {
+    public boolean containsAll(@Nonnull final Collection<?> c) {
         return value.containsAll(c);
     }
 
     @Override
-    public boolean addAll(@Nonnull Collection<? extends ValueType> c) {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+    public boolean addAll(@Nonnull final Collection<? extends ValueType> c) {
+        if(!sizeRequire.validate(value.size()+c.size())) throw new UnsupportedOperationException();
         return value.addAll(c);
     }
 
     @Override
-    public boolean removeAll(@Nonnull Collection<?> c) {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+    public boolean removeAll(@Nonnull final Collection<?> c) {
+        if(sizeRequire.isSizeFixed()) throw new UnsupportedOperationException();
         return value.removeAll(c);
     }
 
     @Override
-    public boolean removeIf(Predicate<? super ValueType> filter) {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+    public boolean removeIf(final @Nonnull Predicate<? super ValueType> filter) {
+        if(sizeRequire.isSizeFixed()) throw new UnsupportedOperationException();
         return value.removeIf(filter);
     }
 
     @Override
-    public boolean retainAll(@Nonnull Collection<?> c) {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+    public boolean retainAll(@Nonnull final Collection<?> c) {
+        if(sizeRequire.isSizeFixed()) throw new UnsupportedOperationException();
         return value.retainAll(c);
     }
 
     @Override
     public void clear() {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+        if(!sizeRequire.validate(0)) throw new UnsupportedOperationException();
         value.clear();
     }
 }

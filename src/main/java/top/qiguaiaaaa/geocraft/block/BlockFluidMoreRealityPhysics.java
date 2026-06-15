@@ -48,6 +48,7 @@ import java.util.*;
  * 这是一个基于MORE REALITY模式流体的流体实现，你可以通过继承该类来实现自己的物理流体
  * 注意该类实现的是早期开发的MORE_REALITY流体实现,可能不适用于现在的流体
  */
+@Deprecated
 public class BlockFluidMoreRealityPhysics extends BlockFluidFinite {
     protected int slopeFindDistanceWhenQuantaAbove1 = (int) (quantaPerBlock*1.5/2);
 

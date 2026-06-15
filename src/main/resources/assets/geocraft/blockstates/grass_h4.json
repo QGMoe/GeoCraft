@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "snowy=false": [
+      { "model": "geocraft:grass_normal_h4" },
+      { "model": "geocraft:grass_normal_h4", "y": 90 },
+      { "model": "geocraft:grass_normal_h4", "y": 180 },
+      { "model": "geocraft:grass_normal_h4", "y": 270 }
+    ],
+    "snowy=true":  { "model": "geocraft:grass_snowed_h4" }
+  }
+}

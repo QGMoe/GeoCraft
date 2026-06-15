@@ -1,0 +1,122 @@
+/*
+ * Copyright 2025 QiguaiAAAA
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * 版权所有 2025 QiguaiAAAA
+ * 根据Apache许可证第2.0版（“本许可证”）许可；
+ * 除非符合本许可证的规定，否则你不得使用此文件。
+ * 你可以在此获取本许可证的副本：
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * 除非所适用法律要求或经书面同意，在本许可证下分发的软件是“按原样”分发的，
+ * 没有任何形式的担保或条件，不论明示或默示。
+ * 请查阅本许可证了解有关本许可证下许可和限制的具体要求。
+ * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
+ */
+
+package 清汩萌.天圆地方.tests.fluidphysics;
+
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
+import 清汩萌.天圆地方.util.MessyUtil;
+import 清汩萌.天圆地方.天圆地方测试;
+import 清汩萌.天圆地方.world.MockSimpleWorld;
+import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
+import 清汩萌.天圆地方.world.storage.MockWorldInfo;
+import 清汩萌.造.空间.空间构造器;
+import 清汩萌.造.空间.网格参数;
+import 清汩萌.造.空间.词块网格;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
+import static 清汩萌.天圆地方.assets.MockBlocks.Bases.〇;
+import static 清汩萌.天圆地方.assets.MockBlocks.VanillaFluids.曜;
+
+/**
+ * @author QiguaiAAAA
+ */
+public class FluidPhysicsTest extends 天圆地方测试 {
+    protected static MockSimpleWorld world;
+
+    @BeforeEach
+    public void beforeFluidPhysicsTest() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        test();
+    }
+
+    @SuppressWarnings("unused")
+    public static void beforeFluidPhysicsTest_Inner(){
+        GeneralConfig.ENABLE_BLOCK_UPDATER.setValue(false);
+        world = MockSimpleWorld.create(MockWorldInfo.create(b-> b.withGameType(GameType.CREATIVE)), false);
+        world.setAirBlock(〇);
+    }
+
+    @AfterEach
+    public void afterFluidPhysicsTest() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        test();
+    }
+
+    @SuppressWarnings("unused")
+    public static void afterFluidPhysicsTest_Inner(){
+        world = null;
+        GeneralConfig.ENABLE_BLOCK_UPDATER.setValue(true);
+    }
+
+    @Nonnull
+    public static MockSimpleSandbox initWorldSandbox(final @Nonnull 空间构造器 $构造器,
+                                                     final @Nonnull 词块网格 $网格,
+                                                     final @Nonnull BlockPos beginPos){
+        天圆地方测试.LOGGER.info("begin pos {}",beginPos);
+        return initWorldSandbox($构造器, $网格);
+    }
+
+    @Nonnull
+    public static MockSimpleSandbox initWorldSandbox(final @Nonnull 空间构造器 $构造器,final @Nonnull 词块网格 $网格){
+        final @Nonnull MockSimpleSandbox sandbox = new MockSimpleSandbox($网格.构造($构造器));
+        sandbox.setOuterBlock(曜);
+        world.setSandbox(sandbox);
+        $构造器.打印(sandbox.getStructure());
+        return sandbox;
+    }
+
+    @Nonnull
+    public static Object[] 打包网格数据(final @Nonnull 词块网格 $网格){
+        return new Object[]{$网格.获取原始网格数据(),
+                $网格.获取参数(),
+                MessyUtil.toNullableString($网格.获取默认填充方块())};
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public static 词块网格 恢复网格数据(final @Nonnull Object[] raw){
+        Assertions.assertEquals(3,raw.length);
+        return 恢复网格数据((List<List<List<String>>>) raw[0], (int[]) raw[1], (String) raw[2]);
+    }
+
+    @Nonnull
+    public static 词块网格 恢复网格数据(final @Nonnull List<List<List<String>>> $原始网格数据,
+                                        final int[] $原始尺寸数据,
+                                        final @Nullable String $原始默认方块数据){
+        final 词块网格 $网格 = 词块网格.从原始网格数据恢复($原始网格数据);
+        for(final 网格参数 $参数:网格参数.列表) $网格.期望($原始尺寸数据[$参数.ordinal()],$参数);
+        if($原始默认方块数据 != null) $网格.默认用($原始默认方块数据);
+        return $网格;
+    }
+}

@@ -32,41 +32,37 @@ import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
  * 提供更多自定义的配置项目,需要传入一个方法用于获取值的实例
  * @param <V> 值类型,注意要实现{@link Object#toString()}以写入配置文件
  */
-public class ConfigCustom<V> extends ConfigItem<V> {
+public class ConfigCustom<V> extends ConfigItem<V,ConfigCustom<V>> {
     protected final Function<String,V> parser; //转换器，将字符串反序列化为对应配置值
-    /**
-     * @see #ConfigCustom(ConfigCategory, String, Object, String, Function, boolean)
-     */
-    public ConfigCustom(@Nonnull ConfigCategory category,@Nonnull String configKey,@Nonnull V defaultValue,@Nonnull Function<String,V> parser) {
-        this(category,configKey,defaultValue,null,parser);
-    }
-
-    /**
-     * @see #ConfigCustom(ConfigCategory, String, Object, String, Function, boolean)
-     */
-    public ConfigCustom(@Nonnull ConfigCategory category, @Nonnull String configKey, @Nonnull V defaultValue, @Nullable String comment, @Nonnull Function<String,V> parser) {
-        this(category,configKey,defaultValue,comment,parser,false);
-    }
 
     /**
      * 创建一个配置项
      * @param category 配置所在目录
      * @param configKey 配置的key
      * @param defaultValue 配置的默认值，不应为null，因为会调用{@link Object#toString()}
-     * @param comment 配置的注释
      * @param parser 反序列化器，用于将字符串反序列化为对应配置值
-     * @param isFinal 配置是否在初始化后不可更改
      */
-    public ConfigCustom(@Nonnull ConfigCategory category,@Nonnull String configKey,@Nonnull V defaultValue,@Nullable String comment,@Nonnull Function<String,V> parser,boolean isFinal) {
-        super(category, configKey, defaultValue, comment, isFinal);
-        this.parser = parser;
+    public ConfigCustom(@Nonnull final ConfigCategory category,@Nonnull final String configKey,@Nonnull final V defaultValue,@Nonnull final Function<String,V> parser) {
+        super(category, configKey, defaultValue);
+        this.parser = Objects.requireNonNull(parser);
+    }
+
+    @Nonnull
+    public Function<String, V> getParser() {
+        return parser;
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.custom";
     }
 
     /**
@@ -74,7 +70,7 @@ public class ConfigCustom<V> extends ConfigItem<V> {
      * @param property {@inheritDoc}
      */
     @Override
-    protected void load(@Nonnull Property property) {
+    protected void load(@Nonnull final Property property) {
         this.value = parser.apply(property.getString());
         if(this.value == null) this.value = defaultValue;
     }

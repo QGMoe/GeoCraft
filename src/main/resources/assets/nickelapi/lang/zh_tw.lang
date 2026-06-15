@@ -1,0 +1,62 @@
+nickel.command.parameter.generic.big_decimal=高精度十進位數
+nickel.command.parameter.generic.big_integer=高精度整數
+nickel.command.parameter.generic.boolean=布林值
+nickel.command.parameter.generic.double=雙精度浮點數
+nickel.command.parameter.generic.integer=整數型態
+nickel.command.parameter.generic.long=長整數
+nickel.command.parameter.generic.string=字串
+nickel.command.parameter.generic.uuid=UUID
+nickel.command.parameter.minecraft.block_pos=方塊座標
+nickel.command.parameter.minecraft.block=方塊
+nickel.command.parameter.minecraft.block_state=方塊狀態
+nickel.command.parameter.minecraft.dimension=維度
+nickel.command.parameter.minecraft.entity_selector=目標選擇器
+nickel.command.parameter.minecraft.item=物品
+nickel.command.parameter.minecraft.item_stack=物品堆疊
+nickel.command.parameter.minecraft.vector3d=三維向量
+nickel.command.parameter.forge.fluid=流體
+nickel.command.parameter.forge.ore_directory=礦物辭典
+nickel.command.parameter.forge.entity_entry=實體類型
+
+nickel.command.parameter.base.default_not_found=該可選參數未正確設定預設值解析器
+nickel.command.parameter.smart.checker1=該參數至少需要一個輸入
+nickel.command.parameter.smart.checkers=該參數至少需要 %s 個輸入
+nickel.command.parameter.checker.resource_location.invalid.repeat=命名空間 ID 不能存在兩個及以上的分號『:』
+nickel.command.parameter.checker.resource_location.invalid.slash=命名空間不能存在正斜線『/』
+nickel.command.parameter.string.nonMatch=無效的輸入 %s ，該字串參數的輸入必須符合正規表達式 %s
+nickel.command.parameter.string.invalid.white=無效的輸入 %s ，該字串參數僅允許以下輸入：%s
+nickel.command.parameter.string.invalid.black=無效的輸入 %s ，該字串參數不接受以下輸入： %s
+nickel.command.parameter.uuid.invalid=無效的 UUID：%s
+nickel.command.parameter.dimension.not_found=無法根據 ID %s 找到對應的維度，該維度可能不存在或已被卸載
+nickel.command.parameter.block_state.invalid_end=%s 缺少右方括號『[』
+nickel.command.parameter.fluid.invalid=無效的流體 %s
+nickel.command.parameter.ore_directory.invalid=無效的礦物辭典 %s
+nickel.command.parameter.entity_entry.invalid=無效的實體類型 %s
+
+nickel.command.functional.permit.denied=因您的權限不足，該命令無法執行
+nickel.command.functional.literal.non_match=命令預期的字面量是 %s ，但是您輸入了 %s
+
+nickel.command.execute.argument_not_empty=多餘的輸入：%s
+
+nickel.command.context.get.non_entity=沒有匹配到任何符合條件的實體
+nickel.command.context.get.unknown_argument.entity=嘗試從執行上下文獲取一個實體時出現了一個意外的錯誤：未知的物件類型 %s
+nickel.command.context.get.unknown_argument.entities=嘗試從執行上下文獲取實體們時出現了一個意外的錯誤：未知的物件類型 %s
+
+nickel.command.literals.exception.default=該字面量節點被設定為可選，但意外地沒有設定任何的預設邏輯
+
+#存在行末空格
+nickel.command.exception.syntax.node.pre=命令節點
+nickel.command.exception.syntax.node.sub= 出現語法錯誤
+#行末空格 開始
+nickel.command.exception.syntax.details=詳細資訊： 
+nickel.command.exception.syntax.usage=用法： 
+#行末空格 結束
+nickel.command.exception.base.message=命令執行時出現了一些錯誤
+#存在行末空格
+nickel.command.exception.base.node.pre=命令執行到命令節點 
+nickel.command.exception.base.node.sub= 時發生錯誤
+#行末空格 開始
+nickel.command.exception.base.details=詳細資訊： 
+nickel.command.exception.base.branch=分支： 
+#行末空格 結束
+nickel.command.exception.runtime.message=命令執行時出錯：%s

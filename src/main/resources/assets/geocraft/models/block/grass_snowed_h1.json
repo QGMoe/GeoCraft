@@ -1,0 +1,9 @@
+{
+  "parent": "block/cube_bottom_top",
+  "textures": {
+    "particle": "geocraft:blocks/dirt_h1",
+    "bottom": "geocraft:blocks/dirt_h1",
+    "top": "blocks/grass_top",
+    "side": "geocraft:blocks/grass_side_snowed_h1"
+  }
+}

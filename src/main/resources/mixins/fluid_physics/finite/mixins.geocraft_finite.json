@@ -1,0 +1,18 @@
+{
+  "package": "top.qiguaiaaaa.geocraft.mixin.finite",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "block.BlockDynamicLiquidMixin",
+    "block.BlockLiquidMixin",
+    "block.BlockFluidClassicMixin",
+    "block.BlockStaticLiquidMixin",
+    "ForgeFluidUtilMixin",
+    "block.BlockSnowBlockMixin"
+  ],
+  "client": [
+    "client.BlockLiquidMixin",
+    "client.BlockFluidBaseMixin"
+  ]
+}

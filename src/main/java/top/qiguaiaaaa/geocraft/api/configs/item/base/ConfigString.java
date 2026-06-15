@@ -32,36 +32,26 @@ import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * {@link String}配置项
  */
-public class ConfigString extends ConfigItem<String> {
-    /**
-     * @see #ConfigString(ConfigCategory, String, String, String, boolean)
-     */
-    public ConfigString(@Nonnull ConfigCategory category,@Nonnull String configKey,@Nonnull String defaultValue) {
-        super(category, configKey, defaultValue);
-    }
-
-    /**
-     * @see #ConfigString(ConfigCategory, String, String, String, boolean)
-     */
-    public ConfigString(@Nonnull ConfigCategory category,@Nonnull String configKey,@Nonnull String defaultValue,@Nullable String comment) {
-        super(category, configKey, defaultValue, comment);
-    }
+public class ConfigString extends ConfigItem<String,ConfigString> {
 
     /**
      * 创建一个配置项
      * @param category 配置所在目录
      * @param configKey 配置的key
      * @param defaultValue 配置的默认值，不应为null，因为会调用{@link Object#toString()}
-     * @param comment 配置的注释
-     * @param isFinal 配置是否在初始化后不可更改
      */
-    public ConfigString(@Nonnull ConfigCategory category, @Nonnull String configKey, @Nonnull String defaultValue, @Nullable String comment, boolean isFinal) {
-        super(category, configKey, defaultValue, comment, isFinal);
+    public ConfigString(@Nonnull final ConfigCategory category, @Nonnull final String configKey, @Nonnull final String defaultValue) {
+        super(category, configKey, defaultValue);
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.string";
     }
 
     /**
@@ -69,7 +59,7 @@ public class ConfigString extends ConfigItem<String> {
      * @param property {@inheritDoc}
      */
     @Override
-    protected void load(@Nonnull Property property) {
+    protected void load(@Nonnull final Property property) {
         this.value = property.getString();
     }
 }

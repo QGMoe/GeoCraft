@@ -74,10 +74,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     private static final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
-    public static final FiniteFlowingVanilla WATER_FLOW = new FiniteFlowingVanilla(Blocks.FLOWING_WATER,Blocks.WATER,FluidRegistry.WATER);
-    public static final FiniteFlowingVanilla LAVA_FLOW = new FiniteFlowingVanilla(Blocks.FLOWING_LAVA,Blocks.LAVA,FluidRegistry.LAVA);
-
-    private FiniteFlowingVanilla(@Nonnull final BlockDynamicLiquid dynamic,
+    public FiniteFlowingVanilla(@Nonnull final BlockDynamicLiquid dynamic,
                                 @Nonnull final BlockStaticLiquid _static,
                                 @Nonnull final Fluid fluid) {
         super(dynamic,_static ,fluid);
@@ -85,7 +82,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
 
     @Nonnull
     public static FiniteFlowingVanilla getFlowingByMaterial(@Nonnull final Material material){
-        return material == Material.WATER? FiniteFlowingVanilla.WATER_FLOW :FiniteFlowingVanilla.LAVA_FLOW;
+        return material == Material.WATER? FiniteFlowings.WATER_FLOW : FiniteFlowings.LAVA_FLOW;
     }
 
     /**
@@ -360,7 +357,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
                 final int newDistance = getSingleSlopeDistance(worldIn,
                         facingPos$迭代用$mut.getX(),
                         y,
-                        facingPos$最外层$mut.getZ(),
+                        facingPos$迭代用$mut.getZ(),
                         distance + 1,
                         enumfacing.getOpposite());
                 if (newDistance < difficulty) difficulty = newDistance;

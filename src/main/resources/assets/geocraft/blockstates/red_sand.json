@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "humidity=1": [
+      { "model": "geocraft:red_sand_h1" },
+      { "model": "geocraft:red_sand_h1", "y": 90 },
+      { "model": "geocraft:red_sand_h1", "y": 180 },
+      { "model": "geocraft:red_sand_h1", "y": 270 }
+    ],
+    "humidity=2": [
+      { "model": "geocraft:red_sand_h2" },
+      { "model": "geocraft:red_sand_h2", "y": 90 },
+      { "model": "geocraft:red_sand_h2", "y": 180 },
+      { "model": "geocraft:red_sand_h2", "y": 270 }
+    ],
+    "humidity=3": [
+      { "model": "geocraft:red_sand_h3" },
+      { "model": "geocraft:red_sand_h3", "y": 90 },
+      { "model": "geocraft:red_sand_h3", "y": 180 },
+      { "model": "geocraft:red_sand_h3", "y": 270 }
+    ],
+    "humidity=4": [
+      { "model": "geocraft:red_sand_h4" },
+      { "model": "geocraft:red_sand_h4", "y": 90 },
+      { "model": "geocraft:red_sand_h4", "y": 180 },
+      { "model": "geocraft:red_sand_h4", "y": 270 }
+    ]
+  }
+}

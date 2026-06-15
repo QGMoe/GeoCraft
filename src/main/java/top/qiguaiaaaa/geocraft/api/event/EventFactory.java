@@ -61,6 +61,7 @@ import top.qiguaiaaaa.geocraft.api.event.player.ExtendedUseHoeEvent;
 import top.qiguaiaaaa.geocraft.api.event.player.FillGlassBottleEvent;
 import top.qiguaiaaaa.geocraft.api.event.player.FillGlassBottleEvent.FillGlassBottleOnAreaEffectCloudEvent;
 import top.qiguaiaaaa.geocraft.api.event.player.FillGlassBottleEvent.FillGlassBottleOnFluidEvent;
+import top.qiguaiaaaa.geocraft.api.event.player.UseSpadeEvent;
 import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.setting.GeoAtmosphereSetting;
 
@@ -121,8 +122,22 @@ public final class EventFactory {
         return event.getSystem();
     }
 
-    public static int onHoeUse(ItemStack stack, EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing,float x,float y,float z) {
+    public static int onHoeUse(final @Nonnull ItemStack stack,final @Nonnull EntityPlayer player,final @Nonnull World worldIn,
+                               final @Nonnull BlockPos pos,final @Nonnull EnumHand hand,final @Nonnull EnumFacing facing,
+                               final float x,final float y,final float z) {
         ExtendedUseHoeEvent event = new ExtendedUseHoeEvent(player, stack, worldIn, pos,hand,facing,x,y,z);
+        if (MinecraftForge.EVENT_BUS.post(event)) return -1;
+        if (event.getResult() == Result.ALLOW) {
+            stack.damageItem(1, player);
+            return 1;
+        }
+        return 0;
+    }
+
+    public static int onSpadeUse(final @Nonnull ItemStack stack,final @Nonnull EntityPlayer player,final @Nonnull World worldIn,
+                                 final  @Nonnull BlockPos pos,final @Nonnull EnumHand hand,final @Nonnull EnumFacing facing,
+                                 final float x,final float y,final float z) {
+        final @Nonnull UseSpadeEvent event = new UseSpadeEvent(player,stack,worldIn,pos,hand,facing,x,y,z);
         if (MinecraftForge.EVENT_BUS.post(event)) return -1;
         if (event.getResult() == Result.ALLOW) {
             stack.damageItem(1, player);

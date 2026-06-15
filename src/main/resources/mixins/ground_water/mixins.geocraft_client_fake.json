@@ -1,5 +1,5 @@
 {
-  "package": "top.qiguaiaaaa.geocraft.mixin.groundwater",
+  "package": "top.qiguaiaaaa.geocraft.mixin.soil",
   "required": true,
   "compatibilityLevel": "JAVA_8",
   "refmap": "mixins.geocraft.refmap.json",

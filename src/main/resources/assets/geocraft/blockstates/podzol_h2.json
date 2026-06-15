@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "snowy=false": { "model": "geocraft:podzol_h2" },
+    "snowy=true": { "model": "grass_snowed" }
+  }
+}

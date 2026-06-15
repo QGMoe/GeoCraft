@@ -40,43 +40,50 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
-public class ConfigList<ValueType> extends ConfigCollection<IConfigurableList<ValueType>,ValueType> implements List<ValueType>{
-
-    public ConfigList(ConfigCategory category, String configKey, IConfigurableList<ValueType> defaultValue, Function<String,ValueType> parser) {
-        this(category, configKey, defaultValue,null,parser);
+public class ConfigList<ValueType,SELF extends ConfigList<ValueType,SELF>>
+        extends ConfigCollection<IConfigurableList<ValueType>,ValueType,SELF> implements List<ValueType>{
+    protected ConfigList(final @Nonnull ConfigCategory category,
+                      final @Nonnull String configKey,
+                      final @Nonnull IConfigurableList<ValueType> defaultValue,
+                      final @Nonnull Function<String,ValueType> parser) {
+        this(category, configKey, defaultValue,parser,ConfigurableList::new);
     }
 
-    public ConfigList(ConfigCategory category, String configKey, IConfigurableList<ValueType> defaultValue, String comment, Function<String,ValueType> parser) {
-        this(category,configKey,defaultValue,comment,parser,false);
+    protected ConfigList(final @Nonnull ConfigCategory category,
+                      final @Nonnull String configKey,
+                      final @Nonnull IConfigurableList<ValueType> defaultValue,
+                      final @Nonnull Function<String,ValueType> parser,
+                      final @Nonnull Supplier<IConfigurableList<ValueType>> factory) {
+        super(category, configKey, defaultValue,parser,factory);
     }
 
-    public ConfigList(ConfigCategory category, String configKey, IConfigurableList<ValueType> defaultValue, String comment, Function<String,ValueType> parser, boolean isFinal) {
-        this(category, configKey, defaultValue, comment,-1,parser,isFinal);
+    public static <V> ConfigList<V,? extends ConfigList<V,?>> create(final @Nonnull ConfigCategory category,
+                         final @Nonnull String configKey,
+                         final @Nonnull IConfigurableList<V> defaultValue,
+                         final @Nonnull Function<String,V> parser) {
+        return new Impl<>(category, configKey, defaultValue,parser,ConfigurableList::new);
     }
 
-    public ConfigList(ConfigCategory category, String configKey, IConfigurableList<ValueType> defaultValue, String comment, int maxListSize, Function<String,ValueType> parser, boolean isFinal) {
-        this(category, configKey, defaultValue, comment,maxListSize,parser,ConfigurableList::new, isFinal);
+    public static <V> ConfigList<V,? extends ConfigList<V,?>> create(final @Nonnull ConfigCategory category,
+                                                                     final @Nonnull String configKey,
+                                                                     final @Nonnull IConfigurableList<V> defaultValue,
+                                                                     final @Nonnull Function<String,V> parser,
+                                                                     final @Nonnull Supplier<IConfigurableList<V>> factory) {
+        return new Impl<>(category, configKey, defaultValue,parser,factory);
     }
 
-    public ConfigList(ConfigCategory category, String configKey, IConfigurableList<ValueType> defaultValue, String comment, int maxListSize, Function<String,ValueType> parser,Supplier<IConfigurableList<ValueType>> factory, boolean isFinal) {
-        super(category, configKey, defaultValue, comment, maxListSize,parser,factory,isFinal);
+    @Nonnull
+    @Override
+    protected Collection<ValueType> getUnmodifiableCollection() {
+        if(unmodifiable == null) unmodifiable = Collections.unmodifiableList(value);
+        return unmodifiable;
     }
 
-    public ConfigList<ValueType> setMaxListSize(int maxListSize) {
-        this.maxListSize = maxListSize;
-        return this;
-    }
-
-    public ConfigList<ValueType> setListSizeFixed(boolean listSizeFixed) {
-        isListSizeFixed = listSizeFixed;
-        return this;
-    }
-
-    public ConfigList<ValueType> setValidatedPattern(Pattern validatedPattern) {
-        this.validatedPattern = validatedPattern;
-        return this;
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.list";
     }
 
     //***********
@@ -84,71 +91,80 @@ public class ConfigList<ValueType> extends ConfigCollection<IConfigurableList<Va
     //***********
 
     @Override
-    public boolean addAll(int index,@Nonnull Collection<? extends ValueType> c) {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+    public boolean addAll(final int index,final @Nonnull Collection<? extends ValueType> c) {
+        if(!sizeRequire.validate(this.size() + c.size())) throw new UnsupportedOperationException();
         return value.addAll(c);
     }
 
     /**
      * @see List#get(int)
      */
-    public ValueType get(int index){
+    public ValueType get(final int index){
         return value.get(index);
     }
 
     @Override
-    public ValueType set(int index,@Nonnull ValueType element) {
-        if(isFinal) throw new UnsupportedOperationException();
+    public ValueType set(final int index,final @Nonnull ValueType element) {
         return value.set(index,element);
     }
 
     @Override
-    public void add(int index,@Nonnull ValueType element) {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+    public void add(final int index,final @Nonnull ValueType element) {
+        if(!sizeRequire.validate(this.size() + 1)) throw new UnsupportedOperationException();
         value.add(index,element);
     }
 
     @Override
-    public ValueType remove(int index) {
-        if(isFinal || isListSizeFixed) throw new UnsupportedOperationException();
+    public ValueType remove(final int index) {
+        if(!sizeRequire.validate(this.size()-1)) throw new UnsupportedOperationException();
         return value.remove(index);
     }
 
     @Override
-    public int indexOf(Object o) {
+    public int indexOf(final @Nonnull Object o) {
         return value.indexOf(o);
     }
 
     @Override
-    public int lastIndexOf(Object o) {
+    public int lastIndexOf(final @Nonnull Object o) {
         return value.lastIndexOf(o);
     }
 
+    @Nonnull
     @Override
     public ListIterator<ValueType> listIterator() {
-        if(isFinal || isListSizeFixed){
-            return Collections.unmodifiableList(value).listIterator();
-        }
+        if(sizeRequire.isSizeFixed()) return ((List<ValueType>)getUnmodifiableCollection()).listIterator();
         return value.listIterator();
     }
 
+    @Nonnull
     @Override
-    public ListIterator<ValueType> listIterator(int index) {
-        if(isFinal || isListSizeFixed){
-            return Collections.unmodifiableList(value).listIterator(index);
-        }
+    public ListIterator<ValueType> listIterator(final int index) {
+        if(sizeRequire.isSizeFixed()) return ((List<ValueType>)getUnmodifiableCollection()).listIterator(index);
         return value.listIterator(index);
     }
 
+    @Nonnull
     @Override
-    public List<ValueType> subList(int fromIndex, int toIndex) {
+    public List<ValueType> subList(final int fromIndex,final int toIndex) {
         return value.subList(fromIndex, toIndex);
     }
 
     @Nonnull
     @Override
     public IConfigurableList<ValueType> getValue() {
-        if(!isFinal && !isListSizeFixed) return value;
-        return new UnmodifiableConfigurableList<>(value);
+        if(sizeRequire.isSizeFixed()) return new UnmodifiableConfigurableList<>(value);
+        return value;
+    }
+
+    private static final class Impl<V> extends ConfigList<V,Impl<V>>{
+
+        public Impl(@Nonnull final ConfigCategory category,
+                    @Nonnull final String configKey,
+                    @Nonnull final IConfigurableList<V> defaultValue,
+                    @Nonnull final Function<String, V> parser,
+                    @Nonnull final Supplier<IConfigurableList<V>> factory) {
+            super(category, configKey, defaultValue, parser, factory);
+        }
     }
 }

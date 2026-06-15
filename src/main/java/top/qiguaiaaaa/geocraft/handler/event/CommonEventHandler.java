@@ -27,6 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.handler.event;
 
+import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -53,6 +54,11 @@ import javax.annotation.Nullable;
 
 @Mod.EventBusSubscriber(modid = GeoCraft.MODID)
 public final class CommonEventHandler {
+
+    @SubscribeEvent
+    public static void onRegisterBlocks(final @Nonnull RegistryEvent.Register<Block> event){
+        RegistryHandler.mapMissingStates();
+    }
 
     @SubscribeEvent
     public static void onRegisterAtmosphereProperty(RegistryEvent.Register<IGeographyProperty> event){

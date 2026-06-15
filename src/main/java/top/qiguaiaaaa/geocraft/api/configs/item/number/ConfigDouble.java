@@ -29,57 +29,32 @@ package top.qiguaiaaaa.geocraft.api.configs.item.number;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * {@link Double}配置项
  */
-public class ConfigDouble extends ConfigItem<Double> {
+public class ConfigDouble extends ConfigItem<Double,ConfigDouble> {
     protected double minValue = Double.NEGATIVE_INFINITY;
     protected double maxValue = Double.POSITIVE_INFINITY;
 
-    /**
-     * @see #ConfigDouble(ConfigCategory, String, double, String, boolean)
-     */
-    public ConfigDouble(@Nonnull ConfigCategory category,@Nonnull String configKey, double defaultValue) {
+    public ConfigDouble(@Nonnull final ConfigCategory category, @Nonnull final String configKey,final double defaultValue) {
         super(category, configKey, defaultValue);
     }
 
-    /**
-     * @see #ConfigDouble(ConfigCategory, String, double, String, boolean)
-     */
-    public ConfigDouble(@Nonnull ConfigCategory category, @Nonnull String configKey, double defaultValue,@Nullable String comment) {
-        super(category, configKey, defaultValue, comment);
-    }
-
-    /**
-     * 创建一个Double类型配置项
-     * @param category 配置所在目录
-     * @param configKey 配置的key
-     * @param defaultValue 配置的默认值
-     * @param comment 配置的注释
-     * @param isFinal 配置是否在初始化后不可更改
-     */
-    public ConfigDouble(@Nonnull ConfigCategory category,@Nonnull String configKey, double defaultValue,@Nullable String comment, boolean isFinal) {
-        this(category, configKey, defaultValue, comment,Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,isFinal);
-    }
-
-    public ConfigDouble(@Nonnull ConfigCategory category, @Nonnull String configKey, double defaultValue, @Nullable String comment, double min, double max, boolean isFinal) {
-        super(category, configKey, defaultValue, comment, isFinal);
-        this.minValue = min;
-        this.maxValue = max;
-    }
-
-    public ConfigDouble setMaxValue(double maxValue) {
+    @Nonnull
+    public ConfigDouble setMaxValue(final double maxValue) {
         this.maxValue = maxValue;
         return this;
     }
 
-    public ConfigDouble setMinValue(double minValue) {
+    @Nonnull
+    public ConfigDouble setMinValue(final double minValue) {
         this.minValue = minValue;
         return this;
     }
@@ -96,7 +71,13 @@ public class ConfigDouble extends ConfigItem<Double> {
     public void save() {
         if(property == null) return;
         property.setValue(value);
-        property.setComment(getPolishedComment());
+        property.setComment(getConstructedComment());
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.double";
     }
 
     /**
@@ -104,9 +85,9 @@ public class ConfigDouble extends ConfigItem<Double> {
      * @param config {@inheritDoc}
      */
     @Override
-    public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,defaultValue,comment,minValue,maxValue);
-        property.setComment(getPolishedComment());
+    public void load(@Nonnull final Configuration config) {
+        property = config.get(category.getPath(),key,defaultValue,null,minValue,maxValue);
+        property.setComment(getConstructedComment());
         load(property);
     }
 
@@ -115,11 +96,16 @@ public class ConfigDouble extends ConfigItem<Double> {
      * @param property {@inheritDoc}
      */
     @Override
-    protected void load(@Nonnull Property property) {
+    protected void load(@Nonnull final Property property) {
         this.value = property.getDouble(defaultValue);
     }
 
-    protected String getPolishedComment(){
-        return (comment == null?"":comment) + " [range: " + minValue + " ~ " + maxValue + ", default: " + defaultValue + "]";
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        list.add(Pair.of("范围 Range",minValue +" ~ "+maxValue));
+        list.add(Pair.of("默认值 Default",defaultValue.toString()));
+        return list;
     }
 }

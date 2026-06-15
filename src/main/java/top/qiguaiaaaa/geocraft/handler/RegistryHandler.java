@@ -27,10 +27,16 @@
 
 package top.qiguaiaaaa.geocraft.handler;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.registries.IForgeRegistry;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
@@ -39,16 +45,19 @@ import top.qiguaiaaaa.geocraft.block.BlockSnowExtended;
 import top.qiguaiaaaa.geocraft.block.BlockSnowFinite;
 import top.qiguaiaaaa.geocraft.block.soil.*;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
+import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.property.*;
 import top.qiguaiaaaa.geocraft.handler.event.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class RegistryHandler {
     private static final Map<String, Block> OverrideVanillaBlockRegistry = new HashMap<>();
+    private static final Int2ObjectOpenHashMap<IBlockState> missingStatesMap = new Int2ObjectOpenHashMap<>();
 
     public static void registerVanillaBlockOverride(@Nonnull String blockId,@Nonnull Block newBlock){
         OverrideVanillaBlockRegistry.put(blockId,newBlock);
@@ -67,16 +76,60 @@ public final class RegistryHandler {
      * @see Block#registerBlocks()
      */
     private static void registerVanillaBlockOverrides(){
-        registerVanillaBlockOverride("grass",new BlockSoilGrass().setHardness(0.6F).setTranslationKey("grass"));
-        registerVanillaBlockOverride("dirt",new BlockSoilDirt().setHardness(0.5F).setTranslationKey("dirt"));
-        registerVanillaBlockOverride("sand",new BlockSoilSand().setHardness(0.5F).setTranslationKey("sand"));
-        registerVanillaBlockOverride("gravel",new BlockSoilGravel().setHardness(0.6F).setTranslationKey("gravel"));
-        registerVanillaBlockOverride("grass_path",new BlockSoilGrassPath().setHardness(0.65F).setTranslationKey("grassPath"));
-        registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSoilFarmland.Finite():new BlockSoilFarmland())
-                .setHardness(0.6F).setTranslationKey("farmland"));
         registerVanillaBlockOverride("snow_layer",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSnowFinite():new BlockSnowExtended())
                 .setHardness(0.1F).setTranslationKey("snow").setLightOpacity(0));
-        registerVanillaBlockOverride("clay",new BlockSoilClay().setHardness(0.6F).setTranslationKey("clay"));
+        final Block grass;
+        final Block dirt;
+        final Block sand;
+        final Block gravel;
+        final Block grass_path;
+        final Block clay;
+        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()){
+            grass = new BlockSoilGrass();
+            dirt = new BlockSoilDirt();
+            sand = new BlockSoilSand();
+            gravel = new BlockSoilGravel();
+            grass_path = new BlockSoilGrassPath();
+            clay = new BlockSoilClay();
+            registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSoilFarmland.MoreReality():new BlockSoilFarmland())
+                    .setHardness(0.6F).setTranslationKey("farmland"));
+        }else {
+            grass = new BlockSoilExtends.Grass();
+            dirt = new BlockSoilExtends.Dirt();
+            sand = new BlockSoilExtends.Sand();
+            gravel = new BlockSoilExtends.Gravel();
+            grass_path = new BlockSoilExtends.GrassPath();
+            clay = new BlockSoilExtends.Clay();
+        }
+        registerVanillaBlockOverride("grass",grass.setHardness(0.6F).setTranslationKey("grass"));
+        registerVanillaBlockOverride("dirt",dirt.setHardness(0.5F).setTranslationKey("dirt"));
+        registerVanillaBlockOverride("sand",sand.setHardness(0.5F).setTranslationKey("sand"));
+        registerVanillaBlockOverride("gravel",gravel.setHardness(0.6F).setTranslationKey("gravel"));
+        registerVanillaBlockOverride("grass_path",grass_path.setHardness(0.65F).setTranslationKey("grassPath"));
+        registerVanillaBlockOverride("clay",clay.setHardness(0.6F).setTranslationKey("clay"));
+    }
+
+    @SuppressWarnings("deprecation")
+    public static void mapMissingStates(){
+        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()) return;
+        GeoCraft.getLogger().info("GeoCraft is mapping missing states for disabling soil system");
+        for(final @Nonnull Block block: Arrays.asList(Blocks.GRASS,Blocks.DIRT,Blocks.SAND,Blocks.GRAVEL,Blocks.GRASS_PATH,Blocks.CLAY)){
+            final Object2IntOpenHashMap<IBlockState> extendedStateToMetaMap = new Object2IntOpenHashMap<>();
+            final int id = Block.getIdFromBlock(block);
+            for(int meta = 0;meta<16;meta++){
+                final IBlockState state = block.getStateFromMeta(meta);
+                if(extendedStateToMetaMap.containsKey(state)) continue;
+                extendedStateToMetaMap.put(state,meta);
+            }
+            for(final Object2IntMap.Entry<IBlockState> entry: extendedStateToMetaMap.object2IntEntrySet()){
+                missingStatesMap.put(id<<4|entry.getIntValue(),entry.getKey());
+            }
+        }
+    }
+
+    @Nullable
+    public static IBlockState mapToMissingState(final int id){
+        return missingStatesMap.get(id);
     }
 
     public static void registerGeographyProperties(RegistryEvent.Register<IGeographyProperty> event){
@@ -101,10 +154,11 @@ public final class RegistryHandler {
         GeoCraftProperties.HEAT_CAPACITY = HeatCapacity.HEAT_CAPACITY;
         GeoCraftProperties.REFLECTIVITY = ReflectivityProperty.REFLECTIVITY;
     }
+
     public static void registerEventHandler(){
         EventFactory.EVENT_BUS.register(AtmosphereEventHandler.class);
-        MinecraftForge.EVENT_BUS.register(SoilEventHandler.class);
-        FluidPhysicsMode mode = FluidPhysicsConfig.FLUID_PHYSICS_MODE.getValue();
+        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()) MinecraftForge.EVENT_BUS.register(SoilEventHandler.class);
+        final @Nonnull FluidPhysicsMode mode = FluidPhysicsConfig.FLUID_PHYSICS_MODE.getValue();
         switch (mode){
             case MORE_REALITY:{
                 registerMoreRealityEventHandler();

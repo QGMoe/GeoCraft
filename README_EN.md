@@ -1,6 +1,6 @@
 # GeoCraft
 
-**Switch Language**: [简体中文](https://github.com/qiguaideaaaa/GeoCraft/blob/master/README.md) | **English**
+**Switch Language**: [简体中文](https://github.com/QGMoe/GeoCraft/blob/master/README.md) | **English**
 
 <img src="https://s2.loli.net/2025/10/08/hc1zrUCmfgWTQ4k.png" alt="" width="818"/>
 

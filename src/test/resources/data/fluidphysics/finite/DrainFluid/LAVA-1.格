@@ -1,0 +1,16 @@
+---
+ver: 1
+default: 曜
+ext:
+  drain_at: [2,2,2]
+  expected:
+    unit: mB
+    drained: 500
+---
+略
+
+曜曜曜
+曜燚曜
+曜曜曜
+
+略

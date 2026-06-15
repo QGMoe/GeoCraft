@@ -27,11 +27,16 @@
 
 package top.qiguaiaaaa.geocraft.util.math;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import top.qiguaiaaaa.geocraft.api.util.math.Degree;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
 public final class MathUtil {
@@ -39,6 +44,14 @@ public final class MathUtil {
         double len = vec.length();
         double rad = Math.asin(Math.abs(vec.y)/len);
         return new Degree(rad,true);
+    }
+
+    public static double tanh(final double x,final double a,final double m,final double d){
+        return a*Math.tanh((x-d)/m)+a+1d;
+    }
+
+    public static int manhattanDistance(final @Nonnull Vec3i a,final @Nonnull Vec3i b){
+        return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY()- b.getY()) + Math.abs(a.getZ() - b.getZ());
     }
 
     /**
@@ -60,10 +73,17 @@ public final class MathUtil {
         return sum/arr.length;
     }
 
+    /**
+     * 获取第 k 百分位数。注意这不会在 arr.length*percent 刚好为整数的时候取这个元素和下一个元素的平均值
+     * @param arr 需要获取第 k 百分位数的数据，可以是乱序的，但不能为空
+     * @param percent 第 k 百分位数，应当介于 [0,1]
+     * @return 第 k 百分位数
+     */
     public static long getPercent(@Nonnull final long[] arr,final double percent){
         final long[] cp = arr.clone();
         Arrays.sort(cp);
-        int loc = (int) Math.ceil(percent*cp.length);
+        final int loc = (int) Math.ceil(percent*cp.length);
+        if(loc == 0) return cp[0];
         return cp[loc-1];
     }
 
@@ -72,6 +92,26 @@ public final class MathUtil {
             l = (r = (l = l ^ r) ^ r) ^ l;
         }
         return n>=l && n <= r;
+    }
+
+    @Nullable
+    public static RayTraceResult rayTrace(final @Nonnull EntityPlayer playerIn,
+                                          final boolean useLiquids) {
+        final float rotationXZ = playerIn.rotationPitch;
+        final float rotationY = playerIn.rotationYaw;
+        final double x = playerIn.posX;
+        final double y = playerIn.posY + playerIn.getEyeHeight();
+        final double z = playerIn.posZ;
+        final @Nonnull Vec3d eyePos = new Vec3d(x, y, z);
+        final float rotationYCosOpposite = MathHelper.cos(-rotationY * 0.017453292F - (float)Math.PI); // cos( -rotationY 转为弧度 - π ) = -cos(rotationY)
+        final float rotationYSin = MathHelper.sin(-rotationY * 0.017453292F - (float)Math.PI); // sin(rotationY)
+        final float rotationXZCosOpposite = -MathHelper.cos(-rotationXZ * 0.017453292F); // -cos(rotationXZ)
+        final float lookY = MathHelper.sin(-rotationXZ * 0.017453292F);
+        final float lookX = rotationYSin * rotationXZCosOpposite;
+        final float lookZ = rotationYCosOpposite * rotationXZCosOpposite;
+        final double reachDis = playerIn.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue();
+        final @Nonnull Vec3d eyesightVec = eyePos.add(lookX * reachDis, lookY * reachDis, lookZ * reachDis);
+        return playerIn.getEntityWorld().rayTraceBlocks(eyePos, eyesightVec, useLiquids, !useLiquids, false);
     }
 
 }

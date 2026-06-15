@@ -29,6 +29,7 @@ package top.qiguaiaaaa.geocraft.api.configs.item.map;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
@@ -36,12 +37,14 @@ import top.qiguaiaaaa.geocraft.api.configs.value.map.ConfigurableLinkedHashMap;
 import top.qiguaiaaaa.geocraft.api.configs.value.map.entry.ConfigEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> implements Map<K,V> {
+public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>,ConfigMap<K,V>> implements Map<K,V> {
 
     protected final Function<String,K> parserK;
     protected final Function<String,V> parserV;
@@ -54,47 +57,46 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> i
     protected boolean keyFixed = false;
 
     @SafeVarargs
-    public ConfigMap(ConfigCategory category, String configKey, Function<String,K> parserK, Function<String,V> parserV, ConfigEntry<K,V>... entries) {
-        this(category,configKey,null,parserK,parserV,entries);
-    }
-
-    @SafeVarargs
-    public ConfigMap(ConfigCategory category, String configKey, String comment, Function<String,K> parserK, Function<String,V> parserV, ConfigEntry<K,V>... entries) {
-        this(category,configKey,comment,parserK,parserV,false,entries);
-    }
-
-    @SafeVarargs
-    public ConfigMap(ConfigCategory category, String configKey, String comment, Function<String,K> parserK, Function<String,V> parserV, boolean isFinal, ConfigEntry<K,V>... entries) {
-        super(category, configKey, new ConfigurableLinkedHashMap<>(), comment, isFinal);
+    public ConfigMap(final @Nonnull ConfigCategory category,
+                     final @Nonnull String configKey,
+                     final @Nonnull Function<String,K> parserK,
+                     final @Nonnull Function<String,V> parserV,
+                     final @Nonnull ConfigEntry<K,V>... entries) {
+        super(category, configKey, new ConfigurableLinkedHashMap<>());
         this.parserK = parserK;
         this.parserV = parserV;
-        for(ConfigEntry<K,V> entry:entries){
+        for(final @Nullable ConfigEntry<K,V> entry:entries){
             if(entry == null) continue;
             defaultValue.put(entry.getKey(),entry.getValue());
         }
     }
 
-    public ConfigMap<K,V> setKeyClass(@Nonnull Class<K> cls){
+    @Nonnull
+    public ConfigMap<K,V> setKeyClass(@Nonnull final Class<K> cls){
         this.keyClass = cls;
         return this;
     }
 
-    public ConfigMap<K,V> setValueClass(@Nonnull Class<V> cls){
+    @Nonnull
+    public ConfigMap<K,V> setValueClass(@Nonnull final Class<V> cls){
         this.valClass = cls;
         return this;
     }
 
-    public ConfigMap<K,V> setKeyComment(@Nonnull String comment){
+    @Nonnull
+    public ConfigMap<K,V> setKeyComment(@Nonnull final String comment){
         this.keyComment = comment;
         return this;
     }
 
-    public ConfigMap<K,V> setValueComment(@Nonnull String comment){
+    @Nonnull
+    public ConfigMap<K,V> setValueComment(@Nonnull final String comment){
         this.valueComment = comment;
         return this;
     }
 
-    public ConfigMap<K,V> setKeyFixed(boolean keyFixed) {
+    @Nonnull
+    public ConfigMap<K,V> setKeyFixed(final boolean keyFixed) {
         this.keyFixed = keyFixed;
         return this;
     }
@@ -107,12 +109,18 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> i
     public void save() {
         if(property == null) return;
         property.setValues(value.toStringList());
-        property.setComment(getPolishedComment());
+        property.setComment(getConstructedComment());
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.map";
     }
 
     @Override
-    public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,defaultValue.toStringList(),getPolishedComment());
+    public void load(@Nonnull final Configuration config) {
+        property = config.get(category.getPath(),key,defaultValue.toStringList(),getConstructedComment());
         load(property);
         if(keyFixed){
             defaultValue.forEach(value::putIfAbsent);
@@ -121,7 +129,7 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> i
     }
 
     @Override
-    protected void load(@Nonnull Property property) {
+    protected void load(@Nonnull final Property property) {
         value = new ConfigurableLinkedHashMap<>();
         String[] strings = property.getStringList();
         StringBuilder pair = new StringBuilder();
@@ -178,7 +186,8 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> i
 
         loadKeyPair(pair.toString());
     }
-    protected void loadKeyPair(@Nonnull String pair){
+
+    protected void loadKeyPair(@Nonnull final String pair){
         String[] spilt;
         try {
             spilt = ConfigurableLinkedHashMap.spiltKeyPair(pair);
@@ -205,21 +214,21 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> i
         }
     }
 
-    protected String getPolishedComment(){
-        StringBuilder builder = new StringBuilder(comment==null?"":comment);
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
         if(keyClass != null && valClass != null)
-            builder.append('\n')
-                    .append("类型 Type: Map<")
-                    .append(keyClass.getSimpleName())
-                    .append(" -> ")
-                    .append(valClass.getSimpleName())
-                    .append(" >");
-        if(keyComment != null)
-            builder.append("\n键说明 Key Info:\n").append(keyComment);
-        if(valueComment != null)
-            builder.append("\n值说明 Value Info:\n").append(valueComment);
-        return builder.toString();
+            list.add(Pair.of("类型 Type", "Map< " +
+                    keyClass.getSimpleName() +
+                    " -> " +
+                    valClass.getSimpleName() +
+                    " >"));
+        if(keyComment != null) list.add(Pair.of("键说明 Key Info",keyComment));
+        if(valueComment != null) list.add(Pair.of("值说明 Value Info",valueComment));
+        return list;
     }
+
 
     //*****************
     // Map
@@ -236,55 +245,57 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> i
     }
 
     @Override
-    public boolean containsKey(Object key) {
+    public boolean containsKey(final @Nonnull Object key) {
         return value.containsKey(key);
     }
 
     @Override
-    public boolean containsValue(Object value) {
+    public boolean containsValue(final @Nonnull Object value) {
         return this.value.containsValue(value);
     }
 
     @Override
-    public V get(Object key) {
+    public V get(final @Nonnull Object key) {
         return this.value.get(key);
     }
 
     @Override
-    public V put(K key, V value) {
-        if(isFinal) throw new UnsupportedOperationException();
+    public V put(final @Nonnull K key,final @Nonnull V value) {
         if(keyFixed && !this.value.containsKey(key)) throw new UnsupportedOperationException();
         return this.value.put(key,value);
     }
 
     @Override
-    public V remove(Object key) {
-        if(isFinal || keyFixed) throw new UnsupportedOperationException();
+    public V remove(final @Nonnull Object key) {
+        if(keyFixed) throw new UnsupportedOperationException();
         return this.value.remove(key);
     }
 
     @Override
-    public void putAll(@Nonnull Map<? extends K, ? extends V> m) {
-        if(isFinal || keyFixed) throw new UnsupportedOperationException();
+    public void putAll(@Nonnull final Map<? extends K, ? extends V> m) {
+        if(keyFixed) throw new UnsupportedOperationException();
         this.value.putAll(m);
     }
 
     @Override
     public void clear() {
-        if(isFinal || keyFixed) throw new UnsupportedOperationException();
+        if(keyFixed) throw new UnsupportedOperationException();
         this.value.clear();
     }
 
+    @Nonnull
     @Override
     public Set<K> keySet() {
         return this.value.keySet();
     }
 
+    @Nonnull
     @Override
     public Collection<V> values() {
         return this.value.values();
     }
 
+    @Nonnull
     @Override
     public Set<Entry<K, V>> entrySet() {
         return this.value.entrySet();

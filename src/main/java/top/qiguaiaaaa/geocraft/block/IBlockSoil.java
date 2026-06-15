@@ -64,7 +64,7 @@ import top.qiguaiaaaa.geocraft.api.util.*;
 import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.ChunkUtil;
@@ -106,7 +106,7 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
             final long filled = host.addAmountInQB(worldIn,down,downState,EnumFacing.UP,FluidRegistry.WATER,
                     QBUtil.QUANTA_VOLUME, FluidHostOperation.DO_WITH_CERTAINTY,null,FROM_SOIL,BlockFlagsModifier.MODIFY_NOTHING);
             return filled>0?-1:0;
-        }else if(FiniteFlowingVanilla.WATER_FLOW.canFlowDownTo(downState)){
+        }else if(FiniteFlowings.WATER_FLOW.canFlowDownTo(downState)){
             if(getCurrentMode() == FluidPhysicsMode.MORE_REALITY) {
                 FluidOperationUtil.triggerDestroyBlockEffectByFluid(worldIn,down,downState,FluidRegistry.WATER);
                 FiniteFlowingVanilla.WATER_FLOW.placeDynamicBlock(worldIn,pos,7);

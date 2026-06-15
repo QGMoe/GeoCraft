@@ -31,56 +31,56 @@ import net.minecraftforge.common.config.Configuration;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 
 
-public class ConfigurationLoader {
+public final class ConfigurationLoader {
     private static boolean initialised = false;
     private static Configuration config;
-    private static final ArrayList<ConfigItem<?>> configItems = new ArrayList<>();
+    private static final ArrayList<ConfigItem<?,?>> configItems = new ArrayList<>();
     private static final ArrayList<ConfigCategory> configCategories = new ArrayList<>();
 
-    public static void init(File configFile){
+    public static void init(final @Nonnull File configFile){
         if(initialised) return;
         config = new Configuration(configFile);
         config.load();
         initialised = true;
     }
-    public static void registerConfigItem(ConfigItem<?> item){
-        if(item == null) return;
-        if(configItems.contains(item)) return;
-        configItems.add(item);
-    }
-
-    public static void registerConfigCategory(ConfigCategory category){
-        if(category == null) return;
-        if(configCategories.contains(category)) return;
-        configCategories.add(category);
-    }
 
     public static void load(){
-        for(ConfigCategory category:configCategories){
-            config.setCategoryComment(category.getPath(),category.getComment());
-        }
-        for(ConfigItem<?> item:configItems){
-            item.load(config);
-        }
+        for(final @Nonnull ConfigCategory category:configCategories) config.setCategoryComment(category.getPath(),category.getComment());
+        for(final @Nonnull ConfigItem<?,?> item:configItems) item.load(config);
         save();
     }
 
     public static void save(){
         if(config == null) return;
-        for(ConfigCategory category:configCategories){
-            config.setCategoryComment(category.getPath(),category.getComment());
-        }
-        for(ConfigItem<?> item:configItems){
-            item.save();
-        }
+        for(final @Nonnull ConfigCategory category:configCategories) config.setCategoryComment(category.getPath(),category.getComment());
+        for(final @Nonnull ConfigItem<?,?> item:configItems) item.save();
         config.save();
     }
 
     public static boolean isInitialised(){
         return initialised;
+    }
+
+    @Nonnull
+    public static Collection<ConfigItem<?,?>> getConfigItems(){
+        return configItems;
+    }
+
+    static void registerConfigItem(final ConfigItem<?,?> item){
+        if(item == null) return;
+        if(configItems.contains(item)) return;
+        configItems.add(item);
+    }
+
+    static void registerConfigCategory(final ConfigCategory category){
+        if(category == null) return;
+        if(configCategories.contains(category)) return;
+        configCategories.add(category);
     }
 }

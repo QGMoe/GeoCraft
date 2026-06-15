@@ -28,29 +28,26 @@
 package top.qiguaiaaaa.geocraft.api.configs.item.collection.list;
 
 import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.ConfigurableList;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.IConfigurableList;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Random;
 
 /**
  * @author QiguaiAAAA
  */
-public class ConfigIntegerWeightDistribution extends ConfigIntegerList {
+public class ConfigIntegerWeightDistribution extends ConfigIntegerList<ConfigIntegerWeightDistribution> {
     protected int sum = 0;
     protected int begin = 0;
-    public ConfigIntegerWeightDistribution(ConfigCategory category, String configKey, ConfigurableList<Integer> defaultValue) {
+
+    public ConfigIntegerWeightDistribution(final @Nonnull ConfigCategory category,
+                                           final @Nonnull String configKey,
+                                           final @Nonnull ConfigurableList<Integer> defaultValue) {
         super(category, configKey, defaultValue);
-    }
-
-    public ConfigIntegerWeightDistribution(ConfigCategory category, String configKey, ConfigurableList<Integer> defaultValue, String comment) {
-        super(category, configKey, defaultValue, comment);
-    }
-
-    public ConfigIntegerWeightDistribution(ConfigCategory category, String configKey, ConfigurableList<Integer> defaultValue, String comment, boolean isFinal) {
-        super(category, configKey, defaultValue, comment, isFinal);
     }
 
     public void reloadWeights(){
@@ -61,24 +58,13 @@ public class ConfigIntegerWeightDistribution extends ConfigIntegerList {
     }
 
     @Override
-    public void setValue(@Nonnull IConfigurableList<Integer> newValue) {
+    public void setValue(@Nonnull final IConfigurableList<Integer> newValue) {
         super.setValue(newValue);
         reloadWeights();
     }
 
-    @Override
-    public ConfigIntegerWeightDistribution setMinValue(int minValue) {
-        super.setMinValue(minValue);
-        return this;
-    }
-
-    @Override
-    public ConfigIntegerWeightDistribution setMaxValue(int maxValue) {
-        super.setMaxValue(maxValue);
-        return this;
-    }
-
-    public ConfigIntegerWeightDistribution setBegin(int begin) {
+    @Nonnull
+    public ConfigIntegerWeightDistribution setBegin(final int begin) {
         this.begin = begin;
         return this;
     }
@@ -88,18 +74,27 @@ public class ConfigIntegerWeightDistribution extends ConfigIntegerList {
     }
 
     @Override
-    public ConfigIntegerWeightDistribution setMaxListSize(int maxListSize) {
-        super.setMaxListSize(maxListSize);
-        return this;
-    }
-
-    @Override
-    public void load(@Nonnull Configuration config) {
+    public void load(@Nonnull final Configuration config) {
         super.load(config);
         reloadWeights();
     }
 
-    public int getRandomResult(Random rnd){
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        list.add(Pair.of("分布起始值 Distribution Begin",String.valueOf(begin)));
+        return list;
+    }
+
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.list.int.distribution";
+    }
+
+    public int getRandomResult(final @Nonnull Random rnd){
         int rndRes = rnd.nextInt(sum);
         int accumulation = 0;
         for(int cur = begin,i =0;i<value.size();i++,cur++){

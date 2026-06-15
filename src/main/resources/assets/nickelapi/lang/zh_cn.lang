@@ -26,6 +26,7 @@ nickel.command.parameter.checker.resource_location.invalid.slash=命名空间不
 nickel.command.parameter.string.nonMatch=无效的输入 %s ，该字符串参数的输入必须匹配正则表达式 %s
 nickel.command.parameter.string.invalid.white=无效的输入 %s ，该字符串参数仅允许以下输入：%s
 nickel.command.parameter.string.invalid.black=无效的输入 %s ，该字符串参数不接受以下输入： %s
+nickel.command.parameter.uuid.invalid=无效的 UUID：%s
 nickel.command.parameter.dimension.not_found=无法根据 ID %s 找到对应的维度，该维度可能不存在或已被卸载
 nickel.command.parameter.block_state.invalid_end=%s 缺少右方括号『[』
 nickel.command.parameter.fluid.invalid=无效的流体 %s
@@ -58,3 +59,4 @@ nickel.command.exception.base.node.sub= 时发生错误
 nickel.command.exception.base.details=详细信息： 
 nickel.command.exception.base.branch=分支： 
 #行末空格 结束
+nickel.command.exception.runtime.message=命令运行时出错：%s

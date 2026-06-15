@@ -30,11 +30,14 @@ package top.qiguaiaaaa.geocraft.configs;
 import net.minecraftforge.common.config.Config;
 import top.qiguaiaaaa.geocraft.MixinEarlyInit;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
+import top.qiguaiaaaa.geocraft.api.configs.EffectiveMode;
 import top.qiguaiaaaa.geocraft.api.configs.GeoConfig;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
+import top.qiguaiaaaa.geocraft.api.configs.item.collection.ConfigCollection;
 import top.qiguaiaaaa.geocraft.api.configs.item.collection.IConfigIntCollection;
+import top.qiguaiaaaa.geocraft.api.configs.item.collection.SizeRequirement;
 import top.qiguaiaaaa.geocraft.api.configs.item.collection.list.ConfigDoubleList;
-import top.qiguaiaaaa.geocraft.api.configs.item.collection.list.ConfigList;
+import top.qiguaiaaaa.geocraft.api.configs.item.map.ConfigMap;
 import top.qiguaiaaaa.geocraft.api.configs.item.number.ConfigDouble;
 import top.qiguaiaaaa.geocraft.api.configs.item.number.ConfigInteger;
 import top.qiguaiaaaa.geocraft.api.configs.item.number.ConfigLong;
@@ -46,12 +49,75 @@ import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.function.BiConsumer;
 
 import static top.qiguaiaaaa.geocraft.configs.ConfigurationLoader.registerConfigCategory;
 import static top.qiguaiaaaa.geocraft.configs.ConfigurationLoader.registerConfigItem;
 
 public final class ConfigInit {
     private static boolean hasLoaded = false;
+
+    private static final HashMap<Class<? extends Annotation>, BiConsumer<ConfigItem<?,?>,Annotation>> itemProcessors = new HashMap<>();
+    private static final HashMap<Class<? extends Annotation>, BiConsumer<ConfigCategory,Annotation>> categoryProcessors = new HashMap<>();
+
+    static {
+        loadItemProcessors();
+        loadCategoryProcessors();
+    }
+
+    private static void loadItemProcessors(){
+        itemProcessors.put(Deprecated.class,(item,a) -> item.setDeprecated(true));
+        itemProcessors.put(Config.Comment.class,(item,a)-> item.setComment(String.join("\n",((Config.Comment)a).value())));
+        itemProcessors.put(Config.LangKey.class,(item,a) -> item.setTranslationKey(((Config.LangKey)a).value()));
+        itemProcessors.put(GeoConfig.Experimental.class,(item,a) -> item.setBeta(true));
+        itemProcessors.put(GeoConfig.Since.class,(item,a) -> {
+            final GeoConfig.Since since = (GeoConfig.Since) a;
+            item.addCommentProperty("自 From","v"+since.value()+" 起 Begin");
+        });
+
+        for(final @Nonnull EffectiveMode mode : EffectiveMode.values())
+            if(mode.getAnnotation() != null)
+                itemProcessors.put(mode.getAnnotation(),(item,a)-> item.setMode(mode));
+
+        itemProcessors.put(Config.RangeInt.class,(item,a)->{
+            final Config.RangeInt range = (Config.RangeInt) a;
+            if(item instanceof ConfigInteger) ((ConfigInteger)item).setMinValue(range.min()).setMaxValue(range.max());
+            else if(item instanceof IConfigIntCollection<?>) ((IConfigIntCollection<?>)item).setMinValue(range.min()).setMaxValue(range.max());});
+        itemProcessors.put(Config.RangeDouble.class,(item,a)->{
+            final Config.RangeDouble range = (Config.RangeDouble) a;
+            final double min = range.min() == Double.MIN_VALUE ? Double.NEGATIVE_INFINITY:range.min();
+            final double max = range.max() == Double.MAX_VALUE ? Double.POSITIVE_INFINITY:range.max();
+            if(item instanceof ConfigDouble) ((ConfigDouble)item).setMinValue(min).setMaxValue(max);
+            else if(item instanceof ConfigDoubleList<?>) ((ConfigDoubleList<?>)item).setMinValue(min).setMaxValue(max);});
+        itemProcessors.put(GeoConfig.RangeLong.class,(item,a)->{
+            if(item instanceof ConfigLong){
+                final GeoConfig.RangeLong range = (GeoConfig.RangeLong) a;
+                ((ConfigLong)item).setMinValue(range.min()).setMaxValue(range.max());
+            }});
+
+        itemProcessors.put(GeoConfig.Fixed.class,(item, a)->{
+            if(item instanceof ConfigCollection<?,?,?>){
+                final ConfigCollection<?,?,?> c = (ConfigCollection<?, ?, ?>) item;
+                c.requireSize(SizeRequirement.fixed(c.getDefaultValue().size()));
+            }else if(item instanceof ConfigMap<?,?>) ((ConfigMap<?,?>)item).setKeyFixed(true);
+        });
+        itemProcessors.put(GeoConfig.SizeRange.class,(item, a)->{
+            if(item instanceof ConfigCollection<?,?,?>){
+                final GeoConfig.SizeRange size = (GeoConfig.SizeRange) a;
+                ((ConfigCollection<?,?,?>)item).requireSize(SizeRequirement.range(size.min(),size.max()));
+            }});
+
+        itemProcessors.put(GeoConfig.KeyComment.class,(item,a)->{
+            if(item instanceof ConfigMap<?,?>) ((ConfigMap<?, ?>) item).setKeyComment(String.join("\n",((GeoConfig.KeyComment)a).value()));});
+        itemProcessors.put(GeoConfig.ValueComment.class,(item,a)->{
+            if(item instanceof ConfigMap<?,?>) ((ConfigMap<?,?>)item).setValueComment(String.join("\n",((GeoConfig.ValueComment)a).value()));});
+    }
+
+    private static void loadCategoryProcessors(){
+        categoryProcessors.put(Config.Comment.class,(c,a)->c.setComment(String.join("\n",((Config.Comment)a).value())));
+    }
+
     public static void initConfigs(){
         if(hasLoaded) return;
         initConfigClass(GeneralConfig.class);
@@ -68,81 +134,43 @@ public final class ConfigInit {
         });
     }
 
-    private static void initConfigClass(Class<?> configClass){
-        Field[] fields = configClass.getFields();
-        for(Field field:fields){
-            int modifiers = field.getModifiers();
+    private static void initConfigClass(final @Nonnull Class<?> configClass){
+        final @Nonnull Field[] fields = configClass.getFields();
+        for(final @Nonnull  Field field:fields){
+            final int modifiers = field.getModifiers();
             if(!Modifier.isStatic(modifiers)) continue;
             if(!Modifier.isPublic(modifiers)) continue;
             try {
                 initField(field);
-            } catch (IllegalAccessException e) {
+            } catch (final @Nonnull IllegalAccessException e) {
                 MixinEarlyInit.LOGGER.error("Couldn't get field {} in config class {}",field,configClass);
             }
         }
     }
 
-    private static void initField(@Nonnull Field field) throws IllegalAccessException {
-        Object val = field.get(null);
+    private static void initField(@Nonnull final Field field) throws IllegalAccessException {
+        if(field.isAnnotationPresent(Config.Ignore.class)) return;
+        final @Nonnull Object val = field.get(null);
         if(val == null) return;
-        if(field.isAnnotationPresent(Config.Ignore.class)){
-            return;
-        }
-        final Config.RangeInt rangeInt = getFieldAnnotation(field,Config.RangeInt.class);
-        final Config.RangeDouble rangeDouble = getFieldAnnotation(field,Config.RangeDouble.class);
-        final GeoConfig.RangeLong rangeLong = getFieldAnnotation(field,GeoConfig.RangeLong.class);
-        final GeoConfig.MaxSize maxSize = getFieldAnnotation(field,GeoConfig.MaxSize.class);
 
-        if(rangeInt != null){
-            if(val instanceof ConfigInteger){
-                ConfigInteger integer = (ConfigInteger) val;
-                integer.setMinValue(rangeInt.min())
-                        .setMaxValue(rangeInt.max());
-            }else if(val instanceof IConfigIntCollection){
-                IConfigIntCollection list = (IConfigIntCollection) val;
-                list.setMinValue(rangeInt.min())
-                        .setMaxValue(rangeInt.max());
-            }
-        }else if(rangeDouble != null && val instanceof ConfigDouble) {
-            ConfigDouble d = (ConfigDouble) val;
-            d.setMinValue((rangeDouble.min() == Double.MIN_VALUE)?Double.NEGATIVE_INFINITY:rangeDouble.min())
-                    .setMaxValue((rangeDouble.max() == Double.MAX_VALUE)?Double.POSITIVE_INFINITY:rangeDouble.max());
-        }else if(rangeDouble != null && val instanceof ConfigDoubleList){
-            ((ConfigDoubleList)val).setMinValue((rangeDouble.min() == Double.MIN_VALUE)?Double.NEGATIVE_INFINITY:rangeDouble.min())
-                    .setMaxValue((rangeDouble.max() == Double.MAX_VALUE)?Double.POSITIVE_INFINITY:rangeDouble.max());
-        }else if(rangeLong != null && val instanceof ConfigLong){
-            ((ConfigLong)val).setMaxValue(rangeLong.max())
-                    .setMinValue(rangeLong.min());
-        }
-
-        if(val instanceof ConfigList<?>){
-            if(field.isAnnotationPresent(GeoConfig.SizeFixed.class)){
-                ((ConfigList<?>) val).setListSizeFixed(true);
-            }
-            if(maxSize !=null){
-                ((ConfigList<?>) val).setMaxListSize(maxSize.value());
-            }
-        }
-
+        final @Nonnull Annotation[] annotations = field.getDeclaredAnnotations();
         if(val instanceof ConfigCategory){
-            if(field.isAnnotationPresent(Config.Comment.class)){
-                Config.Comment comment = field.getAnnotation(Config.Comment.class);
-                ConfigCategory category = (ConfigCategory) val;
-                category.setComment(String.join("\n",comment.value()));
-            }
-            registerConfigCategory((ConfigCategory) val);
-        }else if(val instanceof ConfigItem<?>){
-            ConfigItem<?> item = (ConfigItem<?>) val;
-            if(field.isAnnotationPresent(Deprecated.class)) item.setDeprecated(true);
+            final @Nonnull ConfigCategory c = (ConfigCategory) val;
+            processAnnotations(c,annotations,categoryProcessors);
+            registerConfigCategory(c);
+        }else if(val instanceof ConfigItem<?,?>){
+            final @Nonnull ConfigItem<?,?> item = (ConfigItem<?, ?>) val;
+            processAnnotations(item,annotations,itemProcessors);
             registerConfigItem(item);
         }
     }
 
-    @Nullable
-    private static <T extends Annotation> T getFieldAnnotation(@Nonnull Field field, @Nonnull Class<T> annotation){
-        if(field.isAnnotationPresent(annotation)){
-            return field.getAnnotation(annotation);
+    private static <T> void processAnnotations(final @Nonnull T item,
+                                               final @Nonnull Annotation[] annotations,
+                                               final @Nonnull HashMap<Class<? extends Annotation>, BiConsumer<T,Annotation>> processors){
+        for(final @Nonnull Annotation a:annotations){
+            final @Nullable BiConsumer<T,Annotation> processor = processors.get(a.annotationType());
+            if(processor != null) processor.accept(item,a);
         }
-        return null;
     }
 }

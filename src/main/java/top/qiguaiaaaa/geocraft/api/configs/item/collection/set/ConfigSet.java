@@ -34,6 +34,7 @@ import top.qiguaiaaaa.geocraft.api.configs.value.collection.IConfigurableSet;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.UnmodifiableConfigurableSet;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -41,31 +42,73 @@ import java.util.function.Supplier;
 /**
  * @author QiguaiAAAA
  */
-public class ConfigSet<V> extends ConfigCollection<IConfigurableSet<V>,V> implements Set<V> {
-    public ConfigSet(ConfigCategory category, String configKey, IConfigurableSet<V> defaultValue, Function<String,V> parser) {
-        this(category, configKey, defaultValue,null,parser);
+public class ConfigSet<V,S extends ConfigSet<V,S>> extends ConfigCollection<IConfigurableSet<V>,V,ConfigSet<V,S>> implements Set<V> {
+
+    protected ConfigSet(final @Nonnull ConfigCategory category,
+                     final @Nonnull String configKey,
+                     final @Nonnull IConfigurableSet<V> defaultValue,
+                     final @Nonnull Function<String,V> parser) {
+        super(category, configKey, defaultValue, parser,ConfigurableSet::new);
     }
 
-    public ConfigSet(ConfigCategory category, String configKey, IConfigurableSet<V> defaultValue, String comment, Function<String,V> parser) {
-        this(category,configKey,defaultValue,comment,parser,false);
+    protected ConfigSet(final @Nonnull ConfigCategory category,
+                     final @Nonnull String configKey,
+                     final @Nonnull IConfigurableSet<V> defaultValue,
+                     final @Nonnull Function<String,V> parser,
+                     final @Nonnull Supplier<IConfigurableSet<V>> factory) {
+        super(category, configKey, defaultValue, parser,factory);
     }
 
-    public ConfigSet(ConfigCategory category, String configKey, IConfigurableSet<V> defaultValue, String comment, Function<String,V> parser, boolean isFinal) {
-        this(category, configKey, defaultValue, comment,-1,parser,isFinal);
+    public static <V> ConfigSet<V,? extends ConfigSet<V,?>> create(final @Nonnull ConfigCategory category,
+                                                                   final @Nonnull String configKey,
+                                                                   final @Nonnull IConfigurableSet<V> defaultValue,
+                                                                   final @Nonnull Function<String,V> parser){
+        return new Impl<>(category,configKey,defaultValue,parser);
     }
 
-    public ConfigSet(ConfigCategory category, String configKey, IConfigurableSet<V> defaultValue, String comment, int maxListSize, Function<String,V> parser, boolean isFinal) {
-        this(category, configKey, defaultValue, comment,maxListSize,parser, ConfigurableSet::new, isFinal);
-    }
-
-    public ConfigSet(ConfigCategory category, String configKey, IConfigurableSet<V> defaultValue, String comment, int maxListSize, Function<String,V> parser, Supplier<IConfigurableSet<V>> factory, boolean isFinal) {
-        super(category, configKey, defaultValue, comment, maxListSize,parser,factory,isFinal);
+    public static <V> ConfigSet<V,? extends ConfigSet<V,?>> create(final @Nonnull ConfigCategory category,
+                                                                   final @Nonnull String configKey,
+                                                                   final @Nonnull IConfigurableSet<V> defaultValue,
+                                                                   final @Nonnull Function<String,V> parser,
+                                                                   final @Nonnull Supplier<IConfigurableSet<V>> factory){
+        return new Impl<>(category,configKey,defaultValue,parser,factory);
     }
 
     @Nonnull
     @Override
     public IConfigurableSet<V> getValue() {
-        if(isFinal || isListSizeFixed) return new UnmodifiableConfigurableSet<>(value);
+        if(sizeRequire.isSizeFixed()) return (UnmodifiableConfigurableSet<V>) unmodifiable;
         return value;
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.set";
+    }
+
+    @Nonnull
+    @Override
+    protected Collection<V> getUnmodifiableCollection() {
+        if(unmodifiable == null) unmodifiable = new UnmodifiableConfigurableSet<>(value);
+        return unmodifiable;
+    }
+
+    private static final class Impl<V> extends ConfigSet<V,Impl<V>>{
+
+        private Impl(@Nonnull final ConfigCategory category,
+                     @Nonnull final String configKey,
+                     @Nonnull final IConfigurableSet<V> defaultValue,
+                     @Nonnull final Function<String, V> parser) {
+            super(category, configKey, defaultValue, parser);
+        }
+
+        private Impl(@Nonnull final ConfigCategory category,
+                     @Nonnull final String configKey,
+                     @Nonnull final IConfigurableSet<V> defaultValue,
+                     @Nonnull final Function<String, V> parser,
+                     @Nonnull final Supplier<IConfigurableSet<V>> factory) {
+            super(category, configKey, defaultValue, parser, factory);
+        }
     }
 }

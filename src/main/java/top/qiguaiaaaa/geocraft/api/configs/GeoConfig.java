@@ -38,14 +38,22 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GeoConfig {
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface SizeFixed{}
 
+    /**
+     * @since 天圆地方 API v0.3.1
+     */
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
-    @interface MaxSize{
-        int value() default -1;
+    @interface Fixed {}
+
+    /**
+     * @since 天圆地方 API v0.3.1
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface SizeRange {
+        int min() default 0;
+        int max() default Integer.MAX_VALUE;
     }
 
     @Target(ElementType.FIELD)
@@ -63,4 +71,29 @@ public @interface GeoConfig {
     @interface Since{
         String value();
     }
+
+    /**
+     * @since 天圆地方 API 0.3.1
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface KeyComment{
+        String[] value();
+    }
+
+    /**
+     * @since 天圆地方 API 0.3.1
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface ValueComment{
+        String[] value();
+    }
+
+    /**
+     * @since 天圆地方 API 0.3.2
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Experimental{}
 }

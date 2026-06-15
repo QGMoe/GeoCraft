@@ -28,42 +28,46 @@
 package top.qiguaiaaaa.geocraft.api.configs.item.collection.list;
 
 import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.value.collection.ConfigurableList;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public class ConfigDoubleList extends ConfigList<Double>{
-    protected double minValue = Double.NEGATIVE_INFINITY,
-    maxValue = Double.POSITIVE_INFINITY;
-    public ConfigDoubleList(ConfigCategory category, String configKey, ConfigurableList<Double> defaultValue) {
-        this(category, configKey, defaultValue,null);
+public class ConfigDoubleList<S extends ConfigDoubleList<S>> extends ConfigList<Double,S>{
+    protected double minValue = Double.NEGATIVE_INFINITY;
+    protected double maxValue = Double.POSITIVE_INFINITY;
+
+    protected ConfigDoubleList(final @Nonnull ConfigCategory category,
+                            final @Nonnull String configKey,
+                            final @Nonnull ConfigurableList<Double> defaultValue) {
+        super(category, configKey, defaultValue, Double::parseDouble);
     }
 
-    public ConfigDoubleList(ConfigCategory category, String configKey, ConfigurableList<Double> defaultValue, String comment) {
-        this(category, configKey, defaultValue, comment, false);
+    @Nonnull
+    public static ConfigDoubleList<?> create(final @Nonnull ConfigCategory category,
+                                             final @Nonnull String configKey,
+                                             final @Nonnull ConfigurableList<Double> defaultValue){
+        return new Impl(category, configKey, defaultValue);
     }
 
-    public ConfigDoubleList(ConfigCategory category, String configKey, ConfigurableList<Double> defaultValue, String comment, boolean isFinal) {
-        this(category, configKey, defaultValue, comment,-1, isFinal);
-    }
-
-    public ConfigDoubleList(ConfigCategory category, String configKey, ConfigurableList<Double> defaultValue, String comment, int maxListSize, boolean isFinal) {
-        super(category, configKey, defaultValue, comment, maxListSize, Double::parseDouble, isFinal);
-    }
-
-    public ConfigDoubleList setMinValue(double minValue) {
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S setMinValue(final double minValue) {
         this.minValue = minValue;
-        return this;
+        return (S) this;
     }
 
-    public ConfigDoubleList setMaxValue(double maxValue) {
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S setMaxValue(final double maxValue) {
         this.maxValue = maxValue;
-        return this;
+        return (S) this;
     }
 
     public double getMinValue() {
@@ -78,26 +82,43 @@ public class ConfigDoubleList extends ConfigList<Double>{
     public void save() {
         if(property == null) return;
         property.setValues(toDoubleList(value));
-        property.setComment(getPolishedComment());
+        property.setComment(getConstructedComment());
     }
 
     @Override
     public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,toDoubleList(defaultValue),comment,minValue,maxValue,isListSizeFixed,maxListSize);
-        property.setComment(getPolishedComment());
+        property = config.get(category.getPath(),key,toDoubleList(defaultValue),null,minValue,maxValue, sizeRequire.isSizeFixed(), sizeRequire.getMaxListSize());
+        property.setComment(getConstructedComment());
         load(property);
     }
 
-    protected String getPolishedComment(){
-        return (comment==null?"":comment)+" [range: " + minValue + " ~ " + maxValue + (maxListSize>=0?", maxSize: " + maxListSize:"") + "]";
+    @Nonnull
+    @Override
+    protected List<Pair<String, String>> getCommentProperties() {
+        final List<Pair<String,String>> list = super.getCommentProperties();
+        list.add(Pair.of("范围 Range",minValue + " ~ "+maxValue));
+        return list;
     }
 
-    protected double[] toDoubleList(@Nonnull Collection<Double> c){
+    protected static double[] toDoubleList(@Nonnull final Collection<Double> c){
         double[] doubles = new double[c.size()];
         int i=0;
         for(Double d:c){
             doubles[i++]=d;
         }
         return doubles;
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.list.double";
+    }
+
+    private static final class Impl extends ConfigDoubleList<Impl>{
+
+        private Impl(@Nonnull final ConfigCategory category, @Nonnull final String configKey, @Nonnull final ConfigurableList<Double> defaultValue) {
+            super(category, configKey, defaultValue);
+        }
     }
 }

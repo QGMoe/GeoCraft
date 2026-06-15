@@ -33,43 +33,32 @@ import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * {@link Boolean}配置项
  */
-public class ConfigBoolean extends ConfigItem<Boolean> {
-    /**
-     * @see #ConfigBoolean(ConfigCategory, String, boolean, String, boolean)
-     */
-    public ConfigBoolean(@Nonnull ConfigCategory category,@Nonnull String configKey, boolean defaultValue) {
-        super(category, configKey, defaultValue);
-    }
-
-    /**
-     * @see #ConfigBoolean(ConfigCategory, String, boolean, String, boolean)
-     */
-    public ConfigBoolean(@Nonnull ConfigCategory category, @Nonnull String configKey, boolean defaultValue, @Nullable String comment) {
-        super(category, configKey, defaultValue, comment);
-    }
-
+public class ConfigBoolean extends ConfigItem<Boolean,ConfigBoolean> {
     /**
      * 创建一个Boolean类型配置项
      * @param category 配置所在目录
      * @param configKey 配置的key
      * @param defaultValue 配置的默认值
-     * @param comment 配置的注释
-     * @param isFinal 配置是否在初始化后不可更改
      */
-    public ConfigBoolean(@Nonnull ConfigCategory category,@Nonnull String configKey, boolean defaultValue,@Nullable String comment, boolean isFinal) {
-        super(category, configKey, defaultValue, comment, isFinal);
+    public ConfigBoolean(@Nonnull final ConfigCategory category,@Nonnull final String configKey,final boolean defaultValue) {
+        super(category, configKey, defaultValue);
     }
 
     @Override
     public void save() {
         if(property == null) return;
         property.setValue(value);
-        property.setComment(comment);
+        property.setComment(getConstructedComment());
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.boolean";
     }
 
     /**
@@ -77,8 +66,8 @@ public class ConfigBoolean extends ConfigItem<Boolean> {
      * @param config {@inheritDoc}
      */
     @Override
-    public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,defaultValue,comment);
+    public void load(@Nonnull final Configuration config) {
+        property = config.get(category.getPath(),key,defaultValue,getConstructedComment());
         load(property);
     }
 
@@ -87,7 +76,7 @@ public class ConfigBoolean extends ConfigItem<Boolean> {
      * @param property {@inheritDoc}
      */
     @Override
-    protected void load(@Nonnull Property property) {
+    protected void load(@Nonnull final Property property) {
         this.value = property.getBoolean(defaultValue);
     }
 }

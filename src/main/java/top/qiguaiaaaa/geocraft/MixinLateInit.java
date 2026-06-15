@@ -27,7 +27,7 @@
 
 package top.qiguaiaaaa.geocraft;
 
-import top.qiguaiaaaa.geocraft.util.MixinUtil;
+import top.qiguaiaaaa.geocraft.handler.MixinHandler;
 import zone.rong.mixinbooter.ILateMixinLoader;
 
 import java.util.List;
@@ -36,6 +36,6 @@ import java.util.List;
 public class MixinLateInit implements ILateMixinLoader {
     @Override
     public List<String> getMixinConfigs() {
-        return MixinUtil.getModMixins();
+        return MixinHandler.getCompatMixins();
     }
 }
