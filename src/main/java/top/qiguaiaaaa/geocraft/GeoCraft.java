@@ -51,7 +51,7 @@ import top.qiguaiaaaa.geocraft.world.storage.GeoDataFile;
 import javax.annotation.Nonnull;
 import java.io.File;
 
-@Mod(modid = GeoCraft.MODID, name = GeoCraft.NAME, version = GeoCraft.VERSION, dependencies = "required:mixinbooter;required:nickelapi@[0.0.2,)",acceptableRemoteVersions = "*",useMetadata = true)
+@Mod(modid = GeoCraft.MODID, name = GeoCraft.NAME, version = GeoCraft.VERSION, dependencies = "required:mixinbooter;required:nickelapi@[0.0.3,)",acceptableRemoteVersions = "*",useMetadata = true)
 public class GeoCraft {
     public static final String MODID = "geocraft";
     public static final String NAME = "Geo Craft";

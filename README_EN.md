@@ -128,7 +128,7 @@ A:Due to time constraints, GeoCraft won't receive major feature updates for the 
 For more detailed documentation, please note that the English version is currently **much less complete** and may **not** be up-to-date compared to the Chinese documentation. You can visit:
 
 - [MC百科 (mcmod.cn)](https://www.mcmod.cn/class/22470.html) (Most comprehensive, but in Chinese)
-- [GitHub Repository Wiki](https://github.com/qiguaideaaaa/GeoCraft/wiki) (English documentation available but limited)
+- [GitHub Repository Wiki](https://github.com/QGMoe/GeoCraft/wiki) (English documentation available but limited)
 
 The configuration file in-game contains bilingual (English & Chinese) comments for **most** settings.
 
