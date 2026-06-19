@@ -41,7 +41,7 @@ import java.util.Objects;
 public final class 空间构造局 {
     private static final HashMap<ResourceLocation, 空间构造器> $构造注册表 = new HashMap<>();
 
-    public static void 注册(final ResourceLocation id, final 空间构造器 $空间构造器){
+    public static void 登记(final ResourceLocation id, final 空间构造器 $空间构造器){
         final 空间构造器 $旧的 = $构造注册表.put(id,$空间构造器);
         if($旧的 != null) throw new IllegalArgumentException(id+" 已被占用");
     }

@@ -297,11 +297,11 @@ public final class MockBlocks {
                 .添加映射(Soils.SOIL_MAPPING)
                 .添加映射(Liquids.LIQUIDS_MAPPING)
                 .添加映射(GeoSnows.GEO_SNOWS_MAPPING);
-        映射局.注册(Bases.BASIC_MAPPING);
-        映射局.注册(Soils.SOIL_MAPPING);
-        映射局.注册(Liquids.LIQUIDS_MAPPING);
-        映射局.注册(GeoSnows.GEO_SNOWS_MAPPING);
-        空间构造局.注册(new ResourceLocation(天圆地方测试.MODID,"all"),BUILDER);
-        空间构造局.注册(new ResourceLocation("liquids"),Liquids.LIQUIDS_BUILDER);
+        映射局.登记(Bases.BASIC_MAPPING);
+        映射局.登记(Soils.SOIL_MAPPING);
+        映射局.登记(Liquids.LIQUIDS_MAPPING);
+        映射局.登记(GeoSnows.GEO_SNOWS_MAPPING);
+        空间构造局.登记(new ResourceLocation(天圆地方测试.MODID,"all"),BUILDER);
+        空间构造局.登记(new ResourceLocation("liquids"),Liquids.LIQUIDS_BUILDER);
     }
 }

@@ -46,17 +46,17 @@ import java.lang.reflect.Modifier;
  * @author QiguaiAAAA
  */
 public final class 映射器 {
-    private final String $名称;
+    private final ResourceLocation $名称;
     private final HashBiMap<词块, IBlockState> $标准映射表 = HashBiMap.create();
     private final Int2ObjectOpenHashMap<词块解析器> $单字别名解析表 = new Int2ObjectOpenHashMap<>();
     private final Object2ObjectOpenHashMap<String,词块解析器> $多字别名解析表 = new Object2ObjectOpenHashMap<>();
 
     public 映射器(final @Nonnull String $名称) {
-        this.$名称 = $名称;
+        this(new ResourceLocation($名称));
     }
 
     public 映射器(final @Nonnull ResourceLocation $名称) {
-        this.$名称 = $名称.toString();
+        this.$名称 = $名称;
     }
 
     @Nonnull
@@ -199,7 +199,7 @@ public final class 映射器 {
     }
 
     @Nonnull
-    public String 获取名称(){
+    public ResourceLocation 获取名称(){
         return $名称;
     }
 }

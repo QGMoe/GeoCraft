@@ -1,9 +1,7 @@
 ---
 ver: 1
-import:
-  - minecraft:basic
-  - minecraft:liquid
-  - 天圆地方:soil
+upon: liquids
+import: 天圆地方:soil
 default: 土0
 ext:
   drain_at: [2,2,2]

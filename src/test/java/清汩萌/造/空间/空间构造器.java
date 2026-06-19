@@ -186,4 +186,9 @@ public final class 空间构造器 {
         logger.info("构造:\n{}",String.join("\n",序列化(网格)));
     }
 
+    @Nonnull
+    public List<映射器> 获取映射表(){
+        return this.$映射表;
+    }
+
 }

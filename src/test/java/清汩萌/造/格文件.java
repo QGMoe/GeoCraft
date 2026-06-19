@@ -32,6 +32,7 @@ import io.github.classgraph.ScanResult;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.util.ResourceLocation;
 import 清汩萌.造.工具.StringUtil;
+import 清汩萌.造.空间.空间工具;
 import 清汩萌.造.空间.空间构造器;
 import 清汩萌.造.空间.网格参数;
 import 清汩萌.造.空间.词块网格;
@@ -44,10 +45,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -196,12 +194,12 @@ public final class 格文件 {
             Optional.ofNullable(Optional.ofNullable($头部信息.get("default")).orElse($头部信息.get("默认用")))
                     .ifPresent(o -> $网格.默认用(STRIPE.apply(o)));
             Optional.ofNullable(Optional.ofNullable($头部信息.get("import")).orElse($头部信息.get("导入")))
-                    .filter(o -> o instanceof Collection<?>)
-                    .map(o -> ((Collection<?>) o).stream()
+                    .filter(o -> !(o instanceof Map<?,?>))
+                    .map(o -> (o instanceof Collection<?>)?((Collection<?>) o).stream()
                             .map(Object::toString)
-                            .collect(Collectors.toSet()))
+                            .collect(Collectors.toSet()): Collections.singleton(o.toString()))
                     .ifPresent(set -> $网格.基于(set));
-            Optional.ofNullable(Optional.ofNullable($头部信息.get("on")).orElse($头部信息.get("基于")))
+            Optional.ofNullable(Optional.ofNullable($头部信息.get("upon")).orElse($头部信息.get("基于")))
                     .map(Object::toString)
                     .ifPresent(name -> $网格.基于(name));
 
@@ -210,6 +208,8 @@ public final class 格文件 {
                 for(@Nonnull final 网格参数 $参数:网格参数.列表)
                     $网格.期望($大小.get($参数.ordinal()),$参数);
             $附加数据 = (Map<String,Object>) $头部信息.get("ext");
+
+            空间工具.打印元数据(造.LOGGER,$网格);
         }else{
             throw new RuntimeException(); //TODO
         }

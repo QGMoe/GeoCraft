@@ -27,7 +27,10 @@
 
 package 清汩萌.造.空间;
 
+import org.apache.logging.log4j.Logger;
+
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 
 /**
  * @author QGMoe
@@ -38,5 +41,13 @@ public final class 空间工具 {
     public static int[] 转换为游戏坐标(final @Nonnull int[] $网格坐标){
         if($网格坐标.length != 3) throw new IllegalArgumentException();
         return new int[]{$网格坐标[2]-1,$网格坐标[0]-1,$网格坐标[1]-1};
+    }
+
+    public static void 打印元数据(final @Nonnull Logger $日志, final @Nonnull 词块网格 $网格){
+        $日志.info("[词块网格信息]");
+        $日志.info("网格参数：{}", Arrays.toString($网格.获取参数()));
+        $日志.info("网格默认构造器名：{}",$网格.获取默认构造器名称() == null?"NULL":$网格.获取默认构造器名称());
+        $日志.info("网格使用/附加映射：{}",$网格.获取默认映射器名称集合()==null?"{}":$网格.获取默认映射器名称集合());
+        $日志.info("默认方块：{}",$网格.获取默认填充方块()==null?"NULL":$网格.获取默认填充方块());
     }
 }

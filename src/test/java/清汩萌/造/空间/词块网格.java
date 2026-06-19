@@ -30,6 +30,7 @@ package 清汩萌.造.空间;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
 import 清汩萌.造.工具.StringUtil;
+import 清汩萌.造.映射.映射器;
 import 清汩萌.造.管理.映射局;
 import 清汩萌.造.管理.空间构造局;
 import 清汩萌.造.词块.词块;
@@ -157,10 +158,19 @@ public final class 词块网格 {
     private void 加载默认构造器(){
         if(this.$构造器 != null) return;
         if(this.$默认构造器名 != null){
-            this.$构造器 = 空间构造局.查询(new ResourceLocation(this.$默认构造器名));
+            final ArrayList<映射器> $映射表 = new ArrayList<>(空间构造局.需要(new ResourceLocation(this.$默认构造器名)).获取映射表());
+            if(this.$默认映射器名集合 != null) this.$默认映射器名集合.stream()
+                    .map(ResourceLocation::new)
+                    .map(映射局::需要)
+                    .forEach($映射表::add);
+            this.$构造器 = new 空间构造器();
+            $映射表.forEach(this.$构造器::添加映射);
         }else if(this.$默认映射器名集合 != null){
             this.$构造器 = new 空间构造器();
-            this.$默认映射器名集合.stream().map(映射局::需要).forEach(this.$构造器::添加映射);
+            this.$默认映射器名集合.stream()
+                    .map(ResourceLocation::new)
+                    .map(映射局::需要)
+                    .forEach(this.$构造器::添加映射);
         }
     }
 
@@ -208,7 +218,7 @@ public final class 词块网格 {
 
     @Nullable
     public Set<String> 获取默认映射器名称集合(){
-        return this.$默认构造器名 != null?null:this.$默认映射器名集合;
+        return this.$默认映射器名集合;
     }
 
     public int 获取参数(final @Nonnull 网格参数 $参数){
