@@ -27,6 +27,9 @@
 
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
+import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
+import moe.qingu.nickel.command.suggestor.Suggestor;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.NumberInvalidException;
@@ -34,25 +37,17 @@ import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
-import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QiguaiAAAA
  */
-public class DimensionNode extends SmartParameterNode<World> {
+public class DimensionNode extends TokenizeParameterNode.Single<World> {
     public static final DefaultParser<World> DEFAULT_PARSER = (node, context) -> context.getWorld();
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR =
-            (args,context) -> Arrays.stream(DimensionManager.getWorlds()).map(world -> String.valueOf(world.provider.getDimension())).collect(Collectors.toList());
+    public static final Suggestor<World> DEFAULT_SUGGESTOR = SerialiseSuggestor.of(DimensionManager.getWorlds());
 
     public DimensionNode(@Nonnull final String name) {
         super(name);
@@ -61,20 +56,17 @@ public class DimensionNode extends SmartParameterNode<World> {
     }
 
     @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
-    @Nonnull
-    @Override
-    public Class<World> getType() {
-        return World.class;
+    public World parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        final int dimension = CommandBase.parseInt(token);
+        final World world = DimensionManager.getWorld(dimension);
+        if(world == null) return context.panic(translation("nickel.command.parameter.dimension.not_found").arg(dimension));
+        return world;
     }
 
     @Nonnull
     @Override
     public Class<World> getTypeClass() {
-        return getType();
+        return World.class;
     }
 
     @Nonnull
@@ -84,17 +76,13 @@ public class DimensionNode extends SmartParameterNode<World> {
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> World parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        final int dimension = CommandBase.parseInt(args.get(0));
-        final World world = DimensionManager.getWorld(dimension);
-        if(world == null) throw new CommandException("nickel.command.parameter.dimension.not_found",dimension);
-        return world;
+    public String serialise(@Nonnull final World world) {
+        return String.valueOf(world.provider.getDimension());
     }
 
     @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
-        CommandBase.parseInt(args.get(0));
+    public boolean checkValid(@Nonnull final String arg, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
+        CommandBase.parseInt(arg);
         return true;
     }
 }

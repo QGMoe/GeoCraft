@@ -27,7 +27,6 @@
 
 package moe.qingu.nickel.command.builder.parameter;
 
-import moe.qingu.nickel.command.node.ISmartNode;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 
 import javax.annotation.Nonnull;
@@ -44,16 +43,5 @@ public final class FastParameterNodeBuilder<P, T extends ParameterNode<P>> exten
 
     public FastParameterNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName,@Nonnull final Function<String, T> builder){
         super(parentName,childName,builder);
-    }
-
-    public final static class FastSmart<P, T extends ParameterNode<P> & ISmartNode> extends FunctionalSmart<P,T, FastSmart<P,T>> {
-
-        public FastSmart(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
-            super(name, builder);
-        }
-
-        public FastSmart(@Nonnull final String parentName,@Nonnull final String childName,@Nonnull final Function<String, T> builder){
-            super(parentName, childName, builder);
-        }
     }
 }

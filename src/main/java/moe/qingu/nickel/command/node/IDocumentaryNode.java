@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.node;
 
-import net.minecraft.util.text.ITextComponent;
+import moe.qingu.nickel.text.TextBuilder;
 
 import javax.annotation.Nonnull;
 
@@ -43,8 +43,9 @@ public interface IDocumentaryNode extends ICommandNode{
     String REQUIRED_FORMAT = "<%s>";
     String REQUIRED_FORMAT_BEGIN = "<";
     String REQUIRED_FORMAT_END = ">";
+
     @Nonnull
-    ITextComponent getDocument();
+    TextBuilder<?,?> getDocument();
 
     @Nonnull
     static String getFormatBegin(final boolean optional){

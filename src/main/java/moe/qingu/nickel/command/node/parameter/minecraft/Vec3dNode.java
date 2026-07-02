@@ -28,23 +28,21 @@
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
 import com.google.common.collect.Lists;
+import moe.qingu.nickel.command.suggestor.TokenizeSuggestor;
+import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.suggestor.Suggestor;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.utils.Matchers;
-import moe.qingu.nickel.command.utils.ValidChecker;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -54,52 +52,52 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
     /**
      *  若第一个参数为数字，则说明为坐标。不会检查参数长度是否满足条件，因为若检查则会导致歧义。
      */
-    public static final BiPredicate<List<String>,CommandContext> DEFAULT_MATCHER = Matchers.matchOnlyFirstArg((arg, context)->{
+    public static final Matcher DEFAULT_MATCHER = Matchers.matchOnlyFirstToken(arg->{
         try {
             CommandBase.parseDouble(0d,arg,false);
-        }catch (NumberInvalidException e) {
+        }catch (final NumberInvalidException e) {
             return false;
         }
         return true;
     });
 
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> {
-        if(args.size()>3) return null;
-        final List<String> suggests = Lists.newArrayList("~");
-        if(context.getTargetPos() == null){
-            final Vec3d pos = context.getSender().getPositionVector();
-            switch (args.size()){
-                case 0:
-                case 1:
-                    suggests.add(String.valueOf(pos.x));
-                    break;
-                case 2:
-                    suggests.add(String.valueOf(pos.y));
-                    break;
-                case 3:
-                    suggests.add(String.valueOf(pos.z));
-                    break;
-                default:return null;
-            }
-        }else {
-            final Vec3i pos = context.getTargetPos();
-            switch (args.size()){
-                case 0:
-                case 1:
-                    suggests.add(String.valueOf(pos.getX()));
-                    break;
-                case 2:
-                    suggests.add(String.valueOf(pos.getY()));
-                    break;
-                case 3:
-                    suggests.add(String.valueOf(pos.getZ()));
-                    break;
-                default:return null;
-            }
-        }
-
-        return suggests;
-    });
+    public static final Suggestor<Vec3d> DEFAULT_SUGGESTOR = TokenizeSuggestor.of(3,
+            (args, context) -> {
+                final List<String> suggests = Lists.newArrayList("~");
+                final int cur = ArrayUtils.lastIndexOf(args,"")+1;
+                if(context.getTargetPos() == null){
+                    final Vec3d pos = context.getSender().getPositionVector();
+                    switch (cur){
+                        case 1:
+                            suggests.add(String.valueOf(pos.x));
+                            break;
+                        case 2:
+                            suggests.add(String.valueOf(pos.y));
+                            break;
+                        case 3:
+                        case 0:
+                            suggests.add(String.valueOf(pos.z));
+                            break;
+                        default:return Stream.empty();
+                    }
+                }else {
+                    final Vec3i pos = context.getTargetPos();
+                    switch (cur){
+                        case 1:
+                            suggests.add(String.valueOf(pos.getX()));
+                            break;
+                        case 2:
+                            suggests.add(String.valueOf(pos.getY()));
+                            break;
+                        case 3:
+                        case 0:
+                            suggests.add(String.valueOf(pos.getZ()));
+                            break;
+                        default:return Stream.empty();
+                    }
+                }
+                return suggests.stream();
+            });
 
     public Vec3dNode(@Nonnull String name) {
         super(name);
@@ -109,20 +107,14 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
     }
 
     @Override
-    public int getParametersLength() {
+    public int getTokenCount() {
         return 3;
     }
 
     @Nonnull
     @Override
-    public Class<Vec3d> getType() {
-        return Vec3d.class;
-    }
-
-    @Nonnull
-    @Override
     public Class<Vec3d> getTypeClass() {
-        return getType();
+        return Vec3d.class;
     }
 
     @Nonnull
@@ -132,19 +124,8 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> Vec3d parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return parseVec3d(args,context);
-    }
-
-    @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        if(!ValidChecker.MATCH_THREE_PARAMETER.check(this,args,context)) return false;
-        parseVec3d(args,context);
-        return true;
-    }
-
     @Nonnull
-    public Vec3d parseVec3d(@Nonnull List<String> args,@Nonnull CommandContext context) throws NumberInvalidException{
+    public Vec3d parse(@Nonnull final String[] args, @Nonnull final CommandContext context) throws CommandException {
         final Vec3d pos = context.getSender().getPositionVector();
         final CommandBase.CoordinateArg[] coors = new CommandBase.CoordinateArg[3];
         for (int i=0;i<3;i++){
@@ -159,7 +140,7 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
                 default:
                     base = pos.z;
             }
-            coors[i] = CommandBase.parseCoordinate(base,args.get(i),doCenterBlock);
+            coors[i] = CommandBase.parseCoordinate(base,args[i],doCenterBlock);
         }
         return new Vec3d(coors[0].getResult(),coors[1].getResult(),coors[2].getResult());
     }

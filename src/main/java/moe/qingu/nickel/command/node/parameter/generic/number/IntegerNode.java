@@ -47,14 +47,8 @@ public class IntegerNode extends NumberNode<Integer> {
 
     @Nonnull
     @Override
-    public Class<Integer> getType() {
-        return Integer.class;
-    }
-
-    @Nonnull
-    @Override
     public Class<Integer> getTypeClass() {
-        return getType();
+        return Integer.class;
     }
 
     @Nonnull
@@ -64,7 +58,7 @@ public class IntegerNode extends NumberNode<Integer> {
     }
 
     @Override
-    protected Integer parseNumber(@Nonnull String arg) throws NumberInvalidException {
+    protected Integer parse(@Nonnull String arg) throws NumberInvalidException {
         return CommandBase.parseInt(arg,minValue,maxValue);
     }
 }

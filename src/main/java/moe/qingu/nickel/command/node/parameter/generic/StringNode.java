@@ -27,57 +27,53 @@
 
 package moe.qingu.nickel.command.node.parameter.generic;
 
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
-import net.minecraft.util.text.TextComponentTranslation;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.node.parameter.ParameterNode;
+import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.exception.NickelSyntaxException;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
 import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QiguaiAAAA
  */
-public class StringNode extends SmartParameterNode<String> {
-    public static final ValidChecker CHECK_WHITELIST = (self, args, context) -> {
+public class StringNode extends ParameterNode<String> {
+    public static final ValidChecker CHECK_WHITELIST = (self, input) -> {
         final StringNode node = (StringNode) self;
-        if(node.whitelist !=null && !node.whitelist.isEmpty()){
-            if(node.whitelist.contains(args.get(0))) return true;
-            throw new NickelSyntaxException(node.currentBranch, node,
-                    new TextComponentTranslation("nickel.command.parameter.string.invalid.white",args.get(0),String.join(" ", node.whitelist)));
-        }
-        return true;
+        final String str = input.readString();
+        if(node.whitelist !=null)
+            if(node.whitelist.contains(str)) return true;
+            else return input.getContext().panic(translation("nickel.command.parameter.string.invalid.white").arg(str,String.join(" ", node.whitelist)));
+        else return true;
     };
-    public static final ValidChecker CHECK_BLACKLIST = (self, args, context) -> {
+    public static final ValidChecker CHECK_BLACKLIST = (self, input) -> {
         final StringNode node = (StringNode) self;
-        if(node.blacklist != null && !node.blacklist.isEmpty() && node.blacklist.contains(args.get(0))){
-            throw new NickelSyntaxException(node.currentBranch, node,
-                    new TextComponentTranslation("nickel.command.parameter.string.invalid.black",args.get(0),String.join(" ",node.blacklist)));
-        }
-        return true;
+        final String str = input.readString();
+        if(node.blacklist != null && node.blacklist.contains(str))
+            return input.getContext().panic(translation("nickel.command.parameter.string.invalid.black").arg(str,String.join(" ",node.blacklist)));
+        else return true;
     };
-    public static final ValidChecker CHECK_PATTERN = (self, args, context) -> {
+    public static final ValidChecker CHECK_PATTERN = (self, input) -> {
         final StringNode node = (StringNode) self;
-        if(node.pattern != null && !node.pattern.matcher(args.get(0)).matches()) {
-            throw new NickelSyntaxException(node.currentBranch, node,
-                    new TextComponentTranslation("nickel.command.parameter.string.nonMatch", args.get(0), node.pattern.toString()));
-        }
-        return true;
+        final String str = input.readString();
+        if(node.pattern != null && !node.pattern.matcher(str).matches())
+            return input.getContext().panic(translation("nickel.command.parameter.string.nonMatch").arg(str,node.pattern.toString()));
+        else return true;
     };
+
     protected Set<String> whitelist = null;
     protected Set<String> blacklist = null;
     protected Pattern pattern = null;
-    protected ValidChecker checker = ValidChecker.MATCH_ONE_PARAMETER;
-    public StringNode(@Nonnull String name) {
+    protected ValidChecker checker = ValidChecker.REQUIRE_ONE_TOKEN;
+
+    public StringNode(@Nonnull final String name) {
         super(name);
     }
 
@@ -97,28 +93,17 @@ public class StringNode extends SmartParameterNode<String> {
 
     @Nonnull
     public StringNode refresh(){
-        checker = ValidChecker.MATCH_ONE_PARAMETER;
+        checker = ValidChecker.REQUIRE_ONE_TOKEN;
         if(whitelist != null && !whitelist.isEmpty()) checker = checker.and(CHECK_WHITELIST);
         if(blacklist != null && !blacklist.isEmpty()) checker = checker.and(CHECK_BLACKLIST);
         if(pattern != null) checker = checker.and(CHECK_PATTERN);
         return this;
     }
 
-    @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
-    @Nonnull
-    @Override
-    public Class<String> getType() {
-        return String.class;
-    }
-
     @Nonnull
     @Override
     public Class<String> getTypeClass() {
-        return getType();
+        return String.class;
     }
 
     @Nonnull
@@ -128,12 +113,12 @@ public class StringNode extends SmartParameterNode<String> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        return checker.check(this,args,context);
+    public boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+        return checker.check(this,input);
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> String parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) {
-        return args.getFirst();
+    public String parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) {
+        return input.readString();
     }
 }

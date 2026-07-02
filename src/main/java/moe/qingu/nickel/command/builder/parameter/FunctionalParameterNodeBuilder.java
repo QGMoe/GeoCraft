@@ -27,7 +27,6 @@
 
 package moe.qingu.nickel.command.builder.parameter;
 
-import moe.qingu.nickel.command.node.ISmartNode;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 
 import javax.annotation.Nonnull;
@@ -54,30 +53,5 @@ public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>, S ext
     @Override
     protected T buildInstance() {
         return builder.apply(name);
-    }
-
-    /**
-     * @author QiguaiAAAA
-     */
-    public static class FunctionalSmart<P, T extends ParameterNode<P> & ISmartNode,SELF extends FunctionalSmart<P,T,SELF>>
-            extends SmartParameterNodeBuilder<P, T,SELF> {
-
-        protected final Function<String, T> builder;
-
-        public FunctionalSmart(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
-            super(name);
-            this.builder = builder;
-        }
-
-        public FunctionalSmart(@Nonnull final String parentName,@Nonnull final String childName, @Nonnull final Function<String, T> builder) {
-            super(parentName,childName);
-            this.builder = builder;
-        }
-
-        @Nonnull
-        @Override
-        protected T buildInstance() {
-            return builder.apply(name);
-        }
     }
 }

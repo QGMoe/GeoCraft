@@ -27,51 +27,41 @@
 
 package moe.qingu.nickel.command.node.parameter.forge;
 
-import com.google.common.collect.Lists;
+import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
+import moe.qingu.nickel.command.suggestor.Suggestor;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
-import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
-import java.util.function.BiFunction;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QiguaiAAAA
  */
-public class FluidSelectorNode extends SmartParameterNode<Fluid> {
+public class FluidSelectorNode extends TokenizeParameterNode.Single<Fluid> {
 
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR =
-            ((args, context) -> Lists.newArrayList(FluidRegistry.getRegisteredFluids().keySet()));
+    public static final Suggestor<Fluid> DEFAULT_SUGGESTOR = DirectSuggestor.of(FluidRegistry.getRegisteredFluids().keySet());
 
-    public FluidSelectorNode(@Nonnull String name) {
+    public FluidSelectorNode(@Nonnull final String name) {
         super(name);
         setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
-    @Nonnull
-    @Override
-    public Class<Fluid> getType() {
-        return Fluid.class;
+    public Fluid parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        final Fluid fluid = FluidRegistry.getFluid(token);
+        if(fluid == null) return context.panic(translation("nickel.command.parameter.fluid.invalid").arg(token));
+        return fluid;
     }
 
     @Nonnull
     @Override
     public Class<Fluid> getTypeClass() {
-        return getType();
+        return Fluid.class;
     }
 
     @Nonnull
@@ -81,14 +71,7 @@ public class FluidSelectorNode extends SmartParameterNode<Fluid> {
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> Fluid parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        final Fluid fluid = FluidRegistry.getFluid(args.getFirst());
-        if(fluid == null) throw new CommandException("nickel.command.parameter.fluid.invalid",args.getFirst());
-        return fluid;
-    }
-
-    @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        return ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context);
+    public String serialise(@Nonnull final Fluid fluid) {
+        return fluid.getName();
     }
 }

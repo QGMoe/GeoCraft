@@ -27,6 +27,8 @@
 
 package moe.qingu.nickel.command.context;
 
+import moe.qingu.nickel.command.node.ICommandNode;
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -34,8 +36,7 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -44,36 +45,30 @@ public final class SuggestContext extends CommandContext{
     @Nullable
     private BlockPos targetPos;
 
-    private final Map<String,Object> contexts = new HashMap<>();
-
-    public SuggestContext(@Nonnull ICommand command, @Nonnull MinecraftServer server, @Nonnull ICommandSender sender) {
-        super(command, server, sender);
+    public SuggestContext(@Nonnull final InputReader context,
+                          @Nonnull final ICommand command,
+                          @Nonnull final MinecraftServer server,
+                          @Nonnull final ICommandSender sender) {
+        super(context,command, server, sender);
     }
 
-    public void setTargetPos(@Nullable BlockPos targetPos) {
+    public void setTargetPos(@Nullable final BlockPos targetPos) {
         this.targetPos = targetPos;
     }
 
-    public void put(@Nonnull final String key,@Nonnull final Object object){
-        this.contexts.put(key,object);
-    }
-
-    public void remove(@Nonnull final String key){
-        contexts.remove(key);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T get(@Nonnull final String key){
-        return (T) this.contexts.get(key);
+    @Nullable
+    public Stream<String> enter(final @Nonnull ICommandNode node) {
+        this.nodeContext.context.push(node);
+        try(@Nonnull final ContextStack<?> ignored = this.nodeContext){
+            final int begin = input.getCursor();
+            final @Nullable Stream<String> res = node.suggest(input,this);
+            input.setCursor(begin);
+            return res;
+        }
     }
 
     @Nullable
     public BlockPos getTargetPos() {
         return targetPos;
-    }
-
-    @Nonnull
-    public Map<String, Object> getContexts() {
-        return contexts;
     }
 }

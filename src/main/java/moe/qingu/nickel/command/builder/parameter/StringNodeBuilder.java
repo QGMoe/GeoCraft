@@ -33,17 +33,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
  */
-public class StringNodeBuilder extends SmartParameterNodeBuilder<String, StringNode,StringNodeBuilder> {
+public class StringNodeBuilder extends ParameterNodeBuilder<String, StringNode,StringNodeBuilder> {
     protected Pattern pattern;
     protected Set<String> whitelist;
     protected Set<String> blacklist;
@@ -122,8 +120,8 @@ public class StringNodeBuilder extends SmartParameterNodeBuilder<String, StringN
             Stream<String> stream = whitelist.stream();
             if(blacklist != null) stream = stream.filter(v -> !blacklist.contains(v));
             if(pattern != null) stream = stream.filter(v -> pattern.matcher(v).matches());
-            final List<String> allowedValues = stream.sorted().collect(Collectors.toList());
-            suggest((args,context)-> allowedValues);
+            final Stream<String> allowedValues = stream.sorted();
+            suggestRaw(allowedValues);
         }
         return node.refresh();
     }

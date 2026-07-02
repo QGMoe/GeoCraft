@@ -25,22 +25,56 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.node.parameter.minecraft;
+package moe.qingu.nickel.command.utils;
 
-import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import moe.qingu.nickel.command.reader.InputReader;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public abstract class MinecraftVec3Node<T> extends TokenizeParameterNode.Multi<T> {
-    protected boolean doCenterBlock = false;
-    public MinecraftVec3Node(@Nonnull final String name) {
-        super(name);
+@FunctionalInterface
+public interface Matcher extends Predicate<InputReader> {
+    @Override
+    default boolean test(@Nonnull final InputReader inputReader){
+        final int cur = inputReader.getCursor();
+        try {
+            return match(inputReader);
+        }finally {
+            inputReader.setCursor(cur);
+        }
     }
 
-    public void setDoCenterBlock(final boolean doCenterBlock) {
-        this.doCenterBlock = doCenterBlock;
+    default @Nonnull Matcher and(final @Nonnull Matcher other) {
+        Objects.requireNonNull(other);
+        return input -> test(input) && other.test(input);
     }
+
+    default @Nonnull Matcher or(final @Nonnull Matcher other) {
+        Objects.requireNonNull(other);
+        return input -> test(input) || other.test(input);
+    }
+
+    @Nonnull
+    @Override
+    default Matcher and(final @Nonnull Predicate<? super InputReader> other) {
+        return and(other::test);
+    }
+
+    @Nonnull
+    @Override
+    default Matcher negate() {
+        return t -> !this.test(t);
+    }
+
+    @Nonnull
+    @Override
+    default Predicate<InputReader> or(final @Nonnull Predicate<? super InputReader> other) {
+        return or(other::test);
+    }
+
+    boolean match(@Nonnull final InputReader input);
 }

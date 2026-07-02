@@ -29,34 +29,33 @@ package moe.qingu.nickel.command.utils;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.NumberInvalidException;
-import moe.qingu.nickel.command.context.CommandContext;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 /**
  * @author QiguaiAAAA
  */
 public final class Matchers {
-    public static final BiPredicate<List<String>, CommandContext> ANY = (args,context)-> !args.isEmpty();
-    public static final BiPredicate<List<String>, CommandContext> INTEGER = matchInteger(Integer.MIN_VALUE,Integer.MAX_VALUE);
-    public static final BiPredicate<List<String>, CommandContext> LONG = matchLong(Long.MIN_VALUE,Long.MAX_VALUE);
-    public static final BiPredicate<List<String>, CommandContext> DOUBLE = matchDouble(Double.MIN_VALUE,Double.MAX_VALUE);
-    public static final BiPredicate<List<String>, CommandContext> RESOURCE_LOCATION = matchOnlyFirstArg(Matchers::isResourceLocation);
+    public static final Matcher ANY = input-> !input.isRemainingEmpty();
+    public static final Matcher INTEGER = matchInteger(Integer.MIN_VALUE,Integer.MAX_VALUE);
+    public static final Matcher LONG = matchLong(Long.MIN_VALUE,Long.MAX_VALUE);
+    public static final Matcher DOUBLE = matchDouble(Double.MIN_VALUE,Double.MAX_VALUE);
+    public static final Matcher RESOURCE_LOCATION = matchOnlyFirstToken(Matchers::isResourceLocation);
+
+    private Matchers(){}
 
     @Nonnull
-    public static BiPredicate<List<String>,CommandContext> matchOnlyFirstArg(@Nonnull final BiPredicate<String,CommandContext> simpleMatcher){
-        return ANY.and((args,context)-> simpleMatcher.test(args.get(0),context));
+    public static Matcher matchOnlyFirstToken(@Nonnull final Predicate<String> simpleMatcher){
+        return ANY.and(input-> simpleMatcher.test(input.readToken()));
     }
 
     @Nonnull
-    public static BiPredicate<List<String>,CommandContext> matchInteger(final int min,final int max){
-        return matchOnlyFirstArg((arg,context)->{
+    public static Matcher matchInteger(final int min,final int max){
+        return matchOnlyFirstToken(arg->{
             try {
                 CommandBase.parseInt(arg,min,max);
-            } catch (NumberInvalidException e) {
+            } catch (final @Nonnull NumberInvalidException e) {
                 return false;
             }
             return true;
@@ -64,8 +63,8 @@ public final class Matchers {
     }
 
     @Nonnull
-    public static BiPredicate<List<String>,CommandContext> matchLong(final long min,final long max){
-        return matchOnlyFirstArg((arg,context)->{
+    public static Matcher matchLong(final long min,final long max){
+        return matchOnlyFirstToken(arg->{
             try {
                 CommandBase.parseLong(arg,min,max);
             } catch (NumberInvalidException e) {
@@ -76,8 +75,8 @@ public final class Matchers {
     }
 
     @Nonnull
-    public static BiPredicate<List<String>,CommandContext> matchDouble(final double min, final double max){
-        return matchOnlyFirstArg((arg,context)->{
+    public static Matcher matchDouble(final double min, final double max){
+        return matchOnlyFirstToken(arg->{
             try {
                 CommandBase.parseDouble(arg,min,max);
             } catch (NumberInvalidException e) {
@@ -87,11 +86,8 @@ public final class Matchers {
         });
     }
 
-    public static boolean isResourceLocation(@Nonnull final String arg, @Nullable final CommandContext context){
+    public static boolean isResourceLocation(@Nonnull final String arg){
         final String[] split = arg.split(":");
         return split.length==1 || split.length==2 && !split[0].contains("/");
     }
-
-
-    private Matchers(){}
 }

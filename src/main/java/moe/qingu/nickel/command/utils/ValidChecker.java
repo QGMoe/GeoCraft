@@ -27,60 +27,77 @@
 
 package moe.qingu.nickel.command.utils;
 
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
-import net.minecraft.util.text.TextComponentTranslation;
 import moe.qingu.nickel.command.context.CommandContext;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.exception.NickelCommandException;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
+import moe.qingu.nickel.command.node.parameter.ParameterNode;
+import net.minecraft.command.CommandException;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QiguaiAAAA
  */
 @FunctionalInterface
 public interface ValidChecker {
-    ValidChecker MATCH_ONE_PARAMETER = (self, args, context) -> {
-        if(args.size()>=1 && !args.get(0).isEmpty()) return true;
+    ValidChecker REQUIRE_ONE_TOKEN = (self, input) -> {
+        if(!input.isRemainingEmpty()) return true;
         else if(self.isOptional()) return false;
-        else throw new NickelSyntaxException(self.getCurrentBranch(), self, new TextComponentTranslation("nickel.command.parameter.smart.checker1"));
+        else return input.getContext().panic(translation("nickel.command.parameter.smart.checker1"));
     };
-    ValidChecker MATCH_TWO_PARAMETER = matchMultiParas(2);
-    ValidChecker MATCH_THREE_PARAMETER = matchMultiParas(3);
-    ValidChecker MATCH_FOUR_PARAMETER = matchMultiParas(4);
-    ValidChecker MATCH_RESOURCE_LOCATION = MATCH_ONE_PARAMETER.and((self, args, context) -> {
-        final String[] split = args.get(0).split(":");
-        if(split.length>2) throw new NickelSyntaxException(self.getCurrentBranch(),self,
-                new TextComponentTranslation("nickel.command.parameter.checker.resource_location.invalid.repeat"));
-        else if(split.length==2&&split[0].contains("/"))
-            throw new NickelSyntaxException(self.getCurrentBranch(),self,
-                    new TextComponentTranslation("nickel.command.parameter.checker.resource_location.invalid.slash"));
-        return true;
-    });
+    ValidChecker MATCH_TWO_PARAMETER = matchMultiTokens(2);
+    ValidChecker MATCH_THREE_PARAMETER = matchMultiTokens(3);
+    ValidChecker MATCH_FOUR_PARAMETER = matchMultiTokens(4);
+    ValidChecker MATCH_RESOURCE_LOCATION = REQUIRE_ONE_TOKEN.and((self, input) ->
+            matchResourceLocation(input.readToken(),input.getContext()));
 
-    boolean check(@Nonnull SmartParameterNode<?> self, @Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException;
+    default boolean check(@Nonnull final ParameterNode<?> self, @Nonnull final InputReader input) throws CommandException{
+        final int cur = input.getCursor();
+        try{
+            return run(self,input);
+        }finally {
+            input.setCursor(cur);
+        }
+    }
+
+    boolean run(@Nonnull final ParameterNode<?> self, @Nonnull final InputReader input) throws CommandException;
 
     @Nonnull
     default ValidChecker and(@Nonnull final ValidChecker after) {
-        return (self, args, context) -> this.check(self, args, context) && after.check(self, args, context);
+        return (self, input) -> this.check(self, input) && after.check(self, input);
     }
 
     @Nonnull
     default ValidChecker or(@Nonnull final ValidChecker condition) {
-        return (self, args, context) -> this.check(self, args, context) || condition.check(self, args, context);
+        return (self, input) -> this.check(self, input) || condition.check(self, input);
     }
 
     @Nonnull
-    static ValidChecker matchMultiParas(final int paraNum) {
+    static ValidChecker matchMultiTokens(final int paraNum) {
         if (paraNum < 2) throw new IllegalArgumentException();
-        return ((self, args, context) -> {
-            if (args.size() >= paraNum && !args.get(paraNum - 1).isEmpty()) return true;
-            else if (args.size() >= 1 && !args.get(0).isEmpty()) //只有一到三个参数，填了一半，不能用默认值
-                throw new NickelSyntaxException(self.getCurrentBranch(),self,new TextComponentTranslation("nickel.command.parameter.smart.checkers",paraNum));
-            else if (self.isOptional()) return false; //可以用默认值
-            else throw new NickelSyntaxException(self.getCurrentBranch(),self,new TextComponentTranslation("nickel.command.parameter.smart.checkers",paraNum));
-        });
+        return (self, input) -> matchMultiTokens(self,input,paraNum);
+    }
+
+    static boolean matchMultiTokens(final @Nonnull ParameterNode<?> self, final @Nonnull InputReader input, final int paraNum) throws NickelCommandException, NickelSyntaxException, NickelRuntimeException {
+        int num = paraNum;
+        check:{
+            while (num-->0) if(input.readToken().isEmpty()) break check;
+            return true;
+        }
+        if(num < paraNum-1) return input.getContext().panic(translation("nickel.command.parameter.smart.checkers").arg(paraNum));
+        else if (self.isOptional()) return false; //可以用默认值
+        else return input.getContext().panic(translation("nickel.command.parameter.smart.checkers").arg(paraNum));
+    }
+
+    static boolean matchResourceLocation(final @Nonnull String token, final @Nonnull CommandContext context) throws NickelCommandException, NickelSyntaxException, NickelRuntimeException {
+        final String[] split = token.split(":");
+        if(split.length>2) return context.panic(translation("nickel.command.parameter.checker.resource_location.invalid.repeat"));
+        else if(split.length==2&&split[0].contains("/"))
+            return context.panic(translation("nickel.command.parameter.checker.resource_location.invalid.slash"));
+        return true;
     }
 }

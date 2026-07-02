@@ -27,7 +27,11 @@
 
 package moe.qingu.nickel.command.node;
 
+import moe.qingu.nickel.command.context.CommandContext;
+import moe.qingu.nickel.command.exception.NickelCommandException;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.command.exception.NickelSyntaxException;
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -36,18 +40,15 @@ import net.minecraft.util.math.BlockPos;
 import moe.qingu.nickel.command.builder.CommandBuilder;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
-import moe.qingu.nickel.command.exception.NickelCommandException;
-import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -110,13 +111,17 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
 
     @Nonnull
     @Override
-    public List<String> getTabCompletions(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args, @Nullable BlockPos targetPos) {
+    public List<String> getTabCompletions(@Nonnull final MinecraftServer server,
+                                          @Nonnull final ICommandSender sender,
+                                          @Nonnull final String[] args,
+                                          @Nullable final BlockPos targetPos) {
         if(childNode == null) return Collections.emptyList();
-        final SuggestContext context = new SuggestContext(this,server,sender);
+        final InputReader input = new InputReader(String.join(" ",args));
+        final SuggestContext context = new SuggestContext(input,this,server,sender);
         context.setTargetPos(targetPos);
-        final List<String> suggests = childNode.suggest(new LinkedList<>(Arrays.asList(args)),context);
+        final Stream<String> suggests = context.enter(childNode);
         if(suggests == null) return Collections.emptyList();
-        return suggests;
+        return suggests.collect(Collectors.toList());
     }
 
     @Override
@@ -127,8 +132,10 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
     @Override
     public void execute(@Nonnull final MinecraftServer server, @Nonnull final ICommandSender sender, @Nonnull final String[] args) throws CommandException {
         if(childNode == null) return;
-        try {
-            childNode.execute(new LinkedList<>(Arrays.asList(args)),new ExecuteContext(this,server,sender));
+        final InputReader input = new InputReader(String.join(" ",args));
+        final ExecuteContext context = new ExecuteContext(input,this,server,sender);
+        try (@Nonnull final CommandContext.ContextStack<?> ignored = context.enter(this.branch)){
+            context.enter(this.childNode);
         }catch (final @Nonnull NickelSyntaxException | NickelCommandException | NickelRuntimeException e){
             e.feedbackTo(sender);
         }
@@ -144,14 +151,16 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
     // ----------
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
         if(childNode == null) return;
-        childNode.execute(args,context);
+        try (@Nonnull final CommandContext.ContextStack<?> ignored = context.enter(this.branch)){
+            context.enter(this.childNode);
+        }
     }
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
-        return childNode == null?null:childNode.suggest(args,context);
+    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+        return childNode == null?null:context.enter(childNode);
     }
 }

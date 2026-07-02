@@ -27,10 +27,11 @@
 
 package moe.qingu.nickel.command.node.functional;
 
+import moe.qingu.nickel.command.context.CommandContext;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
@@ -38,31 +39,29 @@ import moe.qingu.nickel.command.node.ICommandNode;
 import moe.qingu.nickel.command.node.IDocumentaryNode;
 import moe.qingu.nickel.command.node.ISmartNode;
 import moe.qingu.nickel.command.node.NoSplitNode;
-import moe.qingu.nickel.command.node.execute.ExecuteNode;
 import moe.qingu.nickel.command.utils.CommandBranch;
 import moe.qingu.nickel.command.utils.SplitCommandBranch;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static moe.qingu.nickel.text.Texts.plain;
+import static moe.qingu.nickel.text.Texts.wrap;
+
 /**
- * 智能分支节点，可以根据{@link ISmartNode#match(List, CommandContext)}自动推断出下一个节点。
+ * 智能分支节点，可以根据{@link ISmartNode#match(InputReader)}自动推断出下一个节点。
  * @see ISmartNode
  * @author QiguaiAAAA
  */
 public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
     protected final List<ISmartNode> nodeList = new ArrayList<>();
+    protected final Map<ICommandNode,CommandBranch> branchMap = new HashMap<>();
     protected SplitCommandBranch curBranch;
-    protected ITextComponent document;
+    protected TextBuilder<?,?> document;
 
     /**
      * 添加下一个智能节点
@@ -74,84 +73,88 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
     }
 
     @Nullable
-    protected ICommandNode findNextNode(@Nonnull final List<String> args, @Nonnull final CommandContext context){
+    protected ICommandNode findNextNode(@Nonnull final InputReader input){
         for(final @Nonnull ISmartNode node:nodeList){
-            if(node.match(args,context)){
-                return node;
+            final int cur = input.getCursor();
+            try {
+                if(node.match(input)){
+                    return node;
+                }
+            }finally {
+                input.setCursor(cur);
             }
         }
         return childNode;
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
-        final ICommandNode node = findNextNode(args, context);
-        if(node == null || isSyntaxError(args,node))
-            throw new NickelSyntaxException(curBranch,this);
-        node.execute(args,context);
+    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
+        final ICommandNode node = findNextNode(input);
+        if(node == null) throw new NickelSyntaxException(curBranch,this);
+        final CommandBranch branch = branchMap.get(node);
+        if(branch == null) context.enter(node);
+        else try (final @Nonnull CommandContext.ContextStack<?> ignored = context.enter(branch)){
+            context.enter(node);
+        }
     }
 
-    private boolean isSyntaxError(@Nonnull final List<String> args,@Nonnull final ICommandNode node){
-        if(node instanceof ExecuteNode){
-            if(!((ExecuteNode)node).keepArguments()){
-                return !args.isEmpty() && !args.get(0).trim().isEmpty();
-            }
-            return false;
-        }else return args.isEmpty() || args.get(0).trim().isEmpty();
-    }
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context) {
+    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         //GeoCraft.getLogger().info("[Smart] Provide Suggest For [len={}] : {}",args.size(),String.join(" ",args));
-        if(args.size()>1){ //Smart 的位置不需要建议
-            final ICommandNode node = findNextNode(args, context);
-            if (node != null) return node.suggest(args, context);
-            return Collections.emptyList();
+        if(!input.isRemainingEmpty()){ //Smart 的位置不需要建议
+            final ICommandNode node = findNextNode(input);
+            if (node == null) return null;
+            final CommandBranch branch = branchMap.get(node);
+            if(branch == null) return context.enter(node);
+            try (final @Nonnull CommandContext.ContextStack<?> ignored = context.enter(branch)){
+                return context.enter(node);
+            }
         }
 
         return (childNode==null?nodeList.stream():Stream.concat(nodeList.stream(),Stream.of(childNode)))
-                .map(node -> node.suggest(args,context))
+                .map(context::enter)
                 .filter(Objects::nonNull)
-                .flatMap(List::stream)
+                .flatMap(Function.identity())
                 .map(String::trim)
                 .distinct() //去重
-                .filter(s->s.startsWith(args.isEmpty()?"":args.getLast().trim()))
-                .sorted()
-                .collect(Collectors.toList());
+//                .filter(s->s.startsWith(args.isEmpty()?"":args.getLast().trim()))
+                .sorted();
     }
 
     @Nonnull
     @Override
     public CommandBranch branch() {
-        final Set<CommandBranch> branchSet = new HashSet<>();
         final List<ITextComponent> choices = new ArrayList<>();
         final CommandBranch defaultBranch = childNode == null?null:childNode.branch();
         final boolean optional = defaultBranch != null && defaultBranch.isEmpty();
         if(defaultBranch != null && !optional){
-            branchSet.add(defaultBranch);
+            branchMap.put(childNode,defaultBranch);
             choices.add(defaultBranch.getDocuments().get(0));
         }
-        branchSet.addAll(nodeList.stream()
-                .map(ICommandNode::branch)
-                .filter(branch -> !branch.isEmpty())
-                .peek(branch -> choices.add(branch.getDocuments().get(0)))
-                .collect(Collectors.toSet()));
+        nodeList.stream()
+                .map(node -> Pair.of(node,node.branch()))
+                .filter(pair -> !pair.getValue().isEmpty())
+                .forEach(pair -> {
+                    choices.add(pair.getValue().getDocuments().get(0));
+                    branchMap.put(pair.getKey(),pair.getValue());
+                });
 
-        this.document = new TextComponentString(IDocumentaryNode.getFormatBegin(optional));
-        this.curBranch = new SplitCommandBranch(branchSet);
+        this.document = plain(IDocumentaryNode.getFormatBegin(optional));
+        this.curBranch = new SplitCommandBranch(branchMap.values());
         for(int i=0;i<choices.size();i++){
-            if(i>0) this.document.appendText(IDocumentaryNode.SPLIT_NODE_SPLIT);
-            this.document.appendSibling(choices.get(i).createCopy());
+            if(i>0) this.document.then(IDocumentaryNode.SPLIT_NODE_SPLIT);
+            this.document.then(wrap(choices.get(i).createCopy()));
         }
-        this.document.appendText(IDocumentaryNode.getFormatEnd(optional));
-        curBranch.setEndDocument(this.document.createCopy());
+        this.document.then(IDocumentaryNode.getFormatEnd(optional));
+        curBranch.setEndDocument(this.document);
         return this.curBranch;
     }
 
     @Nonnull
     @Override
-    public ITextComponent getDocument() {
-        return document.createCopy();
+    public TextBuilder<?,?> getDocument() {
+        return document;
     }
 }

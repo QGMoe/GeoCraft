@@ -27,58 +27,36 @@
 
 package moe.qingu.nickel.command.node.parameter.generic.number;
 
+import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
-import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class NumberNode<T extends Number> extends SmartParameterNode<T> {
+public abstract class NumberNode<T extends Number> extends TokenizeParameterNode.Single<T> {
     protected T minValue;
     protected T maxValue;
 
-    public NumberNode(@Nonnull String name) {
+    public NumberNode(@Nonnull final String name) {
         super(name);
     }
 
-    public void setMinValue(@Nonnull T minValue) {
+    public void setMinValue(@Nonnull final T minValue) {
         this.minValue = minValue;
     }
 
-    public void setMaxValue(@Nonnull T maxValue) {
+    public void setMaxValue(@Nonnull final T maxValue) {
         this.maxValue = maxValue;
     }
 
-    @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
-    protected abstract T parseNumber(@Nonnull String arg) throws NumberInvalidException;
+    protected abstract T parse(@Nonnull final String arg) throws NumberInvalidException;
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)){ //前提条件：需要满足有一个参数，没有提供参数则返回 false 使用默认值，或抛出错误
-            return false;
-        }
-
-        final String arg = args.get(0);
-        parseNumber(arg); //如果失败这里会炸
-
-        return true;
-    }
-
-    @Override
-    public <T1 extends List<String> & Deque<String>> T parseParameter(@Nonnull T1 args, @Nonnull ExecuteContext context) throws CommandException {
-        return parseNumber(args.get(0));
+    public T parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        return parse(token);
     }
 }

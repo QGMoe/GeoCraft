@@ -27,17 +27,16 @@
 
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
+import moe.qingu.nickel.command.context.CommandContext;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
 import net.minecraft.command.*;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.parameter.forge.ForgeRegistryEntryNode;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
@@ -45,7 +44,7 @@ import java.util.function.BiFunction;
 public class ItemSelectorNode extends ForgeRegistryEntryNode<Item> {
 
     public static final DefaultParser<Item> DEFAULT_PARSER = (node, context) -> Items.AIR;
-    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(Item.REGISTRY);
+    public static final DirectSuggestor.Static<Item> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(Item.REGISTRY);
     public ItemSelectorNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
@@ -53,14 +52,20 @@ public class ItemSelectorNode extends ForgeRegistryEntryNode<Item> {
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> Item parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return CommandBase.getItemByText(context.getSender(),args.getFirst());
+    public Item parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        return CommandBase.getItemByText(context.getSender(),token);
     }
 
     @Nonnull
     @Override
-    public Class<Item> getType() {
+    public Class<Item> getTypeClass() {
         return Item.class;
+    }
+
+    @Nonnull
+    @Override
+    public IForgeRegistry<Item> getRegistry() {
+        return ForgeRegistries.ITEMS;
     }
 
     @Nonnull

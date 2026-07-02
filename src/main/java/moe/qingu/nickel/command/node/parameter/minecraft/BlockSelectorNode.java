@@ -27,24 +27,23 @@
 
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
+import moe.qingu.nickel.command.context.CommandContext;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
 import net.minecraft.block.Block;
 import net.minecraft.command.*;
 import net.minecraft.init.Blocks;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.parameter.forge.ForgeRegistryEntryNode;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
  */
 public class BlockSelectorNode extends ForgeRegistryEntryNode<Block> {
     public static final DefaultParser<Block> DEFAULT_PARSER = (node, context) -> Blocks.AIR;
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(Block.REGISTRY);
+    public static final DirectSuggestor.Static<Block> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(Block.REGISTRY);
 
     public BlockSelectorNode(@Nonnull String name) {
         super(name);
@@ -52,20 +51,26 @@ public class BlockSelectorNode extends ForgeRegistryEntryNode<Block> {
         setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
+    @Override
+    public Block parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        return CommandBase.getBlockByText(context.getSender(), token);
+    }
+
     @Nonnull
     @Override
-    public Class<Block> getType() {
+    public Class<Block> getTypeClass() {
         return Block.class;
+    }
+
+    @Nonnull
+    @Override
+    public IForgeRegistry<Block> getRegistry() {
+        return ForgeRegistries.BLOCKS;
     }
 
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
         return "nickel.command.parameter.minecraft.block";
-    }
-
-    @Override
-    public <T extends List<String> & Deque<String>> Block parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return CommandBase.getBlockByText(context.getSender(), args.getFirst());
     }
 }

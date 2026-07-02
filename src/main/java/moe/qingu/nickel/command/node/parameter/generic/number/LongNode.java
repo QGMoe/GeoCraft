@@ -46,14 +46,8 @@ public class LongNode extends NumberNode<Long> {
 
     @Nonnull
     @Override
-    public Class<Long> getType() {
-        return Long.class;
-    }
-
-    @Nonnull
-    @Override
     public Class<Long> getTypeClass() {
-        return getType();
+        return Long.class;
     }
 
     @Nonnull
@@ -63,7 +57,7 @@ public class LongNode extends NumberNode<Long> {
     }
 
     @Override
-    protected Long parseNumber(@Nonnull String arg) throws NumberInvalidException {
+    protected Long parse(@Nonnull String arg) throws NumberInvalidException {
         return CommandBase.parseLong(arg,minValue,maxValue);
     }
 }

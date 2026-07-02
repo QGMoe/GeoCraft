@@ -27,7 +27,8 @@
 
 package moe.qingu.nickel.command.builder.functional;
 
-import moe.qingu.nickel.command.builder.execute.SimpleCommandExecutor;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.utils.Matcher;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
@@ -46,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -55,8 +55,8 @@ import java.util.function.Predicate;
  */
 public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> {
 
-    public static final CommandExecutor DEFAULT_EXECUTE_FUNC_CHECKER = (args, context) -> {
-        if(!args.isEmpty()) throw new SyntaxErrorException();
+    public static final CommandExecutor DEFAULT_EXECUTE_FUNC_CHECKER = ctx -> {
+        if(!ctx.getInput().isRemainingEmpty()) throw new SyntaxErrorException();
     };
 
     protected List<SmartNodeInnerBuilder<?>> smarts = new ArrayList<>();
@@ -118,11 +118,6 @@ public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> 
         return (S) this;
     }
 
-    @Nonnull
-    public S execute(@Nonnull final SimpleCommandExecutor func){
-        return execute((CommandExecutor) func);
-    }
-
     /**
      * 定义当{@link SmartSplitNode} 的所有智能节点匹配失败时，默认的子节点，可以是任意 {@link ICommandNode}。
      * 该方法会覆盖 {@link #defaultAs(INodeBuilder)} 和 {@link #execute(CommandExecutor)}
@@ -162,7 +157,7 @@ public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> 
         final INodeBuilder<? extends T> child;
         final T bakedChild;
 
-        BiPredicate<List<String>, CommandContext> checker;
+        Matcher checker;
 
         SmartNodeInnerBuilder(@Nonnull final INodeBuilder<? extends T> nodeBuilder){
             this.child = nodeBuilder;
@@ -176,12 +171,12 @@ public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> 
 
         /**
          * 设置当前智能节点的匹配函数。
-         * @see ISmartNode#match(List, CommandContext)
+         * @see ISmartNode#match(InputReader)
          * @param checker 一个匹配函数，用于智能分支节点根据尚未解析的参数和命令上下文匹配当前节点
          * @return {@link SmartNodeInnerBuilder} 自身
          */
         @Nonnull
-        public SmartNodeInnerBuilder<T> matchIf(@Nonnull final BiPredicate<List<String>,CommandContext> checker){
+        public SmartNodeInnerBuilder<T> matchIf(@Nonnull final Matcher checker){
             this.checker = checker;
             return this;
         }
@@ -273,7 +268,7 @@ public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> 
          */
         @Nonnull
         @Override
-        public LiteralNodeInnerBuilder matchIf(@Nonnull final BiPredicate<List<String>, CommandContext> checker) {
+        public LiteralNodeInnerBuilder matchIf(@Nonnull final Matcher checker) {
             return (LiteralNodeInnerBuilder) super.matchIf(checker);
         }
 

@@ -370,6 +370,7 @@ tasks.register('generateMixinJson') {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xdiags:verbose']
     if (propertyBool('use_modern_java_syntax')) {
         if (it.name in ['compileMcLauncherJava', 'compilePatchedMcJava']) {
             return

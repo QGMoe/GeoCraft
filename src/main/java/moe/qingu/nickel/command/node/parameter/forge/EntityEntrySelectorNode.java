@@ -27,51 +27,31 @@
 
 package moe.qingu.nickel.command.node.parameter.forge;
 
+import moe.qingu.nickel.command.suggestor.Suggestor;
 import net.minecraft.command.CommandException;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
+import net.minecraftforge.registries.IForgeRegistry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
  */
 public class EntityEntrySelectorNode extends ForgeRegistryEntryNode<EntityEntry> {
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(ForgeRegistries.ENTITIES);
+    public static final Suggestor<EntityEntry> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(ForgeRegistries.ENTITIES);
 
-    public EntityEntrySelectorNode(@Nonnull String name) {
+    public EntityEntrySelectorNode(@Nonnull final String name) {
         super(name);
         setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
-    @Nonnull
     @Override
-    public Class<EntityEntry> getType() {
-        return EntityEntry.class;
-    }
-
-    @Nonnull
-    @Override
-    public String getTypeTranslationKey() {
-        return "nickel.command.parameter.forge.entity_entry";
-    }
-
-    @Override
-    public <T extends List<String> & Deque<String>> EntityEntry parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return getEntityEntryByText(context,args.getFirst());
-    }
-
-    @Nonnull
-    public EntityEntry getEntityEntryByText(@Nonnull final CommandContext context,@Nonnull final String text) throws CommandException {
-        final ResourceLocation loc = new ResourceLocation(text);
+    public EntityEntry parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        final ResourceLocation loc = new ResourceLocation(token);
         @Nullable final EntityEntry entry  = ForgeRegistries.ENTITIES.getValue(loc);
 
         if (entry == null) {
@@ -79,5 +59,23 @@ public class EntityEntrySelectorNode extends ForgeRegistryEntryNode<EntityEntry>
         } else {
             return entry;
         }
+    }
+
+    @Nonnull
+    @Override
+    public Class<EntityEntry> getTypeClass() {
+        return EntityEntry.class;
+    }
+
+    @Nonnull
+    @Override
+    public IForgeRegistry<EntityEntry> getRegistry() {
+        return ForgeRegistries.ENTITIES;
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "nickel.command.parameter.forge.entity_entry";
     }
 }

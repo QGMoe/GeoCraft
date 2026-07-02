@@ -27,54 +27,35 @@
 
 package moe.qingu.nickel.command.node.parameter.forge;
 
+import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
+import moe.qingu.nickel.command.suggestor.Suggestor;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.oredict.OreDictionary;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
-import moe.qingu.nickel.command.exception.NickelSyntaxException;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
-import moe.qingu.nickel.command.utils.ValidChecker;
 import moe.qingu.nickel.util.oredict.OreDictionaryEntry;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QiguaiAAAA
  */
-public class OreSelectorNode extends SmartParameterNode<OreDictionaryEntry> {
+public class OreSelectorNode extends TokenizeParameterNode.Single<OreDictionaryEntry> {
 
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args,context) -> Arrays.stream(OreDictionary.getOreNames()).collect(Collectors.toList());
+    public static final Suggestor<OreDictionaryEntry> DEFAULT_SUGGESTOR = DirectSuggestor.of(OreDictionary.getOreNames());
 
-    public OreSelectorNode(@Nonnull String name) {
+    public OreSelectorNode(@Nonnull final String name) {
         super(name);
         setSuggestProvider(DEFAULT_SUGGESTOR);
-    }
-
-    @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
-    @Nonnull
-    @Override
-    public Class<OreDictionaryEntry> getType() {
-        return OreDictionaryEntry.class;
     }
 
     @Nonnull
     @Override
     public Class<OreDictionaryEntry> getTypeClass() {
-        return getType();
+        return OreDictionaryEntry.class;
     }
 
     @Nonnull
@@ -84,10 +65,14 @@ public class OreSelectorNode extends SmartParameterNode<OreDictionaryEntry> {
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> OreDictionaryEntry parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        final OreDictionaryEntry entry = OreDictionaryEntry.get(args.getFirst());
-        if(entry == null) throw new NickelSyntaxException(currentBranch,this,
-                new TextComponentTranslation("nickel.command.parameter.ore_directory.invalid",args.getFirst()));
+    public String serialise(@Nonnull final OreDictionaryEntry entry) {
+        return entry.getName();
+    }
+
+    @Override
+    public OreDictionaryEntry parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        final OreDictionaryEntry entry = OreDictionaryEntry.get(token);
+        if(entry == null) return context.panic(translation("nickel.command.parameter.ore_directory.invalid").arg(token));
         return entry;
     }
 
@@ -95,10 +80,8 @@ public class OreSelectorNode extends SmartParameterNode<OreDictionaryEntry> {
      * @see OreDictionary#registerOreImpl(String, ItemStack)
      */
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
-        if("Unknown".equals(args.get(0))) throw new NickelSyntaxException(currentBranch,this,
-                new TextComponentTranslation("nickel.command.parameter.ore_directory.invalid",args.get(0)));
+    public boolean checkValid(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        if("Unknown".equals(token)) return context.panic(translation("nickel.command.parameter.ore_directory.invalid").arg(token));
         return true;
     }
 }

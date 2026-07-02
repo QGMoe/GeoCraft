@@ -25,22 +25,19 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.node.parameter.minecraft;
+package moe.qingu.nickel.command.reader;
 
-import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public abstract class MinecraftVec3Node<T> extends TokenizeParameterNode.Multi<T> {
-    protected boolean doCenterBlock = false;
-    public MinecraftVec3Node(@Nonnull final String name) {
-        super(name);
-    }
+public final class SNBTReader {
 
-    public void setDoCenterBlock(final boolean doCenterBlock) {
-        this.doCenterBlock = doCenterBlock;
+    @Nonnull
+    public static NBTTagCompound readNBTFromInput(final @Nonnull InputReader input){ //todo
+        return new NBTTagCompound();
     }
 }

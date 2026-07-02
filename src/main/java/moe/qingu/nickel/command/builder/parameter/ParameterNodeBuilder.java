@@ -32,14 +32,15 @@ import moe.qingu.nickel.command.builder.functional.SmartSplitNodeBuilder;
 import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.parameter.Decorator;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
+import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
+import moe.qingu.nickel.command.suggestor.Suggestor;
+import moe.qingu.nickel.command.utils.Matcher;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Iterator;
+import java.util.function.*;
+import java.util.stream.Stream;
 
 /**
  * 参数节点构建器
@@ -49,7 +50,7 @@ import java.util.function.Supplier;
  * @param <S> 自身类型，用于 {@link #smart()}
  */
 public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S extends ParameterNodeBuilder<P,T, S>> extends NoSplitNodeBuilder<T, S> {
-    public static final BiFunction<List<String>,SuggestContext,List<String>> USE_DEFAULT_SUGGESTOR = (strings, context) -> null;
+    public static final Suggestor<?> USE_DEFAULT_SUGGESTOR = DirectSuggestor.of("");
     public static final ParameterNode.DefaultParser<?> USE_DEFAULT_PARSER = (node,context) -> null;
     @SuppressWarnings("deprecation")
     protected static final BiConsumer<ParameterNodeBuilder<?,?,?>,SmartSplitNodeBuilder.Inner<ParameterNodeBuilder<?,?,?>>> ON_SMART_DONE =
@@ -60,8 +61,10 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S exte
     protected boolean optional;
     @SuppressWarnings("unchecked")
     protected ParameterNode.DefaultParser<P> parser = (ParameterNode.DefaultParser<P>) USE_DEFAULT_PARSER;
-    protected BiFunction<List<String>, SuggestContext, List<String>> suggestProvider = USE_DEFAULT_SUGGESTOR;
+    @SuppressWarnings("unchecked")
+    protected Suggestor<P> suggestProvider = (Suggestor<P>) USE_DEFAULT_SUGGESTOR;
     protected Decorator<P> decorator;
+    protected Matcher matcher;
 
     public ParameterNodeBuilder(@Nonnull final String name) {
         this.name = name;
@@ -101,35 +104,84 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S exte
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public S suggest(final BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
+    public S suggest(final Suggestor<P> suggestProvider) {
         this.suggestProvider = suggestProvider;
         return (S) this;
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public S suggest(final Function<SuggestContext, List<String>> suggestProvider) {
-        this.suggestProvider = (args,context) -> suggestProvider.apply(context);
+    public S suggest(final SerialiseSuggestor<P> suggestProvider) {
+        this.suggestProvider = suggestProvider;
         return (S) this;
+    }
+
+    @Nonnull
+    public S suggest(final Function<SuggestContext, Stream<P>> suggestProvider) {
+        return suggest((input,ctx)->suggestProvider.apply(ctx));
+    }
+
+    @Nonnull
+    public S suggest(final Supplier<Stream<P>> suggestProvider) {
+        return suggest((input,ctx)->suggestProvider.get());
+    }
+
+    @Nonnull
+    public S suggest(final Stream<P> suggests) {
+        return suggest(SerialiseSuggestor.of(suggests));
+    }
+
+    @Nonnull
+    public S suggest(final Iterable<P> suggests) {
+        return suggest(SerialiseSuggestor.of(suggests));
+    }
+
+    @Nonnull
+    public S suggest(final Iterator<P> suggests) {
+        return suggest(SerialiseSuggestor.of(suggests));
+    }
+
+    @SafeVarargs
+    @Nonnull
+    public final S suggest(final P... suggests) {
+        return suggest(SerialiseSuggestor.of(suggests));
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public S suggest(final Supplier<List<String>> suggestProvider) {
-        this.suggestProvider = (args,context) -> suggestProvider.get();
-        return (S) this;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nonnull
-    public S suggest(final List<String> suggests) {
-        this.suggestProvider = (args,context) -> suggests;
+    public S suggestRaw(final DirectSuggestor<P> suggestProvider) {
+        this.suggestProvider = suggestProvider;
         return (S) this;
     }
 
     @Nonnull
-    public S suggest(final String... suggests){
-        return suggest(Arrays.asList(suggests));
+    public S suggestRaw(final Function<SuggestContext, Stream<String>> suggestProvider) {
+        return suggestRaw((input,ctx)->suggestProvider.apply(ctx));
+    }
+
+    @Nonnull
+    public S suggestRaw(final Supplier<Stream<String>> suggestProvider) {
+        return suggestRaw((input,ctx)->suggestProvider.get());
+    }
+
+    @Nonnull
+    public S suggestRaw(final Stream<String> suggests) {
+        return suggestRaw(DirectSuggestor.of(suggests));
+    }
+
+    @Nonnull
+    public S suggestRaw(final Iterable<String> suggests) {
+        return suggestRaw(DirectSuggestor.of(suggests));
+    }
+
+    @Nonnull
+    public S suggestRaw(final Iterator<String> suggests) {
+        return suggestRaw(DirectSuggestor.of(suggests));
+    }
+
+    @Nonnull
+    public S suggestRaw(final String... suggests){
+        return suggest(DirectSuggestor.of(suggests));
     }
 
     @Nonnull
@@ -166,6 +218,13 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S exte
     public S decorate(@Nonnull final Decorator.Simple<P> decorator){
         if(this.decorator == null) this.decorator = decorator.toFull();
         else this.decorator = this.decorator.andThen(decorator);
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S matchIf(@Nonnull final Matcher matcher){
+        this.matcher = matcher;
         return (S) this;
     }
 

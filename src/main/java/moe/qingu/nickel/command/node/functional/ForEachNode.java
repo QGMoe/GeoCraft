@@ -27,16 +27,16 @@
 
 package moe.qingu.nickel.command.node.functional;
 
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.NoSplitNode;
-import moe.qingu.nickel.util.function.TriFunction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -44,18 +44,18 @@ import java.util.List;
 public class ForEachNode<T extends Iterable<P>,P> extends NoSplitNode{
 
     protected final String key;
-    protected TriFunction<T,List<String>,ExecuteContext,Iterable<P>> transformFunc;
+    protected BiFunction<T,ExecuteContext,Iterable<P>> transformFunc;
 
     public ForEachNode(@Nonnull final String contextKey){
         this.key = contextKey;
     }
 
-    public void setTransformer(final @Nonnull TriFunction<T,List<String>,ExecuteContext,Iterable<P>> transformFunc) {
+    public void setTransformer(final @Nonnull BiFunction<T,ExecuteContext,Iterable<P>> transformFunc) {
         this.transformFunc = transformFunc;
     }
 
     @Override
-    public <ARG extends List<String> & Deque<String>> void execute(@Nonnull ARG args, @Nonnull ExecuteContext context) throws CommandException {
+    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
         if(childNode == null) return;
         T arg = null;
         try {
@@ -64,13 +64,13 @@ public class ForEachNode<T extends Iterable<P>,P> extends NoSplitNode{
 
             final Iterable<P> transformedArg;
             if(transformFunc != null){
-                transformedArg = transformFunc.apply(arg,args,context);
+                transformedArg = transformFunc.apply(arg,context);
             }else transformedArg = arg;
 
             for(final P p:transformedArg){
                 try {
                     context.put(key,p);
-                    childNode.execute(args,context);
+                    context.enter(childNode);
                 }finally {
                     context.remove(key);
                 }
@@ -82,7 +82,7 @@ public class ForEachNode<T extends Iterable<P>,P> extends NoSplitNode{
 
     @Nullable
     @Override
-    public <ARG extends List<String> & Deque<String>> List<String> suggest(@Nonnull ARG args, @Nonnull SuggestContext context) {
-        return childNode==null?null:childNode.suggest(args,context);
+    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+        return childNode==null?null:context.enter(childNode);
     }
 }

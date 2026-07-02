@@ -28,30 +28,28 @@
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
 import com.google.common.reflect.TypeToken;
+import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.EntitySelector;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.entity.Entity;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
-import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
  */
-public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
+public class EntitySelectorNode extends TokenizeParameterNode.Single<List<Entity>> {
 
     public static final DefaultParser<List<Entity>> DEFAULT_PARSER = (node, context) -> Collections.singletonList(context.getSenderAsPlayer());
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) ->
-            Arrays.asList("@s","@a","@p","@r","@e", context.getSender().getName()));
+    public static final DirectSuggestor<List<Entity>> DEFAULT_SUGGESTOR = ((args, context) ->
+            Stream.of("@s", "@a", "@p", "@r", "@e", context.getSender().getName()));
 
     protected static final TypeToken<List<Entity>> Token = new TypeToken<List<Entity>>(List.class) {};
     protected boolean allowPlayerName = true;
@@ -98,11 +96,6 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
         return matchTarget;
     }
 
-    @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
     @Nonnull
     @Override
     public Type getType() {
@@ -123,23 +116,21 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> List<Entity> parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(isRequireSingleEntity()) return Collections.singletonList(EntitySelector.matchOneEntity(context.getSender(), args.getFirst(), matchTarget));
-        return EntitySelector.matchEntities(context.getSender(),args.getFirst(),matchTarget);
+    public List<Entity> parse(@Nonnull final String arg, @Nonnull final CommandContext context) throws CommandException {
+        if(isRequireSingleEntity()) return Collections.singletonList(EntitySelector.matchOneEntity(context.getSender(), arg, matchTarget));
+        return EntitySelector.matchEntities(context.getSender(),arg,matchTarget);
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
+    public boolean checkValid(@Nonnull final String arg, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(isPlayerNameAllowed()) return true;
 
-        final String arg = args.get(0);
         if(arg.startsWith("@")) return true;
         if(!isUUIDAllowed()) return false;
 
         try {
-            UUID.fromString(args.get(0));
-        }catch (IllegalArgumentException e){
+            UUID.fromString(arg);
+        }catch (final IllegalArgumentException e){
             return false;
         }
         return true;

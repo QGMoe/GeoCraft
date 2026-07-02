@@ -42,17 +42,10 @@ public class BigIntegerNode extends NumberNode<BigInteger> {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
     }
-
-    @Nonnull
-    @Override
-    public Class<BigInteger> getType() {
-        return BigInteger.class;
-    }
-
     @Nonnull
     @Override
     public Class<BigInteger> getTypeClass() {
-        return getType();
+        return BigInteger.class;
     }
 
     @Nonnull
@@ -62,7 +55,7 @@ public class BigIntegerNode extends NumberNode<BigInteger> {
     }
 
     @Override
-    protected BigInteger parseNumber(@Nonnull String arg) throws NumberInvalidException {
+    protected BigInteger parse(@Nonnull String arg) throws NumberInvalidException {
         try {
             final BigInteger integer = new BigInteger(arg);
             if(minValue != null && minValue.compareTo(integer)>0){

@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.command.node.parameter;
 
 import com.google.common.collect.Lists;
+import moe.qingu.nickel.command.suggestor.TokenizeSuggestor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -35,19 +36,15 @@ import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.ArrayUtils;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.parameter.minecraft.MinecraftVec3Node;
 import moe.qingu.nickel.command.node.parameter.minecraft.Vec3dNode;
-import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
 import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
@@ -65,10 +62,11 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
         return accessor;
     };
 
-    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args,context) -> {
-        final List<String> suggests = args.size()<=3?Lists.newArrayList("~"):Lists.newArrayList("default","false","true");
+    public static final TokenizeSuggestor<IAtmosphereAccessor> DEFAULT_SUGGESTOR = TokenizeSuggestor.of(3,(args, context) -> {
+        final int cur = ArrayUtils.lastIndexOf(args,"")+1;
+        final List<String> suggests = cur<=3 && cur != 0 ?Lists.newArrayList("~"):Lists.newArrayList("default","false","true");
         final BlockPos pos = context.getTargetPos()==null?context.getPosition():context.getTargetPos();
-        switch (args.size()){
+        switch (cur){
             case 1:
                 suggests.add(String.valueOf(pos.getX()));
                 break;
@@ -78,13 +76,14 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
             case 3:
                 suggests.add(String.valueOf(pos.getZ()));
                 break;
-            case 4:break;
+            case 4:
+            case 0: break;
             default:return null;
         }
-        return suggests;
-    };
+        return suggests.stream();
+    });
 
-    public AtmosphereAccessorNode(@Nonnull String name) {
+    public AtmosphereAccessorNode(@Nonnull final String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
@@ -92,20 +91,15 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        return ValidChecker.MATCH_FOUR_PARAMETER.check(this,args,context);
-    }
-
-    @Override
-    public <T extends List<String> & Deque<String>> IAtmosphereAccessor parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException{
-        final BlockPos pos = CommandBase.parseBlockPos(context.getSender(),args.toArray(new String[0]), 0,doCenterBlock);
+    public IAtmosphereAccessor parse(@Nonnull final String[] tokens, @Nonnull final CommandContext context) throws CommandException {
+        final BlockPos pos = CommandBase.parseBlockPos(context.getSender(),tokens, 0,doCenterBlock);
         final boolean notAir;
-        if("default".equals(args.get(3))){
+        if("default".equals(tokens[3])){
             final World world = context.getWorld();
             if(!world.isBlockLoaded(pos)) throw new CommandException("geocraft.command.chunk_error.unloaded",pos.getX(),pos.getZ());
             final IBlockState state = world.getBlockState(pos);
             notAir = !state.getBlock().isAir(state,world,pos);
-        }else notAir = CommandBase.parseBoolean(args.get(3));
+        }else notAir = CommandBase.parseBoolean(tokens[3]);
 
         final IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(context.getWorld(),pos,notAir);
 
@@ -115,25 +109,30 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
     }
 
     @Override
-    public int getParametersLength() {
+    public boolean checkValid(@Nonnull final String[] args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
+        return true;
+    }
+
+    @Override
+    public int getTokenCount() {
         return 4;
     }
 
     @Nonnull
     @Override
-    public Class<IAtmosphereAccessor> getType() {
-        return IAtmosphereAccessor.class;
-    }
-
-    @Nonnull
-    @Override
     public Class<IAtmosphereAccessor> getTypeClass() {
-        return getType();
+        return IAtmosphereAccessor.class;
     }
 
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
         return "nickel.command.parameter.geocraft.atmosphere_accessor";
+    }
+
+    @Override
+    public String serialise(@Nonnull final IAtmosphereAccessor accessor) {
+        final BlockPos pos = accessor.getPos();
+        return String.format("%s %s %s %s", pos.getX(),pos.getY(),pos.getZ(),"default");
     }
 }

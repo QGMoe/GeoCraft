@@ -46,14 +46,8 @@ public class DoubleNode extends NumberNode<Double> {
 
     @Nonnull
     @Override
-    public Class<Double> getType() {
-        return Double.class;
-    }
-
-    @Nonnull
-    @Override
     public Class<Double> getTypeClass() {
-        return getType();
+        return Double.class;
     }
 
     @Nonnull
@@ -63,7 +57,7 @@ public class DoubleNode extends NumberNode<Double> {
     }
 
     @Override
-    protected Double parseNumber(@Nonnull final String arg) throws NumberInvalidException {
+    protected Double parse(@Nonnull final String arg) throws NumberInvalidException {
         return CommandBase.parseDouble(arg,minValue,maxValue);
     }
 }

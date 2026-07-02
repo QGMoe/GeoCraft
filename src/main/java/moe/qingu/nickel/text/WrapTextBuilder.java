@@ -25,40 +25,26 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.builder.execute;
+package moe.qingu.nickel.text;
 
-import net.minecraft.command.CommandException;
-import moe.qingu.nickel.command.context.ExecuteContext;
+import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-@FunctionalInterface
-public interface SimpleCommandExecutor extends CommandExecutor{
+public final class WrapTextBuilder extends TextBuilder<ITextComponent,WrapTextBuilder> {
+    private final ITextComponent component;
+
+    public WrapTextBuilder(final @Nonnull ITextComponent component) {
+        this.component = component;
+        this.style.setParentStyle(component.getStyle());
+    }
+
+    @Nonnull
     @Override
-    default void run(@Nonnull List<String> args, @Nonnull ExecuteContext context) throws CommandException{
-        this.simplyRun(context);
-    }
-
-    void simplyRun(@Nonnull ExecuteContext ctx) throws CommandException;
-
-    @Nonnull
-    default SimpleCommandExecutor thenSimple(@Nonnull final SimpleCommandExecutor runFunc){
-        return ctx ->{
-            simplyRun(ctx);
-            runFunc.simplyRun(ctx);
-        };
-    }
-
-    @Nonnull
-    default SimpleCommandExecutor thenSimple(@Nonnull final Consumer<ExecuteContext> func){
-        return ctx -> {
-            simplyRun(ctx);
-            func.accept(ctx);
-        };
+    protected ITextComponent build() {
+        return component;
     }
 }

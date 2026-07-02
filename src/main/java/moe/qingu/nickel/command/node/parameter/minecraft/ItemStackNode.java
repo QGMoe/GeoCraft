@@ -27,38 +27,33 @@
 
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.node.parameter.ParameterNode;
+import moe.qingu.nickel.command.reader.SNBTReader;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
+import moe.qingu.nickel.command.utils.Matcher;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextComponentTranslation;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.exception.NickelSyntaxException;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
 import moe.qingu.nickel.command.utils.Matchers;
 import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
-import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
-public class ItemStackNode extends SmartParameterNode<ItemStack> {
+public class ItemStackNode extends ParameterNode<ItemStack> {
     public static final DefaultParser<ItemStack> DEFAULT_PARSER = (node, context) -> new ItemStack(Items.AIR,1);
-    public static final BiPredicate<List<String>, CommandContext> MATCHER_WITH_NBT = Matchers.matchOnlyFirstArg((arg,context)->{
+    public static final Matcher MATCHER_WITH_NBT = Matchers.matchOnlyFirstToken(arg->{
         final String[] split = arg.split("\\{",2);
-        return split.length == 1 && Matchers.isResourceLocation(arg,context) || split.length == 2 && Matchers.isResourceLocation(split[0],context);
+        return split.length == 1 && Matchers.isResourceLocation(arg) || split.length == 2 && Matchers.isResourceLocation(split[0]);
     });
+    public static final DirectSuggestor<ItemStack> DEFAULT_SUGGESTOR = DirectSuggestor.of(ItemSelectorNode.DEFAULT_SUGGESTOR.getData());
 
     protected boolean allowNBT = true;
     protected int count = 1;
@@ -67,7 +62,7 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
     public ItemStackNode(@Nonnull final String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
-        setSuggestProvider(ItemSelectorNode.DEFAULT_SUGGESTOR);
+        setSuggestProvider(DEFAULT_SUGGESTOR);
         setMatcher(MATCHER_WITH_NBT);
     }
 
@@ -83,42 +78,10 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
         this.meta = meta;
     }
 
-    @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
-        if(childNode == null) return;
-        if(!allowNBT){
-            super.execute(args,context);
-            return;
-        }
-
-        int usedParas = 0;
-        if(checkValid(args,context)){
-            if(!args.get(0).contains("\\{")){
-                usedParas = 1;
-                putParsedArgument(parseParameter(args,context),context);
-            } else usedParas = parseStackWithNBT(args,context);
-        }else if(defaultParser!=null){
-            putParsedArgument(defaultParser.parser(this,context),context);
-        }else throw new NickelSyntaxException(currentBranch,this,new TextComponentTranslation("nickel.command.parameter.base.default_not_found"));
-
-        this.executeChild(args,context,usedParas);
-    }
-
-    @Override
-    public int getParametersLength() {
-        return allowNBT?-1:1; //NBT会包含空格，所以是动态的
-    }
-
-    @Nonnull
-    @Override
-    public Class<ItemStack> getType() {
-        return ItemStack.class;
-    }
-
     @Nonnull
     @Override
     public Class<ItemStack> getTypeClass() {
-        return getType();
+        return ItemStack.class;
     }
 
     @Nonnull
@@ -128,43 +91,30 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> ItemStack parseParameter(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
-        final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),args.getFirst());
-        return new ItemStack(item,count,meta);
+    public ItemStack parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+        if(!allowNBT){
+            final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),input.readToken());
+            return new ItemStack(item,count,meta);
+        }else return parseStackWithNBT(input,context);
     }
 
-    public <T extends List<String> & Deque<String>> int parseStackWithNBT(@Nonnull final T args,@Nonnull final ExecuteContext context) throws CommandException {
-        final String[] split = args.getFirst().split("\\{",2);
-        if(split.length <= 1) throw new IllegalArgumentException();
-        final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),split[0]);
+    @Nonnull
+    public ItemStack parseStackWithNBT(@Nonnull final InputReader input,@Nonnull final CommandContext context) throws CommandException {
+        input.skipIfWhitespace();
+        final int begin = input.getCursor();
+        int splitLoc = begin;
+        while (input.canRead() && !Character.isWhitespace(input.peek()) && input.peek() != '{') splitLoc++;
+        final String itemId = input.getSubInput(begin,splitLoc);
+        final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),itemId);
 
-        final int[] prefix = new int[args.size()]; //长度前缀和
-        prefix[0] = split[1].length() + 1; // + 1 表示左大括号
-        final StringBuilder builder = new StringBuilder("{").append(split[1]);
-        for(int i=1;i<args.size();i++){
-            prefix[i] = prefix[i-1] + 1 + args.get(i).length(); // +1 表示空格
-            builder.append(" ").append(args.get(i));
-        }
-        NBTTagCompound compound = null;
-        int nbtEndIndex = args.size()-1;
-        for(;nbtEndIndex>=0;nbtEndIndex--){
-            try {
-                compound = JsonToNBT.getTagFromJson(builder.substring(0,prefix[nbtEndIndex]));
-                break;
-            }catch (NBTException e) {
-                if(nbtEndIndex>0) continue;
-                throw new CommandException("commands.give.tagError", e.getMessage());
-            }
-        }
-        if(compound == null) throw new CommandException("commands.give.tagError","NULL");
+        final NBTTagCompound compound = SNBTReader.readNBTFromInput(input);
         final ItemStack stack = new ItemStack(item,count,meta);
         stack.setTagCompound(compound);
-        putParsedArgument(stack,context);
-        return nbtEndIndex+1;
+        return stack;
     }
 
     @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        return ValidChecker.MATCH_ONE_PARAMETER.check(this, args, context); //由于具体检查比较复杂，这里就简单检查一下
+    public boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+        return ValidChecker.REQUIRE_ONE_TOKEN.check(this, input); //由于具体检查比较复杂，这里就简单检查一下
     }
 }

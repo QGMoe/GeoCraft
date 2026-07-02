@@ -27,12 +27,12 @@
 
 package moe.qingu.nickel.command.node.literal;
 
-import com.google.common.collect.Lists;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.exception.NickelCommandException;
@@ -48,18 +48,17 @@ import moe.qingu.nickel.command.utils.SplitCommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static moe.qingu.nickel.text.Texts.plain;
+
 /**
  * 多字面量节点，可以通过不同的字面量做到不同的分支。<br/>
- * 其作为智能节点时，不可以自定义{@link #match(List, CommandContext)}，使用{@link #setMatcher(BiPredicate)}会抛出{@link UnsupportedOperationException}。
+ * 其作为智能节点时，不可以自定义{@link #match(InputReader)}，使用{@link #setMatcher(Matcher)}会抛出{@link UnsupportedOperationException}。
  * 当提供的参数（args的首个 String）满足以下条件时，匹配会成功：<br/>
  * - 提供的参数是该节点的字面量之一<br/>
  * - 没有提供参数，且当前节点可选<br/>
@@ -77,52 +76,43 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
     protected boolean optional;
     protected SplitCommandBranch curBranch;
 
-    public void addLiteral(@Nonnull String literal,@Nonnull ICommandNode node){
+    public void addLiteral(@Nonnull final String literal,@Nonnull final ICommandNode node){
         literal2Node.put(literal,node);
     }
 
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
         if(!checkPermission(context)) throw new CommandException("nickel.command.functional.permit.denied");
         final ICommandNode node;
-        if(args.size()>0){
-            node = literal2Node.get(args.getFirst());
+        if(!input.isRemainingEmpty()){
+            node = literal2Node.get(input.readToken());
         }else if(!isOptional()) throw new NickelSyntaxException(curBranch,this);
         else node = childNode;
         if(node != null){
-            String first = null;
-            try {
-                first = args.pollFirst();
-                node.execute(args,context);
-            }finally {
-                if(first != null) args.addFirst(first);
-            }
+            context.enter(node);
         }else if(isOptional()) throw new NickelCommandException(curBranch,this,new TextComponentTranslation("nickel.command.literals.exception.default"));
         else throw new NickelSyntaxException(curBranch,this);
     }
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context) {
+    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         if(!checkPermission(context)) return null;
-        if(args.size()>1){
-            String first = null;
-            try {
-                first = args.pollFirst();
-                ICommandNode nextNode = literal2Node.get(first);
+        if(!input.isRemainingEmpty()){
+            final String token = input.readToken();
+            if(input.isRemainingEmpty()){
+                return literal2Node.keySet().stream()
+                        .filter(literal -> literal.startsWith(token))
+                        .sorted();
+            }else {
+                ICommandNode nextNode = literal2Node.get(token);
                 if(nextNode == null && isOptional()) nextNode = childNode;
-                return nextNode == null?null:nextNode.suggest(args, context);
-            }finally {
-                if(first != null) args.addFirst(first);
+                return nextNode == null?null:context.enter(nextNode);
             }
-        }else if(args.size()>0){
-            return literal2Node.keySet().stream()
-                    .filter(literal -> literal.startsWith(args.getFirst().trim()))
-                    .sorted()
-                    .collect(Collectors.toList());
+
         }else {
-            return Lists.newArrayList(literal2Node.keySet());
+            return literal2Node.keySet().stream();
         }
     }
 
@@ -137,19 +127,16 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
     }
 
     @Override
-    public boolean match(@Nonnull List<String> args, @Nonnull CommandContext context) {
-        if(args.size()>0){
-            final String first = args.get(0);
-            return literal2Node.containsKey(first);
-        }else if(isOptional() && childNode != null){
-            if(childNode instanceof ISmartNode){
-                return ((ISmartNode) childNode).match(args,context);//检查默认节点是否匹配，注意这时候已经没有还未解析的参数了
-            }else return true;//否则认为始终匹配
-        }else return false;
+    public boolean match(@Nonnull final InputReader input) {
+        if(!input.isRemainingEmpty()) return literal2Node.containsKey(input.readToken());
+        else if(isOptional() && childNode != null)
+            if(childNode instanceof ISmartNode) return ((ISmartNode) childNode).match(input);//检查默认节点是否匹配，注意这时候已经没有还未解析的参数了
+            else return true;//否则认为始终匹配
+        else return false;
     }
 
     @Override
-    public void setMatcher(@Nullable BiPredicate<List<String>, CommandContext> checker) {
+    public void setMatcher(@Nullable final Matcher checker) {
         throw new UnsupportedOperationException();
     }
 
@@ -173,8 +160,8 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
 
     @Nonnull
     @Override
-    public ITextComponent getDocument() {
-        return new TextComponentString(IDocumentaryNode.getFormatBegin(isOptional()) +
+    public TextBuilder<?,?> getDocument() {
+        return plain(IDocumentaryNode.getFormatBegin(isOptional()) +
                         String.join(SPLIT_NODE_SPLIT, literal2Node.keySet()) +
                         IDocumentaryNode.getFormatEnd(isOptional()));
     }

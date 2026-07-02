@@ -27,61 +27,56 @@
 
 package moe.qingu.nickel.command.node.parameter.forge;
 
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
+import moe.qingu.nickel.command.exception.NickelCommandException;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.command.exception.NickelSyntaxException;
+import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.SuggestContext;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
 import moe.qingu.nickel.command.utils.Matchers;
 import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class ForgeRegistryEntryNode<E extends IForgeRegistryEntry<E>> extends SmartParameterNode<E> {
-    public ForgeRegistryEntryNode(@Nonnull String name) {
+public abstract class ForgeRegistryEntryNode<E extends IForgeRegistryEntry<E>> extends TokenizeParameterNode.Single<E> {
+    public ForgeRegistryEntryNode(@Nonnull final String name) {
         super(name);
         setMatcher(Matchers.RESOURCE_LOCATION);
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        return ValidChecker.MATCH_RESOURCE_LOCATION.check(this,args,context);
-    }
-
-    @Override
-    public int getParametersLength() {
-        return 1;
+    public boolean checkValid(@Nonnull final String token, @Nonnull final CommandContext context) throws NickelCommandException, NickelRuntimeException, NickelSyntaxException {
+        return ValidChecker.matchResourceLocation(token,context);
     }
 
     @Nonnull
     @Override
-    public abstract Class<E> getType();
+    public abstract Class<E> getTypeClass();
 
     @Nonnull
+    public abstract IForgeRegistry<E> getRegistry();
+
     @Override
-    public Class<E> getTypeClass() {
-        return getType();
+    public String serialise(@Nonnull final E e) {
+        final ResourceLocation r = getRegistry().containsValue(e)?getRegistry().getKey(e):e.getRegistryName();
+        if(r == null) return "";
+        return r.toString();
     }
 
     @Nonnull
-    public static <E extends IForgeRegistryEntry<E>> BiFunction<List<String>, SuggestContext,List<String>> createSuggestProviderFromRegistry(@Nonnull final IForgeRegistry<E> registry){
-        final List<String> entries = registry.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
-        return (args,context)-> entries;
+    public static <E extends IForgeRegistryEntry<E>> DirectSuggestor.Static<E> createSuggestProviderFromRegistry(@Nonnull final IForgeRegistry<E> registry){
+        return DirectSuggestor.of(registry.getKeys().stream().map(Object::toString));
     }
 
     @Nonnull
-    public static <K,E extends IForgeRegistryEntry<E>> BiFunction<List<String>, SuggestContext,List<String>> createSuggestProviderFromRegistry(@Nonnull final IRegistry<K,E> registry){
-        final List<String> entries = registry.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
-        return (args,context)-> entries;
+    public static <E extends IForgeRegistryEntry<E>> DirectSuggestor.Static<E> createSuggestProviderFromRegistry(@Nonnull final IRegistry<?,E> registry){
+        return DirectSuggestor.of(registry.getKeys().stream().map(Object::toString));
     }
 }

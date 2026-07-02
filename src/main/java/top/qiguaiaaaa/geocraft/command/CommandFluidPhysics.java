@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.command;
 
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import moe.qingu.nickel.command.builder.execute.CommandExecutor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandResultStats;
@@ -45,7 +46,6 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import moe.qingu.nickel.command.builder.CommandBuilder;
 import moe.qingu.nickel.command.builder.INodeBuilder;
 import moe.qingu.nickel.command.builder.execute.RelayExecuteNodeBuilder;
-import moe.qingu.nickel.command.builder.execute.SimpleCommandExecutor;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.node.ISmartNode;
 import moe.qingu.nickel.command.node.parameter.generic.StringNode;
@@ -59,7 +59,6 @@ import top.qiguaiaaaa.geocraft.util.WaterUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 
 import static moe.qingu.nickel.command.Nodes.*;
 import static moe.qingu.nickel.text.Texts.*;
@@ -141,9 +140,9 @@ public final class CommandFluidPhysics {
     }
 
     @FunctionalInterface
-    interface FluidPhysicsCommandExecutor extends SimpleCommandExecutor{
-        SimpleCommandExecutor GET_LIGHTED_ATMOSPHERE_ACCESSOR = ctx -> ctx.put(ACCESSOR,getLightedAtmosphereAccessor(ctx.getWorld(),ctx.getBlockPos(POS)));
-        SimpleCommandExecutor CHECK_ATMOSPHERE_ACCESSIBILITY = ctx -> {
+    interface FluidPhysicsCommandExecutor extends CommandExecutor {
+        CommandExecutor GET_LIGHTED_ATMOSPHERE_ACCESSOR = ctx -> ctx.put(ACCESSOR,getLightedAtmosphereAccessor(ctx.getWorld(),ctx.getBlockPos(POS)));
+        CommandExecutor CHECK_ATMOSPHERE_ACCESSIBILITY = ctx -> {
             final IAtmosphereAccessor accessor = ctx.get(ACCESSOR);
             if(!accessor.canAccessAtmosphere()) throw new CommandException("geocraft.command.fluidphysics.inaccessibility_to_atmosphere",
                     accessor.getPos().getX(),
@@ -154,13 +153,8 @@ public final class CommandFluidPhysics {
         void run(@Nonnull final ExecuteContext ctx,@Nonnull final IAtmosphereAccessor accessor) throws CommandException;
 
         @Override
-        default void run(@Nonnull List<String> args, @Nonnull ExecuteContext context) throws CommandException {
+        default void run(@Nonnull ExecuteContext context) throws CommandException {
             this.run(context,context.get(ACCESSOR));
-        }
-
-        @Override
-        default void simplyRun(@Nonnull final ExecuteContext ctx) throws CommandException{
-            this.run(ctx,ctx.get(ACCESSOR));
         }
     }
 

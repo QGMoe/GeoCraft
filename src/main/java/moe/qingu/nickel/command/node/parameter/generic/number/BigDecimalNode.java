@@ -46,14 +46,8 @@ public class BigDecimalNode extends NumberNode<BigDecimal> {
 
     @Nonnull
     @Override
-    public Class<BigDecimal> getType() {
-        return BigDecimal.class;
-    }
-
-    @Nonnull
-    @Override
     public Class<BigDecimal> getTypeClass() {
-        return getType();
+        return BigDecimal.class;
     }
 
     @Nonnull
@@ -63,7 +57,7 @@ public class BigDecimalNode extends NumberNode<BigDecimal> {
     }
 
     @Override
-    protected BigDecimal parseNumber(@Nonnull String arg) throws NumberInvalidException {
+    protected BigDecimal parse(@Nonnull String arg) throws NumberInvalidException {
         try {
             final BigDecimal decimal = new BigDecimal(arg);
             if(minValue != null && minValue.compareTo(decimal)>0){

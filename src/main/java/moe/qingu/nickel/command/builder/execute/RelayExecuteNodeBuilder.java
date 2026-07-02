@@ -34,7 +34,6 @@ import moe.qingu.nickel.command.node.ICommandNode;
 import moe.qingu.nickel.command.node.execute.RelayExecuteNode;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 /**
  * @author QiguaiAAAA
@@ -68,28 +67,22 @@ public class RelayExecuteNodeBuilder extends ExecuteNodeBuilder<RelayExecuteNode
     }
 
     @Nonnull
-    public RelayExecuteNodeBuilder after(@Nonnull final SimpleCommandExecutor runFunc) {
-        this.funcOnFinal = runFunc;
-        return this;
-    }
-
-    @Nonnull
     @Override
     public RelayExecuteNode build() {
         final RelayExecuteNode node = new RelayExecuteNode() {
             @Override
+            public void onFinal(@Nonnull final ExecuteContext context) throws CommandException {
+                funcOnFinal.run(context);
+            }
+
+            @Override
+            public void run(@Nonnull final ExecuteContext context) throws CommandException {
+                funcExecute.run(context);
+            }
+
+            @Override
             public boolean keepArguments() {
                 return doKeepArguments;
-            }
-
-            @Override
-            public void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException {
-                funcExecute.run(args, context);
-            }
-
-            @Override
-            public void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException {
-                funcOnFinal.run(args,context);
             }
         };
         node.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());

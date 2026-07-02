@@ -39,8 +39,6 @@ import net.minecraftforge.fml.common.registry.EntityEntry;
 import moe.qingu.nickel.command.builder.execute.CommandExecutor;
 import moe.qingu.nickel.command.builder.execute.ExecuteNodeBuilder;
 import moe.qingu.nickel.command.builder.execute.RelayExecuteNodeBuilder;
-import moe.qingu.nickel.command.builder.execute.SimpleCommandExecutor;
-import moe.qingu.nickel.command.builder.functional.ConditionalSplitNodeBuilder;
 import moe.qingu.nickel.command.builder.functional.ForEachNodeBuilder;
 import moe.qingu.nickel.command.builder.functional.PermitNodeBuilder;
 import moe.qingu.nickel.command.builder.functional.RunCommandNodeBuilder;
@@ -78,11 +76,6 @@ import java.util.UUID;
 public final class Nodes {
 
     private Nodes(){}
-
-    @Nonnull
-    public static ConditionalSplitNodeBuilder split(){
-        return new ConditionalSplitNodeBuilder();
-    }
 
     @Nonnull
     public static <FROM extends Iterable<TO>,TO> ForEachNodeBuilder<FROM,TO> forEach(@Nonnull final String contextToForEach){
@@ -131,11 +124,6 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static ExecuteNodeBuilder.Impl execute(@Nonnull final SimpleCommandExecutor func){
-        return execute().run(func);
-    }
-
-    @Nonnull
     public static RunCommandNodeBuilder.Redirect runCommand(@Nonnull final String commandName){
         return new RunCommandNodeBuilder.Redirect(commandName);
     }
@@ -156,28 +144,8 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static RelayExecuteNodeBuilder relay(@Nonnull final SimpleCommandExecutor func){
-        return relay((CommandExecutor) func);
-    }
-
-    @Nonnull
     public static RelayExecuteNodeBuilder relay(@Nonnull final CommandExecutor func, @Nonnull final CommandExecutor funcAfter){
         return relay().run(func).after(funcAfter);
-    }
-
-    @Nonnull
-    public static RelayExecuteNodeBuilder relay(@Nonnull final SimpleCommandExecutor func,@Nonnull final CommandExecutor funcAfter){
-        return relay((CommandExecutor) func,funcAfter);
-    }
-
-    @Nonnull
-    public static RelayExecuteNodeBuilder relay(@Nonnull final SimpleCommandExecutor func,@Nonnull final SimpleCommandExecutor funcAfter){
-        return relay((CommandExecutor) func,(CommandExecutor) funcAfter);
-    }
-
-    @Nonnull
-    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandExecutor func,@Nonnull final SimpleCommandExecutor funcAfter){
-        return relay(func,(CommandExecutor) funcAfter);
     }
 
     @Nonnull
@@ -216,8 +184,8 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<Boolean, BooleanNode> bool(@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name,BooleanNode::new);
+    public static FastParameterNodeBuilder<Boolean, BooleanNode> bool(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,BooleanNode::new);
     }
 
     @Nonnull
@@ -231,8 +199,8 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<UUID, UUIDNode> uuid(@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name,UUIDNode::new);
+    public static FastParameterNodeBuilder<UUID, UUIDNode> uuid(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,UUIDNode::new);
     }
 
     // Minecraft
@@ -253,8 +221,8 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<Item, ItemSelectorNode> item(@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name,ItemSelectorNode::new);
+    public static FastParameterNodeBuilder<Item, ItemSelectorNode> item(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,ItemSelectorNode::new);
     }
 
     @Nonnull
@@ -284,18 +252,13 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<Block, BlockSelectorNode> block(@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name,BlockSelectorNode::new);
+    public static FastParameterNodeBuilder<Block, BlockSelectorNode> block(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,BlockSelectorNode::new);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<IBlockState, BlockStateNode> blockState(@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name, BlockStateNode::new);
-    }
-
-    @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<IBlockState, BlockStateNode> block$blockState(@Nonnull final String blockNodeName,@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name, s -> new BlockStateNode(blockNodeName,s));
+    public static FastParameterNodeBuilder<IBlockState, BlockStateNode> blockState(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name, BlockStateNode::new);
     }
 
     @Nonnull
@@ -329,24 +292,24 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<World, DimensionNode> dimension(@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name,DimensionNode::new);
+    public static FastParameterNodeBuilder<World, DimensionNode> dimension(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,DimensionNode::new);
     }
 
     // Forge
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<EntityEntry, EntityEntrySelectorNode> entityEntry(@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name,EntityEntrySelectorNode::new);
+    public static FastParameterNodeBuilder<EntityEntry, EntityEntrySelectorNode> entityEntry(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,EntityEntrySelectorNode::new);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<Fluid, FluidSelectorNode> fluid(@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name,FluidSelectorNode::new);
+    public static FastParameterNodeBuilder<Fluid, FluidSelectorNode> fluid(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,FluidSelectorNode::new);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<OreDictionaryEntry, OreSelectorNode> ore(@Nonnull final String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name,OreSelectorNode::new);
+    public static FastParameterNodeBuilder<OreDictionaryEntry, OreSelectorNode> ore(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,OreSelectorNode::new);
     }
 }

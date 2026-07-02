@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.utils;
 
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.ITextComponent;
@@ -58,6 +59,10 @@ public class SplitCommandBranch extends CommandBranch{
 
     public void setEndDocument(@Nonnull final ITextComponent document){
         super.appendDocument(document);
+    }
+
+    public void setEndDocument(@Nonnull final TextBuilder<?,?> document){
+        this.setEndDocument(document.done());
     }
 
     @Override

@@ -27,31 +27,30 @@
 
 package moe.qingu.nickel.command.node.execute;
 
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
 public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNode {
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        ExecuteNode.throwIfShouldNotHaveArguments(args,keepArguments());
+    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
+        ExecuteNode.throwIfShouldNotHaveArguments(input,keepArguments());
         try {
-            this.run(context,args);
-            if(childNode != null) childNode.execute(args,context);
+            this.run(context);
+            if(childNode != null) context.enter(childNode);
         }finally {
-            onFinal(context,args);
+            onFinal(context);
         }
     }
 
     /**
      * 当命令退出当前节点时执行
      */
-    public abstract void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException;
+    public abstract void onFinal(@Nonnull final ExecuteContext context) throws CommandException;
 }

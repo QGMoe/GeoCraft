@@ -29,18 +29,14 @@ package top.qiguaiaaaa.geocraft.command.node;
 
 import moe.qingu.nickel.command.builder.parameter.FastParameterNodeBuilder;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.exception.NickelCommandException;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
-import moe.qingu.nickel.command.utils.ValidChecker;
+import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 import top.qiguaiaaaa.geocraft.configs.ConfigurationLoader;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,27 +45,32 @@ import static moe.qingu.nickel.text.Texts.*;
 /**
  * @author QGMoe
  */
-public final class ConfigItemNode extends SmartParameterNode<ConfigItem<?,?>> {
+public final class ConfigItemNode extends TokenizeParameterNode.Single<ConfigItem<?,?>> {
     private static final List<String> configItemPaths = ConfigurationLoader.getConfigItems().stream().map(ConfigItem::getPath).collect(Collectors.toList());
 
     public ConfigItemNode(@Nonnull final String name) {
         super(name);
-        setSuggestProvider((args,ctx)-> configItemPaths);
+        setSuggestProvider(DirectSuggestor.of(configItemPaths));
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<ConfigItem<?,?>,ConfigItemNode> configItem(final @Nonnull String name){
-        return new FastParameterNodeBuilder.FastSmart<>(name,ConfigItemNode::new);
+    public static FastParameterNodeBuilder<ConfigItem<?,?>,ConfigItemNode> configItem(final @Nonnull String name){
+        return new FastParameterNodeBuilder<>(name,ConfigItemNode::new);
     }
 
     @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        return ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context);
+    public boolean checkValid(@Nonnull final String arg, @Nonnull final CommandContext context){
+        return true;
     }
 
     @Override
-    public int getParametersLength() {
-        return 1;
+    public ConfigItem<?, ?> parse(@Nonnull final String entry, @Nonnull final CommandContext context) throws CommandException {
+        final @Nonnull ConfigItem<?,?> item = ConfigurationLoader.getConfigItems()
+                .stream()
+                .filter(t -> t.getPath().equals(entry))
+                .findFirst()
+                .orElseThrow(() -> new NickelCommandException(this.currentBranch,this, translation("geocraft.command.config_item_not_found").arg(entry).done()));
+        return item;
     }
 
     @Nonnull
@@ -86,14 +87,7 @@ public final class ConfigItemNode extends SmartParameterNode<ConfigItem<?,?>> {
     }
 
     @Override
-    @Nonnull
-    public <T extends List<String> & Deque<String>> ConfigItem<?, ?> parseParameter(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
-        final String entry = args.getFirst();
-        final @Nonnull ConfigItem<?,?> item = ConfigurationLoader.getConfigItems()
-                .stream()
-                .filter(t -> t.getPath().equals(entry))
-                .findFirst()
-                .orElseThrow(() -> new NickelCommandException(this.currentBranch,this, translation("geocraft.command.config_item_not_found").arg(entry).done()));
-        return item;
+    public String serialise(@Nonnull final ConfigItem<?, ?> item) {
+        return item.getPath();
     }
 }

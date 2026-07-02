@@ -27,14 +27,12 @@
 
 package moe.qingu.nickel.command.node.literal;
 
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
-import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
-import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.node.IDocumentaryNode;
 import moe.qingu.nickel.command.node.ISmartNode;
 import moe.qingu.nickel.command.node.functional.PermitNode;
@@ -42,15 +40,15 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
 import java.util.Objects;
-import java.util.function.BiPredicate;
+import java.util.stream.Stream;
+
+import static moe.qingu.nickel.text.Texts.plain;
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * 单字面量节点，可以通过匹配对应的字面量来确定下一步的执行节点，该节点不是一个可选节点。
- * 其作为智能节点时，可以通过 {@link #setMatcher(BiPredicate)} 设置自己的匹配逻辑。其默认逻辑就是检查传入的参数长度是否大于 0，且第一个参数是否等于字面量。
+ * 其作为智能节点时，可以通过 {@link #setMatcher(Matcher)} 设置自己的匹配逻辑。其默认逻辑就是检查传入的参数长度是否大于 0，且第一个参数是否等于字面量。
  * @see LiteralsNode
  * @author QiguaiAAAA
  */
@@ -58,7 +56,7 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
 
     protected final @Nonnull String literal;
 
-    protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
+    protected @Nullable Matcher matchChecker;
 
     protected CommandBranch currentBranch;
 
@@ -72,48 +70,33 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
     }
 
     @Override
-    public boolean match(@Nonnull List<String> args, @Nonnull CommandContext context) {
-        if(matchChecker!=null) return matchChecker.test(args,context);
-        return args.size()>0 && literal.equals(args.get(0));
+    public boolean match(@Nonnull final InputReader input) {
+        if(matchChecker!=null) return matchChecker.test(input);
+        if(!input.isRemainingEmpty()) return literal.equals(input.readToken());
+        else return false;
     }
 
     @Override
-    public void setMatcher(@Nullable BiPredicate<List<String>, CommandContext> checker) {
+    public void setMatcher(@Nullable final Matcher checker) {
         this.matchChecker = checker;
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
+    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
         if(!checkPermission(context)) throw new CommandException("nickel.command.functional.permit.denied");
-        final String first = args.getFirst();
-        if(!literal.equals(first)){
-            throw new NickelSyntaxException(currentBranch,this,
-                    new TextComponentTranslation("nickel.command.functional.literal.non_match",this.literal,args.getFirst()));
-        }
-        try {
-            args.pop();
-            if(childNode != null) childNode.execute(args,context);
-        }finally {
-            args.addFirst(first);
-        }
+        final @Nonnull String token = input.readToken();
+        if(!literal.equals(token)) context.panic(translation("nickel.command.functional.literal.non_match").arg(this.literal,token));
+        if(childNode != null) context.enter(childNode);
     }
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context) {
-        if(args.size()>1){
-            final String first = args.getFirst();
-            try {
-                args.pop();
-                return childNode == null? null : childNode.suggest(args,context);
-            }finally {
-                args.addFirst(first);
-            }
-        }
-        if(args.size()==1){
-            return literal.startsWith(args.getFirst())?Collections.singletonList(literal):null;
-        }
-        return Collections.singletonList(literal);
+    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+        if(!input.isRemainingEmpty()){
+            final @Nonnull String token = input.readToken();
+            if(input.isRemainingEmpty()) return literal.startsWith(token)?Stream.of(literal):null;
+            return childNode == null? null : context.enter(childNode);
+        }else return Stream.of(literal);
     }
 
     @Nonnull
@@ -126,7 +109,7 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
 
     @Nonnull
     @Override
-    public ITextComponent getDocument() {
-        return new TextComponentString(literal);
+    public TextBuilder<?,?> getDocument() {
+        return plain(literal);
     }
 }

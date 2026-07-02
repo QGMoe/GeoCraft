@@ -47,11 +47,11 @@ import javax.annotation.Nonnull;
  * @author QGMoe
  */
 @Mod.EventBusSubscriber(modid = GeoCraft.MODID)
-@SideOnly(Side.CLIENT)
 @SuppressWarnings("unused")
 public final class ClientRegistryHandler {
 
     @SubscribeEvent
+    @SideOnly(Side.CLIENT)
     public static void registerItemModel(final @Nonnull ModelRegistryEvent event){
         // 不知道为什么模组注册额外数据值会影响原版的注册，所以这里先手动注册原版的
         registerVanillaModel(Blocks.CLAY,0,"clay");

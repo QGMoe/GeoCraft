@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.node.functional;
 
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import moe.qingu.nickel.command.context.ExecuteContext;
@@ -34,8 +35,7 @@ import moe.qingu.nickel.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -49,16 +49,16 @@ public class RedirectCommandNode extends RunCommandNode{
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
         final ICommand icommand = getCommand(targetCommandName,context);
-        runCommand(icommand,args,context);
+        runCommand(icommand,input,context);
     }
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
+    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         final ICommand icommand = context.getServer().getCommandManager().getCommands().get(targetCommandName);
         if(icommand == null) return null;
-        return getCommandSuggest(icommand,args,context);
+        return getCommandSuggest(icommand,input,context);
     }
 }

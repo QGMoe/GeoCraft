@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.builder.parameter.minecraft;
 
-import moe.qingu.nickel.command.builder.parameter.SmartParameterNodeBuilder;
+import moe.qingu.nickel.command.builder.parameter.ParameterNodeBuilder;
 import moe.qingu.nickel.command.node.parameter.minecraft.BlockPosNode;
 import moe.qingu.nickel.command.node.parameter.minecraft.MinecraftVec3Node;
 import moe.qingu.nickel.command.node.parameter.minecraft.Vec3dNode;
@@ -37,7 +37,7 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public abstract class MinecraftVec3NodeBuilder<T,N extends MinecraftVec3Node<T>> extends SmartParameterNodeBuilder<T,N, MinecraftVec3NodeBuilder<T,N>> {
+public abstract class MinecraftVec3NodeBuilder<T,N extends MinecraftVec3Node<T>> extends ParameterNodeBuilder<T,N, MinecraftVec3NodeBuilder<T,N>> {
     protected boolean doCenter = false;
 
     public MinecraftVec3NodeBuilder(@Nonnull final String name) {

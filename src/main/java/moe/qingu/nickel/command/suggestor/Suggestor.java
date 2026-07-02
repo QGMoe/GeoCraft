@@ -25,45 +25,37 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.builder.parameter;
+package moe.qingu.nickel.command.suggestor;
 
-import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.node.ISmartNode;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public abstract class SmartParameterNodeBuilder<P, T extends ParameterNode<P> & ISmartNode, S extends ParameterNodeBuilder<P,T, S>> extends ParameterNodeBuilder<P,T, S>{
+@FunctionalInterface
+public interface Suggestor<P> {
+    @Nonnull
+    Stream<String> provide(final @Nonnull ParameterNode<P> node, final @Nonnull InputReader inputReader,final int beginIndex ,final @Nonnull SuggestContext suggestContext);
 
-    protected BiPredicate<List<String>, CommandContext> matcher;
-
-    public SmartParameterNodeBuilder(@Nonnull final String name) {
-        super(name);
-    }
-
-    public SmartParameterNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName){
-        super(parentName,childName);
+    @Nonnull
+    default Suggestor<P> with(final @Nonnull Suggestor<P> suggestor){
+        return ((node, inputReader, beginIndex, suggestContext) ->
+                Stream.concat(this.provide(node,inputReader,beginIndex,suggestContext),suggestor.provide(node,inputReader,beginIndex,suggestContext)));
     }
 
     @Nonnull
-    @Override
-    public T build() {
-        final T instance = super.build();
-        if(matcher != null){
-            instance.setMatcher(matcher);
-        }
-        return instance;
+    static Stream<String> cleanup(final @Nonnull Stream<String> suggestions,final @Nonnull InputReader input,final int beginIndex){
+        final @Nonnull String subInput = input.getSubInput(beginIndex);
+        return suggestions.map(String::trim)
+                .filter(s -> !s.isEmpty() && s.startsWith(subInput))
+                .map(s -> s.substring(s.lastIndexOf(" ")+1))
+                .distinct()
+                .sorted();
     }
 
-    @Nonnull
-    @SuppressWarnings("unchecked")
-    public S matchIf(@Nonnull final BiPredicate<List<String>,CommandContext> matcher){
-        this.matcher = matcher;
-        return (S) this;
-    }
 }

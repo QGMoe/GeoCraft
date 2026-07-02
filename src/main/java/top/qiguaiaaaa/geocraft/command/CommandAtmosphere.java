@@ -284,7 +284,7 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildSetCommand(){
         return literal("set")
                 .require(ATM_PERMISSION_NODE +".set").allow(DefaultPermissionLevel.OP).register()
-                .then($property().suggest(Stream.concat(getPropertyList().stream(),SetConsumer.keySet().stream()).collect(Collectors.toList()))
+                .then($property().suggest(Stream.concat(getPropertyList().stream(),SetConsumer.keySet().stream()))
                         .then($value().then(_pos().then(process(CommandAtmosphere::set)))
         ));
     }
@@ -311,7 +311,7 @@ public final class CommandAtmosphere {
         return literal("reset")
                 .require(ATM_PERMISSION_NODE +".reset").allow(DefaultPermissionLevel.OP).register()
                 .then($property().allow("temp").then(
-                        _pos().then(process((args, context) -> {
+                        _pos().then(process( context -> {
                                     final World world = context.getWorld();
                                     final Atmosphere atmosphere = context.get(ATMOSPHERE);
                                     final BlockPos pos = context.getBlockPos(POS);
@@ -340,7 +340,7 @@ public final class CommandAtmosphere {
         return literal("add")
                 .require(ATM_PERMISSION_NODE +".add").allow(DefaultPermissionLevel.OP).register()
                 .then($property().suggest(
-                        Stream.concat(getPropertyList().stream(),AddConsumer.keySet().stream()).collect(Collectors.toList())
+                        Stream.concat(getPropertyList().stream(),AddConsumer.keySet().stream())
                 ).then($value().then(_pos().then(process(CommandAtmosphere::add)))));
     }
 
@@ -399,17 +399,17 @@ public final class CommandAtmosphere {
                 .require(ATM_PERMISSION_NODE +".track").allow(DefaultPermissionLevel.OP).register()
                 .then($property()
                         .suggest(
-                                Stream.concat(getPropertyList().stream(), Stream.of("temp","water","steam")).collect(Collectors.toList())
+                                Stream.concat(getPropertyList().stream(), Stream.of("temp","water","steam"))
                         ).then(integer("time")
                                 .min(1)
-                                .suggest("1")
+                                .suggest(1)
                                 .translate("geocraft.command.atmosphere.arg.time")
                                 .comment("geocraft.command.atmosphere.comment.time")
                                 .then(string("file_name")
                                         .translate("geocraft.command.atmosphere.arg.file_name")
                                         .comment("geocraft.command.atmosphere.comment.file_name")
                                         .pattern("[^\\s\\\\/:\\*\\?\\\"<>\\|](\\x20|[^\\s\\\\/:\\*\\?\\\"<>\\|])*[^\\s\\\\/:\\*\\?\\\"<>\\|\\.]$") //过滤正确的文件名
-                                        .suggest((strings, context) -> Collections.singletonList("track_"+new Date().getTime()+".csv"))
+                                        .suggest((strings, context) -> Stream.of("track_"+new Date().getTime()+".csv"))
                                         .then(_pos().then(process(CommandAtmosphere::track)))
                         )
                 )
@@ -418,7 +418,7 @@ public final class CommandAtmosphere {
 
     @Nonnull
     public static CommandExecutor buildDefaultExecutor(){
-        return (args, context) -> {
+        return context-> {
             final World world = context.getWorld();
             final BlockPos pos = context.getPosition();
             final IAtmosphereAccessor accessor = getAtmosphereAccessor(world,pos);
@@ -451,7 +451,7 @@ public final class CommandAtmosphere {
                 .after(CommandAtmosphere::afterProcessAtmosphereInfo);
     }
 
-    static void processAtmosphereInfo(@Nonnull final List<String> args, @Nonnull final ExecuteContext context) throws CommandException {
+    static void processAtmosphereInfo(@Nonnull final ExecuteContext context) throws CommandException {
         final World world = context.getWorld();
         final BlockPos pos = context.getBlockPos(POS);
         final IAtmosphereAccessor accessor = getAtmosphereAccessor(world,pos);
@@ -464,14 +464,14 @@ public final class CommandAtmosphere {
                 layer.getBeginY(),layer.getBeginY()+layer.getDepth());
     }
 
-    static void afterProcessAtmosphereInfo(@Nonnull final List<String> args,@Nonnull final ExecuteContext context) {
+    static void afterProcessAtmosphereInfo(@Nonnull final ExecuteContext context) {
         final @Nullable IAtmosphereAccessor accessor = context.remove(ACCESSOR);
         if(accessor != null) accessor.close();
         context.remove(ATMOSPHERE);
         context.remove(LAYER);
     }
 
-    static void set(@Nonnull final List<String> args, @Nonnull final ExecuteContext context) throws CommandException{
+    static void set(@Nonnull final ExecuteContext context) throws CommandException{
         final double value = context.getDouble(VALUE);
         final String name = context.get(PROPERTY);
         final BiConsumer<AtmosphereCommandContext,Double> consumer = SetConsumer.get(name.toLowerCase(Locale.ROOT));
@@ -500,7 +500,7 @@ public final class CommandAtmosphere {
         throw new CommandException("geocraft.command.atmosphere.property.unknown");
     }
 
-    static void add(@Nonnull final List<String> args,@Nonnull final ExecuteContext context) throws CommandException {
+    static void add(@Nonnull final ExecuteContext context) throws CommandException {
         final double value = context.getDouble(VALUE);
         final String name = context.get(PROPERTY);
         final BiConsumer<AtmosphereCommandContext,Double> consumer = AddConsumer.get(name.toLowerCase(Locale.ROOT));
@@ -531,7 +531,7 @@ public final class CommandAtmosphere {
         throw new CommandException("geocraft.command.atmosphere.property.unknown");
     }
 
-    static void query(@Nonnull final List<String> args,@Nonnull final ExecuteContext context) throws CommandException{
+    static void query(@Nonnull final ExecuteContext context) throws CommandException{
         final String name = context.get(PROPERTY);
         final Consumer<AtmosphereCommandContext> consumer = QueryConsumer.get(name.toLowerCase(Locale.ROOT));
         if(consumer != null){
@@ -541,7 +541,7 @@ public final class CommandAtmosphere {
         }
     }
 
-    static void util(@Nonnull final List<String> args,@Nonnull final ExecuteContext context) throws CommandException{
+    static void util(@Nonnull final ExecuteContext context) {
         final World world = context.getWorld();
         final WorldInfo info = world.getWorldInfo();
         final String util = context.get("util_name");
@@ -568,7 +568,7 @@ public final class CommandAtmosphere {
         }
     }
 
-    static void track(@Nonnull final List<String> args,@Nonnull final ExecuteContext context) throws CommandException{
+    static void track(@Nonnull final ExecuteContext context) throws CommandException{
         final int time = context.getInt("time");
         final String fileName = context.get("file_name");
         final BlockPos pos = context.getBlockPos(POS);

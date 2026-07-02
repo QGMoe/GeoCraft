@@ -27,8 +27,8 @@
 
 package moe.qingu.nickel.command.builder.parameter.minecraft;
 
+import moe.qingu.nickel.command.builder.parameter.ParameterNodeBuilder;
 import net.minecraft.item.ItemStack;
-import moe.qingu.nickel.command.builder.parameter.SmartParameterNodeBuilder;
 import moe.qingu.nickel.command.node.parameter.minecraft.ItemStackNode;
 import moe.qingu.nickel.command.utils.Matchers;
 
@@ -37,7 +37,7 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public class ItemStackNodeBuilder extends SmartParameterNodeBuilder<ItemStack,ItemStackNode,ItemStackNodeBuilder> {
+public class ItemStackNodeBuilder extends ParameterNodeBuilder<ItemStack,ItemStackNode,ItemStackNodeBuilder> {
     protected boolean allowNBT = true;
     protected int count = 1;
     protected short meta = 0;

@@ -27,54 +27,43 @@
 
 package moe.qingu.nickel.command.node.parameter.generic;
 
-import com.google.common.collect.Lists;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.node.parameter.ParameterNode;
+import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
+import moe.qingu.nickel.command.utils.Matcher;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
 import moe.qingu.nickel.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
-public class BooleanNode extends SmartParameterNode<Boolean> {
+public class BooleanNode extends ParameterNode<Boolean> {
     public static final DefaultParser<Boolean> DEFAULT_PARSER = (node, context) -> Boolean.FALSE;
-    public static final BiPredicate<List<String>,CommandContext> DEFAULT_MATCHER = (args,context) -> args.size()>0
-            && ("true".equals(args.get(0))) || "false".equals(args.get(0)) || "1".equals(args.get(0)) || "0".equals(args.get(0));
+    public static final Matcher DEFAULT_MATCHER = input -> {
+        try {
+            input.readBoolean();
+            return true;
+        }catch (final CommandException e){
+            return false;
+        }
+    };
 
-    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args, context) -> Lists.newArrayList(Boolean.TRUE.toString(),Boolean.FALSE.toString());
-    public BooleanNode(@Nonnull String name) {
+    public static final SerialiseSuggestor<Boolean> DEFAULT_SUGGESTOR = SerialiseSuggestor.of(true,false);
+
+    public BooleanNode(@Nonnull final String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
         setMatcher(DEFAULT_MATCHER);
     }
 
-    @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
-    @Nonnull
-    @Override
-    public Class<Boolean> getType() {
-        return Boolean.class;
-    }
-
     @Nonnull
     @Override
     public Class<Boolean> getTypeClass() {
-        return getType();
+        return Boolean.class;
     }
 
     @Nonnull
@@ -84,26 +73,14 @@ public class BooleanNode extends SmartParameterNode<Boolean> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)){
-            return false;
-        }
-        parseBoolean(args.get(0));
-        return true;
+    public Boolean parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+        return input.readBoolean();
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> Boolean parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return parseBoolean(args.getFirst());
-    }
-
-    public static boolean parseBoolean(final @Nullable String input) throws SyntaxErrorException{
-        if("true".equals(input) || "1".equals(input)){
-            return true;
-        }
-        if("false".equals(input) || "0".equals(input)){
-            return false;
-        }
-        throw new SyntaxErrorException("commands.generic.boolean.invalid",input==null?"":input);
+    public boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+        if(!ValidChecker.REQUIRE_ONE_TOKEN.check(this,input)) return false;
+        input.readBoolean();
+        return true;
     }
 }

@@ -37,7 +37,7 @@ import javax.annotation.Nonnull;
 public abstract class NoSplitNode implements ICommandNode {
     protected ICommandNode childNode;
 
-    public void setChildNode(ICommandNode child){
+    public void setChildNode(final ICommandNode child){
         childNode = child;
     }
 

@@ -32,6 +32,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nonnull;
 
@@ -40,6 +41,11 @@ import javax.annotation.Nonnull;
  */
 public final class Texts {
     private Texts(){}
+
+    @Nonnull
+    public static WrapTextBuilder wrap(final @Nonnull ITextComponent component){
+        return new WrapTextBuilder(component);
+    }
 
     @Nonnull
     public static PlainTextBuilder plain(final @Nonnull String text){

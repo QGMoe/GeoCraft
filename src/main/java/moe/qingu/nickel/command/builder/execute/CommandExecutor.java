@@ -31,29 +31,28 @@ import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @author QiguaiAAAA
  */
 @FunctionalInterface
 public interface CommandExecutor {
-    void run(@Nonnull List<String> args, @Nonnull ExecuteContext context) throws CommandException;
+    void run(@Nonnull final ExecuteContext ctx) throws CommandException;
 
     @Nonnull
     default CommandExecutor then(@Nonnull final CommandExecutor runFunc){
-        return (args, context) ->{
-            run(args,context);
-            runFunc.run(args,context);
+        return ctx ->{
+            run(ctx);
+            runFunc.run(ctx);
         };
     }
 
     @Nonnull
-    default CommandExecutor then(@Nonnull final BiConsumer<List<String>,ExecuteContext> func){
-        return (args, context) -> {
-            run(args,context);
-            func.accept(args,context);
+    default CommandExecutor then(@Nonnull final Consumer<ExecuteContext> func){
+        return ctx -> {
+            run(ctx);
+            func.accept(ctx);
         };
     }
 }

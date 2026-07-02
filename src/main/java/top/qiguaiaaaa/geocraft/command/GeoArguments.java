@@ -88,7 +88,7 @@ public final class GeoArguments {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<World, DimensionNode> _world(){
+    public static FastParameterNodeBuilder<World, DimensionNode> _world(){
         return dimension(WORLD)
                 .asOptional()
                 .translate("geocraft.command.common.arg.world");

@@ -27,8 +27,8 @@
 
 package moe.qingu.nickel.command.builder.parameter.minecraft;
 
+import moe.qingu.nickel.command.builder.parameter.ParameterNodeBuilder;
 import net.minecraft.entity.Entity;
-import moe.qingu.nickel.command.builder.parameter.SmartParameterNodeBuilder;
 import moe.qingu.nickel.command.node.parameter.minecraft.EntitySelectorNode;
 
 import javax.annotation.Nonnull;
@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * @author QiguaiAAAA
  */
-public class EntitySelectorNodeBuilder extends SmartParameterNodeBuilder<List<Entity>,EntitySelectorNode,EntitySelectorNodeBuilder> {
+public class EntitySelectorNodeBuilder extends ParameterNodeBuilder<List<Entity>,EntitySelectorNode,EntitySelectorNodeBuilder> {
 
     protected boolean single = false;
     protected boolean allowPlayerName = true;

@@ -35,8 +35,8 @@ import org.apache.logging.log4j.Logger;
 
 @Mod(modid = NickelAPI.MODID,version = NickelAPI.VERSION_NAME,acceptableRemoteVersions = "*")
 public final class NickelAPI extends DummyModContainer {
-    public final static long VERSION_ID = -1022;
-    public final static String VERSION_NAME = "0.0.3";
+    public final static long VERSION_ID = -1021;
+    public final static String VERSION_NAME = "0.0.4";
     public final static String MODID = "nickelapi";
     public final static String NAME = "NickelAPI";
     public final static Logger LOGGER = LogManager.getLogger(NAME);

@@ -33,13 +33,12 @@ import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.node.execute.ExecuteNode;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
 public abstract class ExecuteNodeBuilder<N extends ExecuteNode,S extends ExecuteNodeBuilder<N,S>> implements INodeBuilder<N> {
-    public static final CommandExecutor DO_NOTHING = (args, serializedArgs) -> {};
+    public static final CommandExecutor DO_NOTHING = ctx -> {};
     protected CommandExecutor funcExecute = DO_NOTHING;
 
     protected boolean doKeepArguments = false;
@@ -47,13 +46,6 @@ public abstract class ExecuteNodeBuilder<N extends ExecuteNode,S extends Execute
     @Nonnull
     @SuppressWarnings("unchecked")
     public S run(@Nonnull final CommandExecutor runFunc) {
-        this.funcExecute = runFunc;
-        return (S) this;
-    }
-
-    @Nonnull
-    @SuppressWarnings("unchecked")
-    public S run(@Nonnull final SimpleCommandExecutor runFunc) {
         this.funcExecute = runFunc;
         return (S) this;
     }
@@ -70,9 +62,10 @@ public abstract class ExecuteNodeBuilder<N extends ExecuteNode,S extends Execute
         @Override
         public ExecuteNode build() {
             return new ExecuteNode() {
+
                 @Override
-                public void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException {
-                    funcExecute.run(args,context);
+                public void run(@Nonnull final ExecuteContext context) throws CommandException {
+                    funcExecute.run(context);
                 }
 
                 @Override

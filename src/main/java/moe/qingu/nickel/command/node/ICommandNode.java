@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.node;
 
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
@@ -34,18 +35,17 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
  */
 public interface ICommandNode {
 
-    <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException;
+    void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException;
 
     @Nullable
-    <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context);
+    Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context);
 
     @Nonnull
     CommandBranch branch();

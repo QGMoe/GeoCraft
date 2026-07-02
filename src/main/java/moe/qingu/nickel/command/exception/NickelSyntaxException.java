@@ -78,7 +78,7 @@ public class NickelSyntaxException extends SyntaxErrorException implements INick
 
     @Nonnull
     public ITextComponent getNodeDocument(){
-        return fromNode.getDocument();
+        return fromNode.getDocument().done();
     }
 
     @Nullable

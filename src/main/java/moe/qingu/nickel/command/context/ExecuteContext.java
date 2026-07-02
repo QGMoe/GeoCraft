@@ -27,6 +27,8 @@
 
 package moe.qingu.nickel.command.context;
 
+import moe.qingu.nickel.command.node.ICommandNode;
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -60,8 +62,20 @@ public final class ExecuteContext extends CommandContext{
 
     private final Map<String,Object> contexts = new HashMap<>();
 
-    public ExecuteContext(@Nonnull ICommand command, @Nonnull MinecraftServer server, @Nonnull ICommandSender sender) {
-        super(command, server, sender);
+    public ExecuteContext(@Nonnull final InputReader context,
+                          @Nonnull final ICommand command,
+                          @Nonnull final MinecraftServer server,
+                          @Nonnull final ICommandSender sender) {
+        super(context,command, server, sender);
+    }
+
+    public void enter(final @Nonnull ICommandNode node) throws CommandException {
+        this.nodeContext.context.push(node);
+        try(@Nonnull final ContextStack<?> ignored = this.nodeContext){
+            final int begin = input.getCursor();
+            node.execute(input,this);
+            input.setCursor(begin);
+        }
     }
 
     @SuppressWarnings("unchecked")

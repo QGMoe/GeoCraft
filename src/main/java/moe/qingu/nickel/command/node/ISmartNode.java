@@ -28,11 +28,12 @@
 package moe.qingu.nickel.command.node;
 
 import moe.qingu.nickel.command.context.CommandContext;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.utils.Matcher;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.BiPredicate;
 
 /**
  * 智能节点，可以实现智能分支。
@@ -42,17 +43,16 @@ public interface ISmartNode extends ICommandNode{
     /**
      * 当前提供的参数是否与该节点匹配，如果匹配则会走当前节点。
      * @implSpec  不应当有副作用。
-     * @param args 当前命令尚未解析的参数。
-     * @param context 当前命令的上下文。
+     * @param input 当前命令的输入。
      * @return 是否匹配。
      */
-    boolean match(@Nonnull List<String> args, @Nonnull CommandContext context);
+    boolean match(@Nonnull final InputReader input);
 
     /**
      * 设置匹配器，用于自定义节点匹配。
-     * @see #match(List, CommandContext)
-     * @param checker 一个匹配器，是一个传入了{@link List<String>}和{@link CommandContext}并返回{@link Boolean}的函数，相当于一个{@link #match(List, CommandContext)}函数。
+     * @see #match(InputReader)
+     * @param checker 一个匹配器，是一个传入了{@link List<String>}和{@link CommandContext}并返回{@link Boolean}的函数，相当于一个{@link #match(InputReader)}函数。
      * @throws UnsupportedOperationException 若不支持设置自定义的匹配器则抛出。
      */
-    void setMatcher(@Nullable BiPredicate<List<String>,CommandContext> checker);
+    void setMatcher(@Nullable final Matcher checker);
 }

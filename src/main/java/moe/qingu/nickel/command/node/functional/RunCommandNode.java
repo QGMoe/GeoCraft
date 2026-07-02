@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command.node.functional;
 
 import com.google.common.base.Throwables;
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.EntitySelector;
@@ -53,7 +54,7 @@ import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -68,38 +69,27 @@ public class RunCommandNode implements ICommandNode{
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(args.isEmpty()) throw new SyntaxErrorException();
-        final String commandName = args.getFirst();
-        try {
-            args.pop();
-            final ICommand icommand = getCommand(commandName,context);
-            runCommand(icommand,args,context);
-        }finally {
-            args.addFirst(commandName);
-        }
+    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
+        final String commandName = input.readToken();
+        if(commandName.isEmpty()) throw new SyntaxErrorException();
+        final ICommand icommand = getCommand(commandName,context);
+        runCommand(icommand,input,context);
     }
 
     @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context) {
-        if(args.isEmpty()){
-            return context.getServer().getCommandManager().getCommands().keySet().stream().sorted().collect(Collectors.toList());
-        }else if(args.size() == 1){
+    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+        final String commandName = input.readToken();
+        if(commandName.isEmpty()){
+            return context.getServer().getCommandManager().getCommands().keySet().stream().sorted();
+        }else if(input.isRemainingEmpty()){
             return context.getServer().getCommandManager().getCommands().keySet().stream()
-                    .filter(s -> s.startsWith(args.getFirst()))
-                    .sorted()
-                    .collect(Collectors.toList());
+                    .filter(s -> s.startsWith(commandName))
+                    .sorted();
         }else{
-            final String commandName = args.getFirst();
-            try {
-                args.pop();
-                final ICommand icommand = context.getServer().getCommandManager().getCommands().get(args.getFirst());
-                if(icommand == null) return null;
-                return getCommandSuggest(icommand,args,context);
-            }finally {
-                args.addFirst(commandName);
-            }
+            final ICommand icommand = context.getServer().getCommandManager().getCommands().get(commandName);
+            if(icommand == null) return null;
+            return getCommandSuggest(icommand,input,context);
         }
     }
 
@@ -111,7 +101,7 @@ public class RunCommandNode implements ICommandNode{
         return branch;
     }
 
-    protected <T extends List<String> & Deque<String>> void runCommand(@Nonnull final ICommand command,@Nonnull final T args,@Nonnull final ExecuteContext context) throws CommandException {
+    protected <T extends List<String> & Deque<String>> void runCommand(@Nonnull final ICommand command,@Nonnull final InputReader input,@Nonnull final ExecuteContext context) throws CommandException {
         final @Nonnull ICommandSender sender = modifier == null?context.getSender():modifier.apply(command,context);
 
         if(!command.checkPermission(context.getServer(),sender)){
@@ -121,7 +111,7 @@ public class RunCommandNode implements ICommandNode{
             return;
         }
 
-        @Nonnull final String[] rawArgs = postGeoCommandEvent(command,context,args.toArray(EmptyStringArr));
+        @Nonnull final String[] rawArgs = postGeoCommandEvent(command,context,input.getInput().split(" "));
 
         final int usernameIndex = getUsernameIndex(command, rawArgs);
 
@@ -155,11 +145,12 @@ public class RunCommandNode implements ICommandNode{
     }
 
     @Nullable
-    protected static <T extends List<String> & Deque<String>> List<String> getCommandSuggest(@Nonnull final ICommand command,@Nonnull final T args, @Nonnull final SuggestContext context){
+    protected static Stream<String> getCommandSuggest(@Nonnull final ICommand command,@Nonnull final InputReader input, @Nonnull final SuggestContext context){
         if(command instanceof ICommandNode){
-            return ((ICommandNode)command).suggest(args,context);
+            return ((ICommandNode)command).suggest(input,context);
         }else {
-            return command.getTabCompletions(context.getServer(),context.getSender(),args.toArray(EmptyStringArr),context.getTargetPos());
+            return command.getTabCompletions(context.getServer(),context.getSender(),input.getInput().split(" "),context.getTargetPos())
+                    .stream();
         }
     }
 
@@ -170,12 +161,10 @@ public class RunCommandNode implements ICommandNode{
         return command;
     }
 
-    protected static int getUsernameIndex(final ICommand command,final @Nonnull String[] args) throws CommandException {
-        if (command != null) {
-            for (int i = 0; i < args.length; ++i) {
-                if (command.isUsernameIndex(args, i) && EntitySelector.matchesMultiplePlayers(args[i])) {
-                    return i;
-                }
+    protected static int getUsernameIndex(final @Nonnull ICommand command,final @Nonnull String[] args) throws CommandException {
+        for (int i = 0; i < args.length; ++i) {
+            if (command.isUsernameIndex(args, i) && EntitySelector.matchesMultiplePlayers(args[i])) {
+                return i;
             }
         }
         return -1;

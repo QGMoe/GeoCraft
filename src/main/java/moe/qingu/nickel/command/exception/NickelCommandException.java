@@ -87,7 +87,7 @@ public class NickelCommandException extends CommandException implements INickelE
 
     @Nullable
     public ITextComponent getNodeDocument(){
-        return fromNode == null?null:fromNode.getDocument();
+        return fromNode == null?null:fromNode.getDocument().done();
     }
 
     @Nullable

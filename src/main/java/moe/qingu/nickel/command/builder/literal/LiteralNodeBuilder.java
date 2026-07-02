@@ -27,6 +27,8 @@
 
 package moe.qingu.nickel.command.builder.literal;
 
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.utils.Matcher;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
@@ -56,7 +58,7 @@ public class LiteralNodeBuilder extends NoSplitNodeBuilder<LiteralNode,LiteralNo
     @SuppressWarnings("deprecation")
     protected static final BiConsumer<LiteralNodeBuilder,SmartSplitNodeBuilder.Inner<LiteralNodeBuilder>> ON_SMART_DONE =
             (self, smart) -> self.bakedChildNode = smart.build();
-    protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
+    protected @Nullable Matcher matchChecker;
     private final @Nonnull String name;
     protected Predicate<CommandContext> funcCheckPermission = PERMIT_ALL;
     protected int requiredPermissionLevel = 0;
@@ -108,12 +110,12 @@ public class LiteralNodeBuilder extends NoSplitNodeBuilder<LiteralNode,LiteralNo
 
     /**
      * 设置该字面量节点作为智能节点的匹配函数。
-     * @see ISmartNode#match(List, CommandContext)
+     * @see ISmartNode#match(InputReader)
      * @param matcher 一个匹配函数，用于智能分支节点根据尚未解析的参数和命令上下文匹配当前节点
      * @return {@link LiteralNodeBuilder} 自身
      */
     @Nonnull
-    public LiteralNodeBuilder matchIf(@Nullable BiPredicate<List<String>, CommandContext> matcher) {
+    public LiteralNodeBuilder matchIf(@Nullable final Matcher matcher) {
         this.matchChecker = matcher;
         return this;
     }

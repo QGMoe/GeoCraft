@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.utils;
 
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.ITextComponent;
@@ -48,6 +49,10 @@ public class CommandBranch {
 
     public void appendDocument(@Nonnull final ITextComponent document){
         documents.addFirst(document);
+    }
+
+    public void appendDocument(@Nonnull final TextBuilder<?,?> document){
+        this.appendDocument(document.done());
     }
 
     @Nonnull

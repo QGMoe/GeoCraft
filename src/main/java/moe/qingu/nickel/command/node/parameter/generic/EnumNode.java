@@ -28,38 +28,22 @@
 package moe.qingu.nickel.command.node.parameter.generic;
 
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
-import moe.qingu.nickel.command.utils.ValidChecker;
+import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
 
 /**
  * @author QGMoe
  */
-public class EnumNode<T extends Enum<T>> extends SmartParameterNode<T> {
+public class EnumNode<T extends Enum<T>> extends TokenizeParameterNode.Single<T> {
     protected final Class<T> t;
     protected String typeTranslationKey;
 
     public EnumNode(@Nonnull final String name,@Nonnull final Class<T> cls) {
         super(name);
         this.t = cls;
-        this.setMatcher((args,ctx)->{
-            if(args.isEmpty()) return false;
-            final String first = args.get(0);
-            try {
-                Enum.valueOf(t,first);
-                return true;
-            }catch (final @Nonnull IllegalArgumentException e){
-                return false;
-            }
-        });
     }
 
     public void setTypeTranslationKey(final @Nonnull String typeTranslationKey) {
@@ -67,13 +51,12 @@ public class EnumNode<T extends Enum<T>> extends SmartParameterNode<T> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        return ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context);
-    }
-
-    @Override
-    public final int getParametersLength() {
-        return 1;
+    public T parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        try {
+            return Enum.valueOf(t,token);
+        }catch (final @Nonnull IllegalArgumentException ignored){
+            throw new NickelSyntaxException(currentBranch,this);
+        }
     }
 
     @Nonnull
@@ -86,15 +69,5 @@ public class EnumNode<T extends Enum<T>> extends SmartParameterNode<T> {
     @Override
     public String getTypeTranslationKey() {
         return typeTranslationKey == null?t.getSimpleName():typeTranslationKey;
-    }
-
-    @Override
-    public <A extends List<String> & Deque<String>> T parseParameter(@Nonnull final A args, @Nonnull final ExecuteContext context) throws CommandException {
-        final @Nonnull String first = args.getFirst();
-        try {
-            return Enum.valueOf(t,first);
-        }catch (final @Nonnull IllegalArgumentException ignored){
-            throw new NickelSyntaxException(currentBranch,this);
-        }
     }
 }

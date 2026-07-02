@@ -30,13 +30,12 @@ package moe.qingu.nickel.command.builder.functional;
 import moe.qingu.nickel.command.builder.NoSplitNodeBuilder;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.node.functional.ForEachNode;
-import moe.qingu.nickel.util.function.TriFunction;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,14 +47,14 @@ import java.util.stream.StreamSupport;
 public class ForEachNodeBuilder<FROM extends Iterable<TO>,TO> extends NoSplitNodeBuilder<ForEachNode<FROM,TO>,ForEachNodeBuilder<FROM,TO>> {
 
     protected final String key;
-    protected TriFunction<FROM, List<String>, ExecuteContext,Iterable<TO>> transformer;
+    protected BiFunction<FROM,ExecuteContext,Iterable<TO>> transformer;
 
     public ForEachNodeBuilder(@Nonnull final String nameToForEach){
         this.key = nameToForEach;
     }
 
     @Nonnull
-    public ForEachNodeBuilder<FROM,TO> transform(@Nonnull final TriFunction<FROM,List<String>,ExecuteContext,Iterable<TO>> transformer){
+    public ForEachNodeBuilder<FROM,TO> transform(@Nonnull final BiFunction<FROM,ExecuteContext,Iterable<TO>> transformer){
         this.transformer = transformer;
         return this;
     }
@@ -63,11 +62,10 @@ public class ForEachNodeBuilder<FROM extends Iterable<TO>,TO> extends NoSplitNod
     @Nonnull
     public ForEachNodeBuilder<FROM,TO> stream(@Nonnull final Function<Stream<TO>,Stream<TO>> streamFunc){
         Objects.requireNonNull(streamFunc);
-        transformer =
-                (from, strings, context) ->
-                        streamFunc.apply(StreamSupport.stream(
-                                Spliterators.spliteratorUnknownSize(from.iterator(), Spliterator.ORDERED),false)
-                        ).collect(Collectors.toList());
+        transformer = (from, context) ->
+                streamFunc.apply(StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(from.iterator(), Spliterator.ORDERED),false)
+                ).collect(Collectors.toList());
         return this;
     }
 

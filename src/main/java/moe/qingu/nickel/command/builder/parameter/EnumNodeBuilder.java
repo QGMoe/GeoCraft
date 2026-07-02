@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 /**
  * @author QGMoe
  */
-public class EnumNodeBuilder<E extends Enum<E>> extends SmartParameterNodeBuilder<E, EnumNode<E>,EnumNodeBuilder<E>>{
+public class EnumNodeBuilder<E extends Enum<E>> extends ParameterNodeBuilder<E, EnumNode<E>,EnumNodeBuilder<E>>{
     protected final @Nonnull Class<E> cls;
     protected String typeTranslationKey;
 

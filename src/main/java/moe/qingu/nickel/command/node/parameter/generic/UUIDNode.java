@@ -28,33 +28,25 @@
 package moe.qingu.nickel.command.node.parameter.generic;
 
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
+import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.SyntaxErrorException;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.context.ExecuteContext;
-import moe.qingu.nickel.command.context.SuggestContext;
-import moe.qingu.nickel.command.node.parameter.SmartParameterNode;
-import moe.qingu.nickel.command.utils.ValidChecker;
 import net.minecraft.util.text.event.HoverEvent;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
 import java.util.UUID;
-import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QiguaiAAAA
  */
-public class UUIDNode extends SmartParameterNode<UUID> {
+public class UUIDNode extends TokenizeParameterNode.Single<UUID> {
     public static final DefaultParser<UUID> DEFAULT_PARSER = (node, context) -> UUID.randomUUID();
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR =
-            ((args, context) -> Collections.singletonList(UUID.randomUUID().toString()));
-
+    public static final SerialiseSuggestor<UUID> DEFAULT_SUGGESTOR =
+            (args, context) -> Stream.of(UUID.randomUUID());
 
     public UUIDNode(@Nonnull String name) {
         super(name);
@@ -63,49 +55,26 @@ public class UUIDNode extends SmartParameterNode<UUID> {
     }
 
     @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
-    @Nonnull
-    @Override
-    public Class<UUID> getType() {
-        return UUID.class;
+    public UUID parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        try {
+            return UUID.fromString(token);
+        }catch (final @Nonnull IllegalArgumentException e){
+            throw new NickelSyntaxException(currentBranch,this,translation("nickel.command.parameter.uuid.invalid")
+                    .arg(token)
+                    .hoverTo(HoverEvent.Action.SHOW_TEXT)
+                    .content(e.getMessage()));
+        }
     }
 
     @Nonnull
     @Override
     public Class<UUID> getTypeClass() {
-        return getType();
+        return UUID.class;
     }
 
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
         return "nickel.command.parameter.generic.uuid";
-    }
-
-    @Override
-    public <T extends List<String> & Deque<String>> UUID parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return parseUUID(args);
-    }
-
-    @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
-        parseUUID(args);
-        return true;
-    }
-
-    @Nonnull
-    protected UUID parseUUID(@Nonnull List<String> args) throws NickelSyntaxException {
-        try {
-            return UUID.fromString(args.get(0));
-        }catch (final @Nonnull IllegalArgumentException e){
-            throw new NickelSyntaxException(currentBranch,this,translation("nickel.command.parameter.uuid.invalid")
-                    .arg(args.get(0))
-                    .hoverTo(HoverEvent.Action.SHOW_TEXT)
-                    .content(e.getMessage()));
-        }
     }
 }

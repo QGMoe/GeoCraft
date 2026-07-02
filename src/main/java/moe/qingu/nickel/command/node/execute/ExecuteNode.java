@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.node.execute;
 
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.SyntaxErrorException;
 import moe.qingu.nickel.command.context.ExecuteContext;
@@ -36,8 +37,7 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -45,14 +45,14 @@ import java.util.List;
 @FunctionalInterface
 public interface ExecuteNode extends ICommandNode {
     @Override
-    default <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException{
-        throwIfShouldNotHaveArguments(args,keepArguments());
-        run(context,args);
+    default void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
+        throwIfShouldNotHaveArguments(input,keepArguments());
+        run(context);
     }
 
     @Nullable
     @Override
-    default <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context){
+    default Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context){
         return null;
     }
 
@@ -66,10 +66,10 @@ public interface ExecuteNode extends ICommandNode {
         return false;
     }
 
-    void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException;
+    void run(@Nonnull final ExecuteContext context) throws CommandException;
 
-    static void throwIfShouldNotHaveArguments(final @Nonnull List<String> args,final boolean keepArg) throws SyntaxErrorException{
-        if(!keepArg && !args.isEmpty() && !args.get(0).trim().isEmpty())
-            throw new SyntaxErrorException("nickel.command.execute.argument_not_empty",String.join(" ",args));
+    static void throwIfShouldNotHaveArguments(@Nonnull final InputReader input, final boolean keepArg) throws SyntaxErrorException{
+        if(!keepArg && !input.isRemainingEmpty()) throw new SyntaxErrorException("nickel.command.execute.argument_not_empty",input.readRemaining());
+        if(!keepArg) input.setCursor(input.getLength());
     }
 }

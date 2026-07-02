@@ -27,6 +27,14 @@
 
 package moe.qingu.nickel.command.context;
 
+import moe.qingu.nickel.command.exception.NickelCommandException;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.command.exception.NickelSyntaxException;
+import moe.qingu.nickel.command.node.ICommandNode;
+import moe.qingu.nickel.command.node.IDocumentaryNode;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.utils.CommandBranch;
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -34,19 +42,35 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Stack;
 
 /**
  * @author QiguaiAAAA
  */
 public class CommandContext {
+    protected final InputReader input;
     protected final ICommand command;
     protected final ICommandSender sender;
     protected final MinecraftServer server;
+    final @Nonnull ContextStack<CommandBranch> branchContext = new ContextStack<>();
+    final @Nonnull ContextStack<ICommandNode> nodeContext = new ContextStack<>();
 
-    public CommandContext(@Nonnull ICommand command,@Nonnull MinecraftServer server,@Nonnull ICommandSender sender) {
+    public CommandContext(@Nonnull final InputReader input,
+                          @Nonnull final ICommand command,
+                          @Nonnull final MinecraftServer server,
+                          @Nonnull final ICommandSender sender) {
+        this.input = input;
+        input.setContext(this);
         this.command = command;
         this.sender = sender;
         this.server = server;
+    }
+
+    @Nonnull
+    public ContextStack<CommandBranch> enter(final @Nonnull CommandBranch branch){
+        this.branchContext.context.push(branch);
+        return this.branchContext;
     }
 
     @Nonnull
@@ -72,5 +96,35 @@ public class CommandContext {
     @Nonnull
     public MinecraftServer getServer() {
         return server;
+    }
+
+    @Nonnull
+    public InputReader getInput() {
+        return input;
+    }
+
+    @Nonnull
+    public <T> T panic(final @Nonnull TextBuilder<?,?> text) throws NickelRuntimeException, NickelCommandException, NickelSyntaxException {
+        final @Nullable ICommandNode curNode = nodeContext.isEmpty()? null:nodeContext.context.peek();
+        final @Nullable CommandBranch curBranch = branchContext.isEmpty()? null:branchContext.context.peek();
+        if(curBranch != null){
+            if(curNode instanceof IDocumentaryNode) throw new NickelSyntaxException(curBranch, (IDocumentaryNode) curNode,text);
+            else throw new NickelCommandException(curBranch,text);
+        }else throw new NickelRuntimeException(text);
+    }
+
+    public static class ContextStack<T> implements AutoCloseable{
+        final @Nonnull Stack<T> context = new Stack<>();
+
+        public final boolean isEmpty(){
+            return context.isEmpty();
+        }
+
+        private ContextStack(){}
+
+        @Override
+        public final void close(){
+            this.context.pop();
+        }
     }
 }
