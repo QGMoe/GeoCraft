@@ -28,7 +28,7 @@
 package moe.qingu.nickel.command.utils;
 
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.exception.NickelCommandException;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;

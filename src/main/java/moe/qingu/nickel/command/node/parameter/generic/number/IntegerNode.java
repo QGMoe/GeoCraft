@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.node.parameter.generic.number;
 
+import moe.qingu.nickel.I18nKeys;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.NumberInvalidException;
 
@@ -54,7 +55,7 @@ public class IntegerNode extends NumberNode<Integer> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "nickel.command.parameter.generic.integer";
+        return I18nKeys.INT;
     }
 
     @Override

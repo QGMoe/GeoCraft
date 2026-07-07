@@ -27,9 +27,11 @@
 
 package moe.qingu.nickel.nbt;
 
-import net.minecraft.nbt.NBTTagLongArray;
+import moe.qingu.nickel.command.node.parameter.generic.StringNode;
+import net.minecraft.nbt.*;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
@@ -45,5 +47,54 @@ public final class NBTUtils {
         return Arrays.stream(arr.substring(3,arr.length()-1).split(","))
                 .map(e -> e.substring(0,e.length()-1))
                 .mapToLong(Long::parseLong);
+    }
+
+    @Nullable
+    public static String escape(final @Nonnull String str){
+
+        for(int i=0;i<str.length();){
+            final int cp = str.codePointAt(i);
+            if(!SNBTReader.isAllowedUnquoted(cp)) return StringNode.escape(str).toString();
+            i += Character.charCount(cp);
+        }
+        return null;
+    }
+
+    public static int sizeOf(final @Nonnull NBTTagCompound compound){
+        int size = 0;
+        for(final String k:compound.getKeySet()) size += sizeOf(compound.getTag(k));
+        return size;
+    }
+
+    public static int sizeOf(final @Nonnull NBTTagList list){
+        int size = 0;
+        for(final NBTBase nbt: list) size += sizeOf(nbt);
+        return size;
+    }
+
+    public static int sizeOf(final @Nonnull NBTTagByteArray arr){
+        return arr.getByteArray().length;
+    }
+
+    public static int sizeOf(final @Nonnull NBTTagIntArray arr){
+        return arr.getIntArray().length;
+    }
+
+    public static int sizeOf(final @Nonnull NBTTagLongArray arr){
+        return (int) streamOf(arr).count();
+    }
+
+    public static int sizeOf(final @Nonnull NBTBase base){
+        if(base instanceof NBTTagCompound){
+            return sizeOf((NBTTagCompound) base);
+        }else if(base instanceof NBTTagList){
+            return sizeOf((NBTTagList) base);
+        }else if(base instanceof NBTTagByteArray){
+            return sizeOf((NBTTagByteArray) base);
+        }else if(base instanceof NBTTagIntArray){
+            return sizeOf((NBTTagIntArray) base);
+        }else if(base instanceof NBTTagLongArray){
+            return sizeOf((NBTTagLongArray) base);
+        }else return 1;
     }
 }

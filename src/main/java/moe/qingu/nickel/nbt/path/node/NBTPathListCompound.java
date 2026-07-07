@@ -25,32 +25,47 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.nbt.path;
+package moe.qingu.nickel.nbt.path.node;
 
+import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagList;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * @author QGMoe
  */
-public final class NBTPathCompound extends NBTPathNode{
-    private final NBTCompoundMatcher matcher;
+public final class NBTPathListCompound extends NBTPathNode{
+    private final NBTCompoundMatcher filter;
 
-    public NBTPathCompound(final @Nonnull NBTCompoundMatcher matcher) {
-        this.matcher = matcher;
+    public NBTPathListCompound(final @Nonnull NBTCompoundMatcher filter) {
+        this.filter = filter;
     }
 
     @Nonnull
-    public NBTCompoundMatcher getMatcher() {
-        return matcher;
+    public NBTCompoundMatcher getFilter() {
+        return filter;
     }
 
     @Override
-    public Collection<NBTBase> apply(final NBTBase nbtBase) {
-        if(matcher.match(nbtBase)) return Collections.singletonList(nbtBase);
-        else return Collections.emptyList();
+    public Collection<NBTBase> apply(final @Nonnull NBTBase nbtBase) {
+        if(nbtBase instanceof NBTTagList){
+            final NBTTagList list = (NBTTagList) nbtBase;
+            return StreamSupport.stream(list.spliterator(),false)
+                    .filter(filter::match)
+                    .collect(Collectors.toList());
+        }else return Collections.emptyList();
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalName() {
+        return I18nKeys.NBTPath.NODE_LIST_COMPOUND;
     }
 }

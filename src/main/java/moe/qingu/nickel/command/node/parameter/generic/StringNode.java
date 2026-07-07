@@ -27,8 +27,9 @@
 
 package moe.qingu.nickel.command.node.parameter.generic;
 
-import moe.qingu.nickel.command.exception.NickelSyntaxException;
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.I18nKeys;
+import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.CommandContext;
@@ -128,9 +129,9 @@ public class StringNode extends ParameterNode<String> {
     @Override
     public String getTypeTranslationKey() {
         switch (mode){
-            case TOKEN:return "nickel.command.parameter.generic.token";
-            case GREED:return "nickel.command.parameter.generic.greed";
-            default:return "nickel.command.parameter.generic.string";
+            case TOKEN:return I18nKeys.TOKEN;
+            case GREED:return I18nKeys.GREED;
+            default:return I18nKeys.STRING;
         }
     }
 
@@ -140,33 +141,71 @@ public class StringNode extends ParameterNode<String> {
     }
 
     @Override
-    public String parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
+    public String parse(@Nonnull final InputReader input) throws CommandException {
         switch (mode){
-            case TOKEN: if(resolve) return input.readToken();
-            else{
-                input.skipContents();
-                return null;
-            }
-            case GREED: if(resolve) return input.readRemaining();
-            else {
-                input.setCursor(input.getLength());
-                return null;
-            } default:{
-                final String res;
-                if(resolve) res = input.readString();
-                else {
-                    input.scanString();
-                    res = null;
-                }
-                if(input.canRead() && !Character.isWhitespace(input.peek())) throw new NickelSyntaxException(this.currentBranch,this);
+            case TOKEN: return input.readToken();
+            case GREED: return input.readRemaining();
+            default:{
+                final String res = input.readString();
+                if(input.canRead() && !Character.isWhitespace(input.peek())) input.panic(input.getCursor(),I18nKeys.Syntax.NO_SPLIT);
                 return res;
             }
         }
     }
 
+    @Override
+    public void scan(@Nonnull final InputReader input) throws CommandException, NickelScanEOFSignal {
+        mode.scan(input);
+    }
+
+    @Nonnull
+    public static StringBuilder escape(@Nonnull final String str){
+        final StringBuilder builder = new StringBuilder();
+        str.codePoints().forEach(cp ->{
+            final String escape = escape(cp);
+            if(escape != null) builder.append(escape);
+            else builder.appendCodePoint(cp);
+        });
+        return builder;
+    }
+
+    public static @Nullable String escape(final int cp){
+        switch (cp) {
+            case '\\': return "\\\\";
+            case '\u001B': return "\\e";
+            case '\b': return "\\b";
+            case '\f': return "\\f";
+            case '\n': return "\\n";
+            case '\t': return "\\t";
+            case '\r': return "\\r";
+            case '"': return "\\\"";
+            case '\u0007': return "\\a";
+            case '\u000B': return "\\v";
+            default: return null;
+        }
+    }
+
     public enum Mode{
-        STRING,
-        TOKEN,
-        GREED
+        STRING{
+            @Override
+            public void scan(@Nonnull final InputReader input) throws CommandException, NickelScanEOFSignal {
+                input.scanString();
+                if(input.canRead() && !Character.isWhitespace(input.peek())) input.panic(input.getCursor(),I18nKeys.Syntax.NO_SPLIT);
+            }
+        },
+        TOKEN{
+            @Override
+            public void scan(@Nonnull final InputReader input) throws CommandException, NickelScanEOFSignal {
+                input.skipContents();
+            }
+        },
+        GREED{
+            @Override
+            public void scan(@Nonnull final InputReader input) {
+                input.setCursor(input.getLength());
+            }
+        };
+
+        public void scan(final @Nonnull InputReader input) throws CommandException,NickelScanEOFSignal{}
     }
 }

@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.exception;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
@@ -112,8 +112,10 @@ public class NickelSyntaxException extends SyntaxErrorException implements INick
                 .then(this.getDetails());
         return msg.hoverTo(HoverEvent.Action.SHOW_TEXT)
                 .content((info == null ? plain(""): info.getInfo()
-                        .then(" <-- \n"+TextFormatting.RESET))
+                        .then(plain(" <-- \n")
+                                .underlined(false)))
                         .then(translation("nickel.command.exception.syntax.usage",this.getSourceBranch().getDocument())
+                                .underlined(false)
                                 .color(TextFormatting.AQUA)));
     }
 }

@@ -76,8 +76,8 @@ public final class NBTCompoundMatcher extends NBTMatcher<NBTTagCompound> {
     protected boolean _match(final @Nonnull NBTTagCompound compound) {
         for(final Map.Entry<String,NBTMatcher<?>> entry:map.entrySet()){
             if(!compound.hasKey(entry.getKey())) return false;
-            final NBTBase v = compound.getTag(entry.getKey());
             if(entry.getValue() == null) continue;
+            final NBTBase v = compound.getTag(entry.getKey());
             if(!entry.getValue().match(v)) return false;
         }
         return true;

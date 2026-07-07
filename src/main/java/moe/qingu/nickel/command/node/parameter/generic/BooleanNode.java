@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.node.parameter.generic;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
 import moe.qingu.nickel.command.utils.Claimer;
@@ -72,12 +72,14 @@ public class BooleanNode extends ParameterNode<Boolean> {
     }
 
     @Override
-    public Boolean parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
-        if(resolve) return input.readBoolean();
-        else {
-            input.readToken();
-            return null;
-        }
+    public Boolean parse(@Nonnull final InputReader input) throws CommandException {
+        return input.readBoolean();
+    }
+
+    @Override
+    public void scan(@Nonnull final InputReader input) {
+        input.skipWhitespaces();
+        input.skipContents();
     }
 
     @Override

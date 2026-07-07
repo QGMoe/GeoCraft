@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.node.literal;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.suggestor.Suggestion;
 import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.text.TextBuilder;
@@ -42,7 +42,6 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import static moe.qingu.nickel.text.Texts.plain;

@@ -28,7 +28,7 @@
 package moe.qingu.nickel.command.context;
 
 import moe.qingu.nickel.command.node.ICommandNode;
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.utils.CommandBranch;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;

@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.node.functional;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.suggestor.Suggestion;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
@@ -36,7 +36,6 @@ import moe.qingu.nickel.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.function.BiFunction;
 
 /**

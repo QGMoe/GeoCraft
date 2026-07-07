@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.utils;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;

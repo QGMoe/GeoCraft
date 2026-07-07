@@ -28,7 +28,7 @@
 package moe.qingu.nickel.command.node.literal;
 
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.suggestor.Suggestion;
 import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.text.TextBuilder;

@@ -25,40 +25,35 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.node.parameter.generic.number;
+package moe.qingu.nickel.nbt.matcher;
 
-import moe.qingu.nickel.I18nKeys;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.NumberInvalidException;
+import net.minecraft.nbt.NBTTagFloat;
 
 import javax.annotation.Nonnull;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class LongNode extends NumberNode<Long> {
-    public static final DefaultParser<Long> DEFAULT_PARSER = (node, context) -> 0L;
-    public LongNode(@Nonnull String name) {
-        super(name);
-        setDefaultParser(DEFAULT_PARSER);
-        setMinValue(Long.MIN_VALUE);
-        setMaxValue(Long.MAX_VALUE);
+public final class NBTFloatMatcher extends NBTMatcher<NBTTagFloat> {
+
+    private final float num;
+
+    public NBTFloatMatcher(final float num) {
+        this.num = num;
+    }
+
+    public float getExpectedFloat() {
+        return num;
     }
 
     @Nonnull
     @Override
-    public Class<Long> getTypeClass() {
-        return Long.class;
-    }
-
-    @Nonnull
-    @Override
-    public String getTypeTranslationKey() {
-        return I18nKeys.LONG;
+    public Class<NBTTagFloat> getMatchType() {
+        return NBTTagFloat.class;
     }
 
     @Override
-    protected Long parse(@Nonnull String arg) throws NumberInvalidException {
-        return CommandBase.parseLong(arg,minValue,maxValue);
+    protected boolean _match(@Nonnull final NBTTagFloat nbtTagFloat) {
+        return nbtTagFloat.getFloat() == num;
     }
 }

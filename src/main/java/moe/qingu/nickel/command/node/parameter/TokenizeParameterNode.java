@@ -28,7 +28,8 @@
 package moe.qingu.nickel.command.node.parameter;
 
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.utils.Acceptor;
 import net.minecraft.command.CommandException;
 
@@ -50,7 +51,7 @@ public abstract class TokenizeParameterNode<P> extends ParameterNode<P>{
         }
 
         @Override
-        public boolean accepts(@Nonnull final InputReader input) throws CommandException {
+        public final boolean accepts(@Nonnull final InputReader input) throws CommandException {
             final int begin = input.getCursor();
             try {
                 if(!Acceptor.matchMultiTokens(this,input,getTokenCount())) return false;
@@ -66,13 +67,18 @@ public abstract class TokenizeParameterNode<P> extends ParameterNode<P>{
         }
 
         @Override
-        public final P parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
-            final String[] tokens = readMultiTokens(input,getTokenCount());
-            if(resolve) return parse(tokens,input.getContext());
-            else return null;
+        public final P parse(@Nonnull final InputReader input) throws CommandException {
+            return parse(readMultiTokens(input,getTokenCount()),input.getContext());
+        }
+
+        @Override
+        public final void scan(@Nonnull final InputReader input) throws CommandException, NickelScanEOFSignal {
+            scan(readMultiTokens(input,getTokenCount()),input.getContext());
         }
 
         public abstract P parse(@Nonnull final String[] tokens, @Nonnull final CommandContext context) throws CommandException;
+
+        public void scan(@Nonnull final String[] tokens, @Nonnull final CommandContext context) throws CommandException{}
 
         @Nonnull
         public static String[] readMultiTokens(@Nonnull final InputReader input,final int num){
@@ -100,13 +106,18 @@ public abstract class TokenizeParameterNode<P> extends ParameterNode<P>{
         }
 
         @Override
-        public P parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
-            final String token = input.readToken();
-            if(resolve) return parse(token,input.getContext());
-            else return null;
+        public final P parse(@Nonnull final InputReader input) throws CommandException {
+            return parse(input.readToken(),input.getContext());
+        }
+
+        @Override
+        public final void scan(@Nonnull final InputReader input) throws CommandException {
+            scan(input.readToken(),input.getContext());
         }
 
         public abstract P parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException;
+
+        public void scan(@Nonnull final String token,@Nonnull final CommandContext context) throws CommandException{}
 
         @Override
         public final int getTokenCount() {

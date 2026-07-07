@@ -25,12 +25,13 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.nbt;
+package moe.qingu.nickel.nbt.operation;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.node.parameter.generic.UUIDNode;
+import moe.qingu.nickel.nbt.NBTUtils;
 import net.minecraft.nbt.*;
 
 import javax.annotation.Nonnull;

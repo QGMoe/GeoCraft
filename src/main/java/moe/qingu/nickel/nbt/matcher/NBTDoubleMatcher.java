@@ -25,42 +25,34 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.nbt.path;
+package moe.qingu.nickel.nbt.matcher;
 
-import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagDouble;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * @author QGMoe
  */
-public final class NBTPathListCompound extends NBTPathNode{
-    private final NBTCompoundMatcher filter;
+public final class NBTDoubleMatcher extends NBTMatcher<NBTTagDouble> {
+    private final double num;
 
-    public NBTPathListCompound(final @Nonnull NBTCompoundMatcher filter) {
-        this.filter = filter;
+    public NBTDoubleMatcher(final double num) {
+        this.num = num;
+    }
+
+    public double getExpectedDouble() {
+        return num;
     }
 
     @Nonnull
-    public NBTCompoundMatcher getFilter() {
-        return filter;
+    @Override
+    public Class<NBTTagDouble> getMatchType() {
+        return NBTTagDouble.class;
     }
 
     @Override
-    public Collection<NBTBase> apply(final @Nonnull NBTBase nbtBase) {
-        if(nbtBase instanceof NBTTagList){
-            final NBTTagList list = (NBTTagList) nbtBase;
-            return StreamSupport.stream(list.spliterator(),false)
-                    .filter(filter::match)
-                    .collect(Collectors.toList());
-        }else return Collections.emptyList();
+    protected boolean _match(@Nonnull final NBTTagDouble nbtTagDouble) {
+        return nbtTagDouble.getDouble() == num;
     }
-
-
 }

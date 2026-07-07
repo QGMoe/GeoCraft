@@ -85,6 +85,8 @@ public abstract class NBTMatcher<T extends NBTBase> {
         else if(nbt instanceof NBTTagInt) return new NBTIntMatcher(((NBTTagInt) nbt).getInt());
         else if(nbt instanceof NBTTagLong) return new NBTLongMatcher(((NBTTagLong) nbt).getLong());
         else if(nbt instanceof NBTTagString) return new NBTStringMatcher(((NBTTagString) nbt).getString());
+        else if(nbt instanceof NBTTagFloat) return new NBTFloatMatcher(((NBTTagFloat)nbt).getFloat());
+        else if(nbt instanceof NBTTagDouble) return new NBTDoubleMatcher(((NBTTagDouble)nbt).getDouble());
         else throw new IllegalArgumentException();
     }
 }

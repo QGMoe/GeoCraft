@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.builder.functional;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.utils.Claimer;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;

@@ -27,13 +27,14 @@
 
 package moe.qingu.nickel.nbt;
 
+import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
-import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
+import moe.qingu.nickel.nbt.operation.SNBTOperation;
+import moe.qingu.nickel.nbt.operation.SNBTOperations;
 import moe.qingu.nickel.util.StringUtils;
 import net.minecraft.command.CommandException;
 import net.minecraft.nbt.*;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.common.util.Constants;
 
@@ -42,11 +43,8 @@ import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static moe.qingu.nickel.text.Texts.plain;
 import static moe.qingu.nickel.text.Texts.translation;
-import static moe.qingu.nickel.util.StringUtils.stringOf;
 
 /**
  * @author QGMoe
@@ -67,7 +65,7 @@ public class SNBTReader {
     @Nonnull
     public static NBTTagCompound readSingleNBTFromInput(final @Nonnull InputReader input) throws CommandException {
         final NBTTagCompound compound =  new SNBTReader(input).readCompound();
-        if(input.canRead() && !Character.isWhitespace(input.peek())) return input.panic(input.getCursor(),"nickel.command.parameter.nbt.escape");
+        if(input.canRead() && !Character.isWhitespace(input.peek())) return input.panic(input.getCursor(),I18nKeys.Syntax.NO_SPLIT);
         return compound;
     }
 
@@ -91,7 +89,7 @@ public class SNBTReader {
         expect('[');
         input.skipWhitespaces();
         final int begin = input.getCursor();
-        if(!input.canRead()) return input.panic(begin,translation("nickel.command.parameter.nbt.expected_value"));
+        if(!input.canRead()) return input.panic(begin,translation(I18nKeys.NBT.EXPECT_VALUE));
 
         switch (input.peek()){
             case 'B':
@@ -121,7 +119,7 @@ public class SNBTReader {
             final int begin = input.getCursor();
             final NBTBase value = this.readValue('i');
             if(type == -1) type = value.getId();
-            else if(value.getId() != type) return input.panic(begin, translation("nickel.command.parameter.nbt.list.type_mismatch")
+            else if(value.getId() != type) return input.panic(begin, translation(I18nKeys.NBT.LIST_MISMATCH)
                     .arg(NBTBase.NBT_TYPES[type],NBTBase.NBT_TYPES[value.getId()]));
             list.appendTag(value);
             if(shouldExit(']')) break;
@@ -141,7 +139,7 @@ public class SNBTReader {
             final int begin = input.getCursor();
             final NBTBase value = this.readValue(cp);
             if(value.getId() != type && value.getId() > type) //对于整型类型，id越大，范围越大，小范围装不了大范围
-                return input.panic(begin, translation("nickel.command.parameter.nbt.array.type_mismatch").arg(NBTBase.NBT_TYPES[type],NBTBase.NBT_TYPES[value.getId()]));
+                return input.panic(begin, translation(I18nKeys.NBT.ARR_MISMATCH).arg(NBTBase.NBT_TYPES[type],NBTBase.NBT_TYPES[value.getId()]));
             final NBTPrimitive primitive = (NBTPrimitive) value;
             if(cp == 'b') array.add(primitive.getByte());
             else if(cp == 'l') array.add(primitive.getLong());
@@ -169,10 +167,10 @@ public class SNBTReader {
         input.skipWhitespaces();
         final int begin = input.getCursor();
         final String key;
-        if(!input.canRead()) return input.panic(begin,translation("nickel.command.parameter.nbt.expected_key"));
+        if(!input.canRead()) return input.panic(begin,translation(I18nKeys.NBT.EXPECT_KEY));
         if(input.peek() == '"' || input.peek() == '\'') key = StringUtils.strip(input.readString());
         else key = readUnquotedString();
-        if(begin == input.getCursor() || key.isEmpty()) return input.panic(begin,translation("nickel.command.parameter.nbt.empty_key"));
+        if(begin == input.getCursor() || key.isEmpty()) return input.panic(begin,translation(I18nKeys.NBT.EMPTY_KEY));
         return key;
     }
 
@@ -181,18 +179,13 @@ public class SNBTReader {
         input.skipWhitespaces();
         final int begin = input.getCursor();
         while (input.canRead() && isAllowedUnquoted(input.peek())) input.skip();
-        return StringUtils.strip(input.getSubInput(begin,input.getCursor()));
-    }
-
-    public void scanUnquotedString(){
-        input.skipWhitespaces();
-        while (input.canRead() && isAllowedUnquoted(input.peek())) input.skip();
+        return input.getSubInput(begin,input.getCursor());
     }
 
     @Nonnull
     public NBTBase readValue(final char defaultNumType) throws CommandException {
         input.skipWhitespaces();
-        if(!input.canRead()) return input.panic(input.getCursor(),translation("nickel.command.parameter.nbt.expected_value"));
+        if(!input.canRead()) return input.panic(input.getCursor(),translation(I18nKeys.NBT.EXPECT_VALUE));
         switch (input.peek()){
             case '{': return readCompound();
             case '[': return readListOrArray();
@@ -209,7 +202,7 @@ public class SNBTReader {
         final String raw = readUnquotedString();
         switch (raw) {
             case "":
-                return input.panic(begin, translation("nickel.command.parameter.nbt.empty_value"));
+                return input.panic(begin, translation(I18nKeys.NBT.EXPECT_VALUE));
             case "true":
                 return new NBTTagByte((byte) 1);
             case "false":
@@ -230,8 +223,7 @@ public class SNBTReader {
                     return parseFloat(begin,raw);
                 }
             }catch (final NumberFormatException e){
-                return input.panic(begin,translation("nickel.command.parameter.nbt.invalid_num",raw)
-                        .hoverTo(HoverEvent.Action.SHOW_TEXT).content(plain(e.getLocalizedMessage())));
+                return input.panic(begin,I18nKeys.NBT.invalidNum(raw,e));
             }
         }else return new NBTTagString(raw);
     }
@@ -251,21 +243,13 @@ public class SNBTReader {
         expect(')');
         final NBTBase[] argsArr = args.toArray(new NBTBase[0]);
         final @Nullable SNBTOperation func = SNBTOperations.resolve(name,argsArr);
-        if(func == null) return input.panic(begin,translation("nickel.command.parameter.nbt.function.undefined")
-                .arg(plain(name+'('+ args.stream()
-                        .map(NBTBase::toString)
-                        .collect(Collectors.joining(",")) +')'
-                ).color(TextFormatting.GOLD).underlined(true))
-                .arg(plain(SNBTOperations.signatureOf(name,args)))
-                .color(TextFormatting.AQUA).underlined(true));
+        if(func == null) return input.panic(begin,I18nKeys.NBT.optUndefined(name,args));
         try{
             return func.invoke(argsArr);
         }catch (final NickelRuntimeException e){
-            return input.panic(begin,translation("nickel.command.parameter.nbt.function.run_exception",SNBTOperations.signatureOf(func))
-                    .hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getInformation()));
+            return input.panic(begin,I18nKeys.NBT.optFailed(func).hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getInformation()));
         }catch (final Exception e){
-            return input.panic(begin,translation("nickel.command.parameter.nbt.function.run_exception",SNBTOperations.signatureOf(func))
-                    .hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getLocalizedMessage()));
+            return input.panic(begin,I18nKeys.NBT.optFailed(func).hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getLocalizedMessage()));
         }
     }
 
@@ -282,16 +266,16 @@ public class SNBTReader {
         boolean unsigned = false;
         int cursor = 0;
         loop: for(;cursor<raw.length();cursor++){
-            final char cp = raw.charAt(cursor);
-            final int digit = Character.digit(cp,radix);
-            if(canSign && cursor==0 && (cp == '+' || cp == '-')) continue ;
+            final char c = raw.charAt(cursor);
+            final int digit = Character.digit(c,radix);
+            if(canSign && cursor==0 && (c == '+' || c == '-')) continue ;
             else if(digit != -1){
-                if(checkZero && zero) return input.panic(begin + cursor,"nickel.command.parameter.nbt.num.invalid_0"); //已经有前导0
+                if(checkZero && zero) return input.panic(begin + cursor,I18nKeys.NBT.INVALID_0); //已经有前导0
                 if(digit == 0 && !inDigit) zero = true; //第一个0可以接受
                 inDigit = true;
-            }
-            else if(inDigit){
-                switch (cp){
+                continue ;
+            } else if(inDigit){
+                switch (c){
                     case 'u':
                     case 'U': unsigned = true;
                     case 's':
@@ -304,17 +288,17 @@ public class SNBTReader {
                         cursor = checkValid_(begin,raw,radix,cursor)-1;//continue会+1
                         continue;
                     }
-                    default: return input.panic(begin+cursor,translation("nickel.command.parameter.nbt.int.invalid_code",cp));
                 }
-            } else return input.panic(begin+cursor,translation("nickel.command.parameter.nbt.int.invalid_code",cp));
+            }
+            return input.panic(begin+cursor,I18nKeys.NBT.intInvalidChar(radix,c));
         }
         final char type;
         if(hasMark){
             if(raw.length() == cursor+1) type = defaultType;
             else if(raw.length() == cursor+2) type = getIntType(begin+cursor+1,raw.charAt(cursor+1));
-            else return input.panic(begin+cursor+2,"nickel.command.parameter.nbt.int.invalid_escape"); //最后最多两个字母了
+            else return input.panic(begin+cursor+2,I18nKeys.NBT.intEscape(cursor+2,raw)); //最后最多两个字母了
         }else if(raw.length() > cursor+1)
-            return input.panic(begin+cursor+1,"nickel.command.parameter.nbt.int.invalid_escape");  //没符号标记，数字后必须最多只剩下一个字母
+            return input.panic(begin+cursor+1,I18nKeys.NBT.intEscape(cursor+1,raw));  //没符号标记，数字后必须最多只剩下一个字母
         else if(raw.length() == cursor +1) type = getIntType(begin+cursor,raw.charAt(cursor));
         else type = defaultType;
         final String val = raw.substring(0,cursor).replace("_","");
@@ -323,7 +307,7 @@ public class SNBTReader {
             case 's': return new NBTTagShort((short) (unsigned?validateRange(begin,Long.parseUnsignedLong(val,radix),0,65535):Short.parseShort(val,radix)));
             case 'i': return new NBTTagInt(unsigned?Integer.parseUnsignedInt(val,radix):Integer.parseInt(val,radix));
             case 'l': return new NBTTagLong(unsigned?Long.parseUnsignedLong(val,radix):Long.parseLong(val,radix));
-            default:return input.panic(begin,translation("nickel.command.parameter.nbt.int.invalid_type",type));
+            default:return input.panic(begin,translation(I18nKeys.NBT.INT_INVALID_TYPE,type));
         }
     }
 
@@ -337,15 +321,15 @@ public class SNBTReader {
         switch (type){
             case 'f':{
                 final float res = Float.parseFloat(val);
-                if(Float.isInfinite(res) || Float.isNaN(res)) return input.panic(begin,"nickel.command.parameter.nbt.float.infinity");
+                if(Float.isInfinite(res) || Float.isNaN(res)) return input.panic(begin,I18nKeys.NBT.INFINITY);
                 return new NBTTagFloat(res);
             }
             case 'd':{
                 final double res = Double.parseDouble(val); //那些.1f、.1d、1.f、1.d、1ef之类的写法Java原生支持
-                if(Double.isInfinite(res) || Double.isNaN(res)) return input.panic(begin,"nickel.command.parameter.nbt.float.infinity");
+                if(Double.isInfinite(res) || Double.isNaN(res)) return input.panic(begin,I18nKeys.NBT.INFINITY);
                 return new NBTTagDouble(res);
             }
-            default:return input.panic(begin,translation("nickel.command.parameter.nbt.float.invalid_type",type));
+            default:return input.panic(begin,translation(I18nKeys.NBT.FLOAT_INVALID_TYPE,type));
         }
     }
 
@@ -353,7 +337,7 @@ public class SNBTReader {
      * 检查非法的前导0
      * @param raw 字符串
      * @param radix 进制
-     * @param loc 前导0位置
+     * @param loc 一个0所在的位置
      * @return 跳过这个0向前的第一个非0位置的后一位
      */
     public int checkPreZeroInFloat(final int begin,final @Nonnull String raw, final int radix, final int loc) throws CommandException{
@@ -361,7 +345,7 @@ public class SNBTReader {
         while (i>=0 && raw.charAt(i) == '0') i--;
         if(i == loc -1 && (loc >= raw.length()-1 || Character.digit(raw.charAt(loc+1),radix) == -1)) return loc; //单个0也在最后，是没问题的，否则0后面接了数字
         if(i < 0 || raw.charAt(i) != '.' && Character.digit(raw.charAt(i),radix) == -1)
-            return input.panic(begin+i+1,"nickel.command.parameter.nbt.num.invalid_0");//这一串0最前面不是数字或小数点，是非法的前导0
+            return input.panic(begin+i+1,I18nKeys.NBT.INVALID_0);//这一串0最前面不是数字或小数点，是非法的前导0
         else return i+1;
     }
 
@@ -371,7 +355,7 @@ public class SNBTReader {
         while (i>=0 && raw.charAt(i) == '_') i--;
         while (j < raw.length() && raw.charAt(j) == '_') j++;
         if(i >= 0 && Character.digit(raw.charAt(i),radix) != -1 && j < raw.length() && Character.digit(raw.charAt(j),radix) != -1) return j;
-        else return input.panic(begin+loc,"nickel.command.parameter.nbt.num.invalid_split");
+        else return input.panic(begin+loc,I18nKeys.NBT.INVALID_NUM_SPLIT);
     }
 
     private char getIntType(final int begin,final char cp) throws CommandException{
@@ -382,7 +366,7 @@ public class SNBTReader {
             case 'S': return 's';
             case 'l':
             case 'L': return  'l';
-            default:return input.panic(begin,translation("nickel.command.parameter.nbt.int.invalid_type",cp));
+            default:return input.panic(begin,translation(I18nKeys.NBT.INT_INVALID_TYPE,cp));
         }
     }
 
@@ -393,13 +377,13 @@ public class SNBTReader {
             case 'F': return 'f';
             case 'd':
             case 'D': return 'd';
-            default:return input.panic(begin+raw.length()-1,translation("nickel.command.parameter.nbt.float.invalid_type",c));
+            default:return input.panic(begin+raw.length()-1,translation(I18nKeys.NBT.FLOAT_INVALID_TYPE,c));
         }
     }
 
     private long validateRange(final int begin,final long num,final long min,final long max) throws CommandException{
-        if(num<min) return input.panic(begin,translation("nickel.command.parameter.nbt.int.too_min",num,min));
-        if(num>max) return input.panic(begin,translation("nickel.command.parameter.nbt.int.too_max",num,max));
+        if(num<min) return input.panic(begin,I18nKeys.NBT.tooMin(num,min));
+        if(num>max) return input.panic(begin,I18nKeys.NBT.tooMax(num,max));
         return num;
     }
 
@@ -414,7 +398,8 @@ public class SNBTReader {
 
     public void expect(final int cp) throws CommandException {
         if(input.skipIf(cp)) return;
-        input.panic(input.getCursor(),translation("nickel.command.parameter.nbt.unexpect",stringOf(cp),input.canRead()?stringOf(input.peek()):"null"));
+        if(!input.canRead()) input.panic(input.getCursor(), I18nKeys.NBT.EOF);
+        else input.panic(input.getCursor(),I18nKeys.NBT.unexpected(cp,input.peek()));
     }
 
     public static boolean isAllowedUnquoted(final int cp) {

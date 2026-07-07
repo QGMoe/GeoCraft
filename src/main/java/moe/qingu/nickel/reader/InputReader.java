@@ -25,12 +25,13 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.reader;
+package moe.qingu.nickel.reader;
 
 import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.exception.NickelCommandException;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.node.ICommandNode;
 import moe.qingu.nickel.command.node.IDocumentaryNode;
@@ -42,7 +43,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static moe.qingu.nickel.text.Texts.*;
-import static moe.qingu.nickel.util.StringUtils.stringOf;
 
 /**
  * @author QGMoe
@@ -126,7 +126,7 @@ public final class InputReader {
             final int quote = this.read();
             final StringBuilder builder = new StringBuilder();
             while (true){
-                if(!canRead()) return panic(this.getCursor(),translation("nickel.command.parameter.string.no_pair",stringOf(quote)));
+                if(!canRead()) return panic(this.getCursor(),I18nKeys.Syntax.strNoClose(quote));
                 int cp = this.read();
                 if(cp == '\\') cp = readEscape();
                 else if(cp == quote) break;
@@ -136,14 +136,15 @@ public final class InputReader {
         }else return this.readToken();
     }
 
-    public void scanString() {
+    public void scanString() throws NickelScanEOFSignal, CommandException {
         skipWhitespaces();
         if (this.canRead() && (this.peek() == '"' || this.peek() == '\'')){
             final int quote = this.read();
-            while (canRead()) {
-                int cp = this.read();
-                if (cp == '\\') this.skip();
-                else if (cp == quote) break;
+            while (true){
+                if(!canRead()) throw NickelScanEOFSignal.INSTANCE;
+                final int cp = this.read();
+                if(cp == '\\') scanEscape();
+                else if(cp == quote) break;
             }
         }else this.skipContents();
     }
@@ -156,7 +157,7 @@ public final class InputReader {
             return true;
         }else if("false".equals(token) || "0".equals(token)){
             return false;
-        }else return context.input.panic(begin,translation("commands.generic.boolean.invalid",token));
+        }else return context.input.panic(begin,translation(I18nKeys.Syntax.INVALID_BOOLEAN,token));
     }
 
     @Nonnull
@@ -192,19 +193,53 @@ public final class InputReader {
                     return readInt(3,3);
                 }
             }
-        }else return panic(this.getCursor(),translation("nickel.command.parameter.string.truncated_escape"));
+        }else return panic(this.getCursor(),translation(I18nKeys.Syntax.STR_TRUNCATED_ESCAPE));
+    }
+
+    public int scanEscape() throws CommandException, NickelScanEOFSignal {
+        if(this.canRead()){
+            final int cp = this.read();
+            switch (cp){
+                case '\\': return '\\';
+                case 's': return ' ';
+                case 'e': return '\u001B';
+                case 'b': return '\b';
+                case 'f': return '\f';
+                case 'n': return '\n';
+                case 't': return '\t';
+                case 'r': return '\r';
+                case '\'': return '\'';
+                case '/': return '/';
+                case '"': return '"';
+                case '0': return '\0';
+                case 'a': return '\u0007';
+                case 'v': return '\u000B';
+                case 'x': return scanInt(2,4);
+                case 'u': return scanInt(4,4);
+                case 'U': return scanInt(8,4);
+                default:{
+                    unread();
+                    return scanInt(3,3);
+                }
+            }
+        }else throw NickelScanEOFSignal.INSTANCE;
     }
 
     public int readInt(int len,final int pow) throws CommandException{
         final int radix = 1<<pow;
+        if(!this.canRead(len)) return panic(this.getCursor(),translation(I18nKeys.Syntax.STR_TRUNCATED_ESCAPE_INT,len,radix));
         int value = 0;
-        if(!this.canRead(len)) return panic(this.getCursor(),translation("nickel.command.parameter.string.truncated_escape.num",len));
         while (len-->0){
             final int digit = Character.digit(this.read(),radix);
-            if(digit == -1) return panic(this.getCursor()-1,translation("nickel.command.parameter.string.invalid_digit",stringOf(codepoints[this.cursor-1]),radix));
+            if(digit == -1) return panic(this.getCursor()-1,I18nKeys.Syntax.intInvalidDigit(codepoints[this.cursor-1],radix));
             value = (value << pow) | digit;
         }
         return value;
+    }
+
+    public int scanInt(final int len,final int pow) throws CommandException, NickelScanEOFSignal {
+        if(!this.canRead(len)) throw NickelScanEOFSignal.INSTANCE;
+        return readInt(len,pow);
     }
 
     public int readInt() throws CommandException{
@@ -216,7 +251,7 @@ public final class InputReader {
             return Integer.parseInt(raw);
         }catch (final @Nonnull NumberFormatException e){
             this.cursor = begin;
-            return context.input.panic(begin,translation("nickel.command.parameter.num.invalid", translation(I18nKeys.INT),raw));
+            return context.input.panic(begin,I18nKeys.Syntax.invalidInt(raw,e));
         }
     }
 
@@ -229,7 +264,7 @@ public final class InputReader {
             return Long.parseLong(raw);
         }catch (final @Nonnull NumberFormatException e){
             this.cursor = begin;
-            return context.input.panic(begin,translation("nickel.command.parameter.num.invalid", translation(I18nKeys.LONG) ,raw));
+            return context.input.panic(begin,I18nKeys.Syntax.invalidLong(raw,e));
         }
     }
 
@@ -242,10 +277,9 @@ public final class InputReader {
             return Double.parseDouble(raw);
         }catch (final @Nonnull NumberFormatException e){
             this.cursor = begin;
-            return context.input.panic(begin,translation("nickel.command.parameter.num.invalid", translation(I18nKeys.DOUBLE) ,raw));
+            return context.input.panic(begin,I18nKeys.Syntax.invalidDouble(raw,e));
         }
     }
-
 
     @Nonnull
     public <T> T panic(final @Nonnull TextBuilder<?,?> text) throws NickelRuntimeException, NickelCommandException, NickelSyntaxException {

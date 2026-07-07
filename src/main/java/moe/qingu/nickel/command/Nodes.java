@@ -30,6 +30,7 @@ package moe.qingu.nickel.command;
 import moe.qingu.nickel.command.builder.parameter.EnumNodeBuilder;
 import moe.qingu.nickel.command.node.parameter.generic.StringNode;
 import moe.qingu.nickel.command.node.parameter.minecraft.*;
+import moe.qingu.nickel.nbt.path.NBTPath;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -302,8 +303,13 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<NBTTagCompound, NBTCompoundNode> $nbt(@Nonnull final String name){
+    public static FastParameterNodeBuilder<NBTTagCompound, NBTCompoundNode> $NBT(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,NBTCompoundNode::new);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder<NBTPath, NBTPathNode> $NBTPath(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,NBTPathNode::new);
     }
 
     // Forge

@@ -25,8 +25,9 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.nbt.path;
+package moe.qingu.nickel.nbt.path.node;
 
+import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -39,7 +40,7 @@ import java.util.Collections;
 /**
  * @author QGMoe
  */
-public final class NBTPathTag extends NBTPathNode{
+public final class NBTPathTag extends NBTPathNode {
 
     private final String key;
     private final NBTCompoundMatcher valueFilter;
@@ -53,9 +54,15 @@ public final class NBTPathTag extends NBTPathNode{
     public Collection<NBTBase> apply(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagCompound){
             final NBTTagCompound compound = (NBTTagCompound) nbtBase;
-            if(compound.hasKey(key)) return Collections.emptyList();
+            if(!compound.hasKey(key)) return Collections.emptyList();
             final @Nonnull NBTBase tag = compound.getTag(key);
-            return valueFilter != null && valueFilter.match(tag)? Collections.singletonList(tag): Collections.emptyList();
+            return valueFilter == null || valueFilter.match(tag)? Collections.singletonList(tag): Collections.emptyList();
         }else return Collections.emptyList();
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalName() {
+        return valueFilter == null?I18nKeys.NBTPath.NODE_TAG:I18nKeys.NBTPath.NODE_TAG_COMPOUND;
     }
 }

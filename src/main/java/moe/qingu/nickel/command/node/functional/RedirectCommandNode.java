@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.node.functional;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.suggestor.Suggestion;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -36,7 +36,6 @@ import moe.qingu.nickel.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * @author QiguaiAAAA

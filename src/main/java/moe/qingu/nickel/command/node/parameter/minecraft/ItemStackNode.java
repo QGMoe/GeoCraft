@@ -27,11 +27,13 @@
 
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import moe.qingu.nickel.nbt.SNBTReader;
 import moe.qingu.nickel.command.suggestor.DirectSuggestor;
 import moe.qingu.nickel.command.utils.Claimer;
+import moe.qingu.nickel.nbt.SNBTScanner;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.init.Items;
@@ -91,17 +93,19 @@ public class ItemStackNode extends ParameterNode<ItemStack> {
     }
 
     @Override
-    public ItemStack parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
-        if(!resolve){
-            if(!allowNBT) input.skipContents();
-            else scanStackWithNBT(input);
-            return null;
-        }
+    public ItemStack parse(@Nonnull final InputReader input) throws CommandException {
         final CommandContext context = input.getContext();
         if(!allowNBT){
             final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),input.readToken());
             return new ItemStack(item,count,meta);
         }else return readStackWithNBT(input,context);
+    }
+
+
+    @Override
+    public void scan(@Nonnull final InputReader input) throws CommandException, NickelScanEOFSignal {
+        if(!allowNBT) input.skipContents();
+        else scanStackWithNBT(input);
     }
 
     @Nonnull
@@ -118,10 +122,10 @@ public class ItemStackNode extends ParameterNode<ItemStack> {
         return stack;
     }
 
-    public static void scanStackWithNBT(@Nonnull final InputReader input) throws CommandException {
+    public static void scanStackWithNBT(@Nonnull final InputReader input) throws CommandException, NickelScanEOFSignal {
         input.skipWhitespaces();
         while (input.canRead() && !Character.isWhitespace(input.peek()) && input.peek() != '{') input.skip();
-        if(input.canRead() && !Character.isWhitespace(input.peek())) SNBTReader.readSingleNBTFromInput(input);
+        if(input.canRead() && !Character.isWhitespace(input.peek())) SNBTScanner.scanSingleNBTFromInput(input);
     }
 
     @Override

@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.node.execute;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.node.NoSplitNode;

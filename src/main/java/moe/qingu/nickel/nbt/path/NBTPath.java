@@ -27,15 +27,16 @@
 
 package moe.qingu.nickel.nbt.path;
 
+import moe.qingu.nickel.nbt.path.node.NBTPathNode;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author QGMoe
@@ -53,10 +54,9 @@ public final class NBTPath {
 
     @Nonnull
     public Collection<NBTBase> match(final @Nonnull NBTTagCompound compound){
-        Collection<NBTBase> c = Collections.singleton(compound);
-        for(final NBTPathNode node:nodes) c = c.stream()
-                .flatMap(e -> node.apply(e).stream())
-                .collect(Collectors.toList());
-        return c;
+        Stream<NBTBase> c = Stream.of(compound);
+        for(final NBTPathNode node:nodes) c = c
+                .flatMap(e -> node.apply(e).stream());
+        return c.collect(Collectors.toList());
     }
 }

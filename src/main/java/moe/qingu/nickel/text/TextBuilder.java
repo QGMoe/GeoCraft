@@ -47,6 +47,7 @@ import static moe.qingu.nickel.text.Texts.wrap;
 public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder<T,S>> {
     protected final @Nonnull Style style = new Style();
     protected @Nullable TextBuilder<?,?> then;
+    protected @Nullable TextBuilder<?,?> last;
 
     @Nonnull
     @SuppressWarnings("unchecked")
@@ -133,8 +134,10 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
     @Nonnull
     @SuppressWarnings("unchecked")
     public final S then(@Nonnull final TextBuilder<?,?> builder){
-        if(then != null) then.then(builder);
+        if(last != null) last.then(builder);
+        else if(then != null) then.then(builder);
         else then = builder;
+        last = builder;
         return (S) this;
     }
 

@@ -27,7 +27,8 @@
 
 package moe.qingu.nickel.command.node.parameter;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.command.node.ISmartNode;
 import moe.qingu.nickel.command.suggestor.Suggestion;
 import moe.qingu.nickel.command.utils.Claimer;
@@ -50,7 +51,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.Collections;
-import java.util.List;
 
 import static moe.qingu.nickel.text.Texts.plain;
 import static moe.qingu.nickel.text.Texts.translation;
@@ -107,7 +107,9 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         if(!input.canRead()) if(suggestProvider!=null) return new Suggestion(this,suggestProvider.provide(this,input,begin,context));
         else return new Suggestion(this, Collections.emptyList());
 
-        parse(input,false);
+        try {
+            scan(input);
+        } catch (final NickelScanEOFSignal ignored) {}
         if(input.canRead()) return this.childNode != null ? context.enter(childNode):null; //存在之后的节点内容
 
         input.setCursor(begin);
@@ -127,7 +129,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         }
 
         if(valid){
-            parsedArg = parse(input,true);
+            parsedArg = parse(input);
             putParsedArgument(parsedArg,context);
             return true;
         }else if(defaultParser!=null){
@@ -144,7 +146,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
 
     /**
      * 检查当前的命令参数是否符合当前参数的语法格式。
-     * 请注意，最好仅检查语法以保证命令的确定性。例如，物品参数应当只检查是否有至少一个参数，至于参数内写的 ID 对应的物品是否存在，应在 {@link #parseParameter(List, ExecuteContext)} 中检查。
+     * 请注意，最好仅检查语法以保证命令的确定性。例如，物品参数应当只检查是否有至少一个参数，至于参数内写的 ID 对应的物品是否存在，应在 {@link #parse(InputReader)} 中检查。
      * @param input 提供的输入（内含上下文）
      * @return 返回 true 表示参数合法，可以解析。返回 false 表示参数非法，但可以使用默认值，仅当 {@link #isOptional()} 为 true 时使用。
      * @throws SyntaxErrorException 当参数非法，且 {@link #isOptional()} 为 false 时，抛出该错误，以说明命令语法错误。此时命令解析会中断。
@@ -154,7 +156,9 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
      */
     public abstract boolean accepts(@Nonnull final InputReader input) throws CommandException;
 
-    public abstract P parse(@Nonnull final InputReader input,final boolean resolve) throws CommandException;
+    public abstract P parse(@Nonnull final InputReader input) throws CommandException;
+
+    public abstract void scan(@Nonnull final InputReader input) throws CommandException, NickelScanEOFSignal;
 
     public String serialise(@Nonnull final P p){
         return p.toString();

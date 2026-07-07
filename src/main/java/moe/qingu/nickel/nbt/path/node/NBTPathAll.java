@@ -25,9 +25,10 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.nbt.path;
+package moe.qingu.nickel.nbt.path.node;
 
 import com.google.common.collect.Lists;
+import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.nbt.NBTUtils;
 import net.minecraft.nbt.*;
 
@@ -35,48 +36,32 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * @author QGMoe
  */
-public final class NBTPathIndex extends NBTPathNode{
-    private final int index;
-
-    public NBTPathIndex(final int index) {
-        this.index = index;
-    }
-
-    public int getIndex() {
-        return index;
+public final class NBTPathAll extends NBTPathNode {
+    @Nonnull
+    @Override
+    public String getLocalName() {
+        return I18nKeys.NBTPath.NODE_ALL;
     }
 
     @Override
     public Collection<NBTBase> apply(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagList){
-            final NBTTagList list = (NBTTagList) nbtBase;
-            if(index<0) return Lists.newArrayList(list);
-            return list.tagCount() > index?Collections.singletonList(list.get(index)): Collections.emptyList();
+            return Lists.newArrayList((NBTTagList) nbtBase);
         }else if(nbtBase instanceof NBTTagByteArray){
-            final byte[] array = ((NBTTagByteArray) nbtBase).getByteArray();
-            if(index<0) {
-                final ArrayList<NBTBase> tags = new ArrayList<>();
-                for(final byte b:array) tags.add(new NBTTagByte(b));
-                return tags;
-            }else return array.length>index?Collections.singletonList(new NBTTagByte(array[index])):Collections.emptyList();
+            final ArrayList<NBTBase> tags = new ArrayList<>();
+            for(final byte b:((NBTTagByteArray) nbtBase).getByteArray()) tags.add(new NBTTagByte(b));
+            return tags;
         }else if(nbtBase instanceof NBTTagIntArray){
-            final int[] array = ((NBTTagIntArray) nbtBase).getIntArray();
-            if(index<0) {
-                final ArrayList<NBTBase> tags = new ArrayList<>();
-                for(final int i:array) tags.add(new NBTTagInt(i));
-                return tags;
-            }else return array.length>index?Collections.singletonList(new NBTTagInt(array[index])):Collections.emptyList();
+            final ArrayList<NBTBase> tags = new ArrayList<>();
+            for(final int i: ((NBTTagIntArray) nbtBase).getIntArray()) tags.add(new NBTTagInt(i));
+            return tags;
         }else if(nbtBase instanceof NBTTagLongArray){
-            final long[] array = NBTUtils.streamOf((NBTTagLongArray) nbtBase).toArray();
-            if(index<0) {
-                final ArrayList<NBTBase> tags = new ArrayList<>();
-                for(final long l:array) tags.add(new NBTTagLong(l));
-                return tags;
-            }else return array.length>index?Collections.singletonList(new NBTTagLong(array[index])):Collections.emptyList();
+            return NBTUtils.streamOf((NBTTagLongArray) nbtBase).mapToObj(NBTTagLong::new).collect(Collectors.toList());
         }else return Collections.emptyList();
     }
 }

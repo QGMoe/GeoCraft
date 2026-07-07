@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.node.parameter.generic;
 
+import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
 import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
@@ -74,7 +75,7 @@ public class UUIDNode extends TokenizeParameterNode.Single<UUID> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "nickel.command.parameter.generic.uuid";
+        return I18nKeys.UUID;
     }
 
     @Nonnull

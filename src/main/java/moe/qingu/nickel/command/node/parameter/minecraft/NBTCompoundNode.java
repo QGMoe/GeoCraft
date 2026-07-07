@@ -27,8 +27,9 @@
 
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
+import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.nbt.SNBTReader;
 import moe.qingu.nickel.command.utils.Acceptor;
 import moe.qingu.nickel.nbt.SNBTScanner;
@@ -66,12 +67,14 @@ public class NBTCompoundNode extends ParameterNode<NBTTagCompound> {
     }
 
     @Override
-    public NBTTagCompound parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
+    public NBTTagCompound parse(@Nonnull final InputReader input) throws CommandException {
         input.skipWhitespaces();
-        if(resolve) return SNBTReader.readSingleNBTFromInput(input);
-        else {
-            SNBTScanner.scanSingleNBTFromInput(input);
-            return null;
-        }
+        return SNBTReader.readSingleNBTFromInput(input);
+    }
+
+    @Override
+    public void scan(@Nonnull final InputReader input) throws CommandException, NickelScanEOFSignal {
+        input.skipWhitespaces();
+        SNBTScanner.scanSingleNBTFromInput(input);
     }
 }

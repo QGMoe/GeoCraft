@@ -31,14 +31,22 @@ import moe.qingu.nickel.NickelAPI;
 import moe.qingu.nickel.command.builder.CommandBuilder;
 import moe.qingu.nickel.command.node.parameter.minecraft.ItemStackNode;
 import moe.qingu.nickel.command.node.parameter.minecraft.NBTCompoundNode;
+import moe.qingu.nickel.command.node.parameter.minecraft.NBTPathNode;
+import moe.qingu.nickel.nbt.path.NBTPath;
+import moe.qingu.nickel.network.PackageNBTInfo;
 import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 
 import javax.annotation.Nonnull;
 
+import java.util.Collection;
 import java.util.Collections;
 
 import static moe.qingu.nickel.command.Nodes.*;
@@ -54,7 +62,7 @@ public final class CommandExample {
                 .require(0)
                 .require("nickelapi.command.example").allow(DefaultPermissionLevel.ALL).register()
                 .then(literals()
-                        .when("nbt").then($nbt("nbt")
+                        .when("nbt").then($NBT("nbt")
                                 .suggest(() -> {
                                     final NBTTagCompound compound = new NBTTagCompound();
                                     compound.setInteger("a_integer",114514);
@@ -72,7 +80,27 @@ public final class CommandExample {
                                             .bold(true)
                                             .hoverTo(Hovers.itemStack(stack))
                                             .sendTo(ctx.getSender());
-                                }))))
+                                })))
+                        .when("query").then($entity("target")
+                                .then($NBTPath("path")
+                                        .then(execute(ctx->{
+                                            final @Nonnull NBTPath path = ctx.get("path", NBTPathNode.class);
+                                            final @Nonnull Entity entity = ctx.getEntity("target");
+                                            final Collection<NBTBase> nbt = path.match(entity.writeToNBT(new NBTTagCompound()));
+                                            final ICommandSender sender = ctx.getSender();
+                                            plain("Target ")
+                                                    .color(TextFormatting.AQUA)
+                                                    .then(Shows.entity(entity)
+                                                            .color(TextFormatting.GOLD)
+                                                            .underlined(true))
+                                                    .then(plain(" Has Matched Data:")
+                                                            .underlined(false)
+                                                            .color(TextFormatting.AQUA))
+                                                    .sendTo(sender);
+                                            if(sender instanceof EntityPlayerMP)
+                                                for(final NBTBase dat : nbt)
+                                                    NickelAPI.CHANNEL.sendTo(new PackageNBTInfo(dat),(EntityPlayerMP) sender);
+                                        })))))
                 .build();
     }
 }

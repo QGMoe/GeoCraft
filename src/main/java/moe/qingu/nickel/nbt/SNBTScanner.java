@@ -27,14 +27,12 @@
 
 package moe.qingu.nickel.nbt;
 
+import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import net.minecraft.command.CommandException;
 
 import javax.annotation.Nonnull;
-
-import static moe.qingu.nickel.text.Texts.translation;
-import static moe.qingu.nickel.util.StringUtils.stringOf;
 
 /**
  * @author QGMoe
@@ -44,19 +42,17 @@ public class SNBTScanner extends SNBTReader{
         super(input);
     }
 
-    public static void scanNBTFromInput(final @Nonnull InputReader input) throws CommandException {
-        try{
-            new SNBTScanner(input).scanCompound();
-        } catch (final NickelScanEOFSignal ignored) {}
+    public static void scanNBTFromInput(final @Nonnull InputReader input) throws CommandException, NickelScanEOFSignal {
+        new SNBTScanner(input).scanCompound();
     }
 
-    public static void scanSingleNBTFromInput(final @Nonnull InputReader input) throws CommandException {
+    public static void scanSingleNBTFromInput(final @Nonnull InputReader input) throws CommandException, NickelScanEOFSignal {
         scanNBTFromInput(input);
         if(input.canRead() && !Character.isWhitespace(input.peek())) input.panic(input.getCursor(),"nickel.command.parameter.nbt.escape");
     }
 
     public final void scanCompound() throws CommandException, NickelScanEOFSignal {
-        input.skipIf('{');
+        expectOrEnd('{');
         while (input.canRead() && input.peek() != '}'){
             this.scanKey();
             input.skipWhitespaces();
@@ -68,7 +64,7 @@ public class SNBTScanner extends SNBTReader{
     }
 
     public final void scanListOrArray() throws CommandException, NickelScanEOFSignal {
-        input.skipIf('[');
+        expectOrEnd('[');
         input.skipWhitespaces();
         if(!input.canRead()) throw NickelScanEOFSignal.INSTANCE;
         switch (input.read()){
@@ -87,11 +83,16 @@ public class SNBTScanner extends SNBTReader{
         expectOrEnd(']');
     }
 
-    public final void scanKey() throws NickelScanEOFSignal {
+    public final void scanKey() throws NickelScanEOFSignal, CommandException {
         input.skipWhitespaces();
         if(!input.canRead()) throw NickelScanEOFSignal.INSTANCE;
         if(input.peek() == '"' || input.peek() == '\'') input.scanString();
         else this.scanUnquotedString();
+    }
+
+    public void scanUnquotedString(){
+        input.skipWhitespaces();
+        while (input.canRead() && isAllowedUnquoted(input.peek())) input.skip();
     }
 
     public final void scanValue() throws CommandException, NickelScanEOFSignal {
@@ -121,7 +122,7 @@ public class SNBTScanner extends SNBTReader{
     }
 
     public final void scanFunction() throws CommandException, NickelScanEOFSignal {
-        input.skipIf('(');
+        expectOrEnd('(');
         boolean beforeAnyArgs = true;
         while (input.canRead() && input.peek() != ')'){
             input.skipWhitespaces();
@@ -135,7 +136,7 @@ public class SNBTScanner extends SNBTReader{
 
     public final void expectOrEnd(final int cp) throws CommandException, NickelScanEOFSignal{
         if(input.canRead()){
-            if(input.peek() != cp) input.panic(input.getCursor(),translation("nickel.command.parameter.nbt.unexpect",stringOf(cp),stringOf(input.peek())));
+            if(input.peek() != cp) input.panic(input.getCursor(), I18nKeys.NBT.unexpected(cp,input.peek()));
             else input.skip();
         }else throw NickelScanEOFSignal.INSTANCE;
     }

@@ -27,7 +27,7 @@
 
 package moe.qingu.nickel.command.exception;
 
-import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.TextFormatting;
