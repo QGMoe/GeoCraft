@@ -65,29 +65,31 @@ public final class NBTPathTag implements NBTPathModifiableNode, NBTPathProvidabl
     }
 
     @Override
-    public void set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
+    public int set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
         if(base instanceof NBTTagCompound){
             final NBTTagCompound compound = (NBTTagCompound) base;
             if(!compound.hasKey(key)){
-                compound.setTag(key,replacement);
-                return;
+                compound.setTag(key,replacement.copy());
+                return 1;
             }
             final @Nonnull NBTBase tag = compound.getTag(key);
             if(valueFilter != null && !valueFilter.match(tag)) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_TAG_MISVALUE));
-            compound.setTag(key,replacement);
+            compound.setTag(key,replacement.copy());
+            return 1;
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_TAG_MISMATCH));
     }
 
     @Override
-    public void remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
+    public int remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
         if(base instanceof NBTTagCompound){
             final NBTTagCompound compound = (NBTTagCompound) base;
             if(!compound.hasKey(key)){
-                return;
+                return 0;
             }
             final @Nonnull NBTBase tag = compound.getTag(key);
             if(valueFilter != null && !valueFilter.match(tag)) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_TAG_MISVALUE));
             compound.removeTag(key);
+            return 1;
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_TAG_MISMATCH));
     }
 

@@ -53,6 +53,7 @@ public final class NBTUtils {
         longArrField = getLongArrField();
         listTypeField = getListTypeField();
         longArrField.setAccessible(true);
+        listTypeField.setAccessible(true);
     }
 
     private static @Nonnull Field getLongArrField(){

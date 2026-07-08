@@ -69,25 +69,35 @@ public final class NBTPathListCompound implements NBTPathModifiableNode, NBTPath
     }
 
     @Override
-    public void set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
+    public int set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
         if(replacement.getId() != Constants.NBT.TAG_COMPOUND) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_LIST_COM_NO_COMPOUND));
         if(base instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) base;
             if(list.getTagType() != 0 && list.getTagType() != Constants.NBT.TAG_COMPOUND)
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_LIST_COM_NO_LIST_COM));
+            int cot = 0;
             for(int i=0;i<list.tagCount();i++)
-                if(filter.match(list.get(i))) list.set(i,replacement);
+                if(filter.match(list.get(i))){
+                    list.set(i,replacement.copy());
+                    cot++;
+                }
+            return cot;
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_LIST_COM_MISMATCH));
     }
 
     @Override
-    public void remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
+    public int remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
         if(base instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) base;
-            if(list.getTagType() != 0 && list.getTagType() != Constants.NBT.TAG_COMPOUND) return;
+            if(list.getTagType() != 0 && list.getTagType() != Constants.NBT.TAG_COMPOUND) return 0;
+            int cot = 0;
             for(int i=0;i<list.tagCount();)
-                if(filter.match(list.get(i))) list.removeTag(i);
+                if(filter.match(list.get(i))){
+                    list.removeTag(i);
+                    cot++;
+                }
                 else i++;
+            return cot;
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_LIST_COM_MISMATCH));
     }
 

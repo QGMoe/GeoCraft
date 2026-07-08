@@ -74,52 +74,58 @@ public final class NBTPath {
         return c.collect(Collectors.toList());
     }
 
-    public void set(final @Nonnull NBTTagCompound compound,final @Nonnull NBTBase tag,final boolean allowMulti) throws NickelRuntimeException {
+    public int set(final @Nonnull NBTTagCompound compound,final @Nonnull NBTBase tag,final boolean allowMulti) throws NickelRuntimeException {
         if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_EMPTY));
         final List<NBTBase> nbt = resolveParents(compound);
         if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_NOT_FOUND));
         else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_FOUND_MULTI));
         final NBTPathNode last = nodes.get(nodes.size()-1);
+        int res = 0;
         if(last instanceof NBTPathModifiableNode)
             for(final NBTBase n:nbt)
                 try {
-                    ((NBTPathModifiableNode) last).set(n,tag);
+                    res += ((NBTPathModifiableNode) last).set(n,tag);
                 }catch (final NickelRuntimeException e){
                     if(!allowMulti) throw e;
                 }
         else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
+        return res;
     }
 
-    public void insert(final @Nonnull NBTTagCompound compound,final @Nonnull NBTBase tag,final boolean allowMulti) throws NickelRuntimeException{
+    public int insert(final @Nonnull NBTTagCompound compound,final @Nonnull NBTBase tag,final boolean allowMulti) throws NickelRuntimeException{
         if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_EMPTY));
         final List<NBTBase> nbt = resolveParents(compound);
         if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_NOT_FOUND));
         else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_FOUND_MULTI));
         final NBTPathNode last = nodes.get(nodes.size()-1);
+        int res = 0;
         if(last instanceof NBTPathIndex)
             for(final NBTBase n:nbt)
                 try {
-                    ((NBTPathIndex) last).insert(n,tag);
+                    res += ((NBTPathIndex) last).insert(n,tag);
                 }catch (final NickelRuntimeException e){
                     if(!allowMulti) throw e;
                 }
         else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
+        return res;
     }
 
-    public void remove(final @Nonnull NBTTagCompound compound,final boolean allowMulti) throws NickelRuntimeException {
+    public int remove(final @Nonnull NBTTagCompound compound,final boolean allowMulti) throws NickelRuntimeException {
         if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_EMPTY));
         final List<NBTBase> nbt = resolveParents(compound);
         if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_NOT_FOUND));
         else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_MULTI_FOUND));
         final NBTPathNode last = nodes.get(nodes.size()-1);
+        int res = 0;
         if(last instanceof NBTPathModifiableNode)
             for(final NBTBase n:nbt)
                 try {
-                    ((NBTPathModifiableNode) last).remove(n);
+                    res += ((NBTPathModifiableNode) last).remove(n);
                 }catch (final NickelRuntimeException e){
                     if(!allowMulti) throw e;
                 }
         else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
+        return res;
     }
 
     public @Nonnull List<NBTBase> init(final @Nonnull NBTTagCompound compound) throws NickelRuntimeException {

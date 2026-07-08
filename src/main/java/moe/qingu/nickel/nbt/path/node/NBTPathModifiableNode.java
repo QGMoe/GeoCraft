@@ -37,7 +37,7 @@ import javax.annotation.Nonnull;
  */
 public interface NBTPathModifiableNode extends NBTPathNode{
 
-    void set(final @Nonnull NBTBase base,final @Nonnull NBTBase replacement) throws NickelRuntimeException;
+    int set(final @Nonnull NBTBase base,final @Nonnull NBTBase replacement) throws NickelRuntimeException;
 
-    void remove(final @Nonnull NBTBase base) throws NickelRuntimeException;
+    int remove(final @Nonnull NBTBase base) throws NickelRuntimeException;
 }

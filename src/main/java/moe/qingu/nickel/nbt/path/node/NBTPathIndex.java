@@ -82,7 +82,7 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
     }
 
     @Override
-    public void set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
+    public int set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
         if(base instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) base;
             final int i = index<0?list.tagCount()+index:index;
@@ -90,13 +90,15 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
             if(list.getTagType() != 0 && replacement.getId() != list.getTagType())
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_TYPE)
                         .arg(NBTBase.NBT_TYPES[replacement.getId()],NBTBase.NBT_TYPES[list.getTagType()]));
-            list.set(i,replacement);
+            list.set(i,replacement.copy());
+            return 1;
         }else if(base instanceof NBTTagByteArray){
             final byte[] array = ((NBTTagByteArray) base).getByteArray();
             final int i = index<0?array.length+index:index;
             if(i<0 || i >= array.length) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_ARR_OUT,i));
             if(replacement.getId() != Constants.NBT.TAG_BYTE) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_BYTE));
             array[i] = ((NBTTagByte)replacement).getByte();
+            return 1;
         }else if(base instanceof NBTTagIntArray){
             final int[] array = ((NBTTagIntArray) base).getIntArray();
             final int i = index<0?array.length+index:index;
@@ -104,6 +106,7 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
             if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_INT)
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_INT));
             array[i] = ((NBTPrimitive)replacement).getInt();
+            return 1;
         }else if(base instanceof NBTTagLongArray){
             final long[] array = NBTUtils.getLongArray((NBTTagLongArray) base);
             final int i = index<0?array.length+index:index;
@@ -111,10 +114,11 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
             if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_LONG)
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_LONG));
             array[i] = ((NBTPrimitive)replacement).getLong();
+            return 1;
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_MISMATCH));
     }
 
-    public void insert(@Nonnull final NBTBase base, @Nonnull final NBTBase tag) throws NickelRuntimeException {
+    public int insert(@Nonnull final NBTBase base, @Nonnull final NBTBase tag) throws NickelRuntimeException {
         if(base instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) base;
             final int i = index<0?list.tagCount()+index:index;
@@ -124,18 +128,20 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
                         .arg(NBTBase.NBT_TYPES[tag.getId()],NBTBase.NBT_TYPES[list.getTagType()]));
             final ArrayList<NBTBase> ca = cache.get();
             while (list.tagCount()>=i) ca.add(list.removeTag(list.tagCount()-1));
-            list.appendTag(tag);
+            list.appendTag(tag.copy());
             for(int j=ca.size()-1;j>=0;j--) list.appendTag(ca.get(j));
+            return 1;
         } else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_INDEX_MISMATCH));
     }
 
     @Override
-    public void remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
+    public int remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
         if(base instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) base;
             final int i = index<0?list.tagCount()+index:index;
             if(i<0 || i >= list.tagCount()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_LIST_OUT,i));
             list.removeTag(i);
+            return 1;
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_INDEX_MISMATCH));
     }
 

@@ -82,31 +82,35 @@ public final class NBTPathAll implements NBTPathModifiableNode, NBTPathProvidabl
     }
 
     @Override
-    public void set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
+    public int set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
         if(base instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) base;
             int size = NBTUtils.empty(list);
-            while (size-->0) list.appendTag(replacement);
+            while (size-->0) list.appendTag(replacement.copy());
+            return list.tagCount();
         }else if(base instanceof NBTTagByteArray){
             if(replacement.getId() != Constants.NBT.TAG_BYTE) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_ALL_NO_BYTE));
             final byte[] arr = ((NBTTagByteArray)base).getByteArray();
             Arrays.fill(arr, ((NBTTagByte)replacement).getByte());
+            return arr.length;
         }else if(base instanceof NBTTagIntArray){
             if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_INT) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_ALL_NO_INT));
             final int[] arr = ((NBTTagIntArray)base).getIntArray();
             Arrays.fill(arr, ((NBTPrimitive)replacement).getInt());
+            return arr.length;
         }else if(base instanceof NBTTagLongArray){
             if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_LONG)
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_ALL_NO_LONG));
             final long[] array = NBTUtils.getLongArray((NBTTagLongArray) base);
             Arrays.fill(array, ((NBTPrimitive)replacement).getLong());
+            return array.length;
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_ALL_MISMATCH));
     }
 
     @Override
-    public void remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
+    public int remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
         if(base instanceof NBTTagList){
-            NBTUtils.empty((NBTTagList) base);
+            return NBTUtils.empty((NBTTagList) base);
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_ALL_MISMATCH));
     }
 
