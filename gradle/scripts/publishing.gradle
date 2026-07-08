@@ -35,7 +35,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，在原文之上略有修改，如有疑议请以英文原文为准
  */
 
-apply from: 'gradle/scripts/helpers.gradle'
+apply from: "${rootProject.projectDir}/gradle/scripts/helpers.gradle"
 
 setDefaultProperty('publish_to_maven', true, false)
 setDefaultProperty('publish_to_curseforge', true, false)

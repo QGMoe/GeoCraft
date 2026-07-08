@@ -29,18 +29,16 @@ package moe.qingu.nickel.nbt.operation;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import moe.qingu.nickel.NickelAPI;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.node.parameter.generic.UUIDNode;
 import moe.qingu.nickel.nbt.NBTUtils;
 import net.minecraft.nbt.*;
+import net.minecraftforge.fml.common.discovery.ASMDataTable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.invoke.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -56,23 +54,24 @@ public final class SNBTOperations {
     private static final Map<SNBTOperation,String> signatures = new HashMap<>();
     private static final MethodHandles.Lookup PERMISSION = MethodHandles.lookup();
 
-    static {
-        SNBTOperations.loadFuncs();
-    }
-
     public static void register(final @Nonnull String name, final @Nonnull SNBTOperation.OperationType type, final @Nonnull SNBTOperation function){
+        final String signature = name + type;
+        if(signatures.containsValue(signature)){
+            NickelAPI.LOGGER.error("Duplicated register for SNBTOperation {}",signature);
+            return;
+        }
         functions.put(name,type,function);
-        signatures.put(function,name+type);
+        signatures.put(function,signature);
     }
 
     @Nonnull
-    @SNBTFunc
+    @SNBTFunction
     public static NBTTagByte bool(final @Nonnull NBTPrimitive num){
         return new NBTTagByte((byte) (num.getLong()==0?0:1));
     }
 
     @Nonnull
-    @SNBTFunc
+    @SNBTFunction
     public static NBTTagIntArray uuid(final @Nonnull NBTTagString str) throws NickelRuntimeException {
         try {
             final UUID uuid = UUID.fromString(str.getString());
@@ -90,7 +89,7 @@ public final class SNBTOperations {
     }
 
     @Nonnull
-    @SNBTFunc
+    @SNBTFunction
     public static NBTTagCompound uuid(final @Nonnull NBTTagString key,final @Nonnull NBTTagString str) throws NickelRuntimeException {
         try {
             final UUID uuid = UUID.fromString(str.getString());
@@ -103,14 +102,14 @@ public final class SNBTOperations {
     }
 
     @Nonnull
-    @SNBTFunc
+    @SNBTFunction
     public static NBTTagCompound concat(final @Nonnull NBTTagCompound a,final @Nonnull NBTTagCompound b){
         b.getKeySet().forEach(k -> a.setTag(k,b.getTag(k)));
         return a;
     }
 
     @Nonnull
-    @SNBTFunc
+    @SNBTFunction
     public static NBTTagByteArray concat(final @Nonnull NBTTagByteArray a,final @Nonnull NBTTagByteArray b){
         final byte[] arrA = a.getByteArray();
         final byte[] arrB = b.getByteArray();
@@ -121,7 +120,7 @@ public final class SNBTOperations {
     }
 
     @Nonnull
-    @SNBTFunc
+    @SNBTFunction
     public static NBTTagIntArray concat(final @Nonnull NBTTagIntArray a,final @Nonnull NBTTagIntArray b){
         final int[] arrA = a.getIntArray();
         final int[] arrB = b.getIntArray();
@@ -132,14 +131,14 @@ public final class SNBTOperations {
     }
 
     @Nonnull
-    @SNBTFunc
+    @SNBTFunction
     public static NBTTagLongArray concat(final @Nonnull NBTTagLongArray a,final @Nonnull NBTTagLongArray b){
         return new NBTTagLongArray(LongStream.concat(NBTUtils.streamOf(a),NBTUtils.streamOf(b))
                 .toArray());
     }
 
     @Nonnull
-    @SNBTFunc
+    @SNBTFunction
     public static NBTTagList concat(final @Nonnull NBTTagList a,final @Nonnull NBTTagList b){
         final NBTTagList list = new NBTTagList();
         for(final NBTBase nbt:a) list.appendTag(nbt);
@@ -148,7 +147,7 @@ public final class SNBTOperations {
     }
 
     @Nonnull
-    @SNBTFunc
+    @SNBTFunction
     public static NBTTagString concat(final @Nonnull NBTTagString a,final @Nonnull NBTTagString b){
         return new NBTTagString(a.getString()+b.getString());
     }
@@ -200,12 +199,16 @@ public final class SNBTOperations {
     }
 
     @SuppressWarnings("unchecked")
-    public static void loadFuncs(){
-        final Method[] methods = SNBTOperations.class.getDeclaredMethods();
+    public static void loadFuncs(final @Nonnull Class<?> cls){
+        final Method[] methods = cls.getDeclaredMethods();
         for(final Method method:methods){
             if(!Modifier.isStatic(method.getModifiers())) continue;
-            if(!method.isAnnotationPresent(SNBTFunc.class)) continue;
-            final SNBTFunc annotation = method.getAnnotation(SNBTFunc.class);
+            if(!method.isAnnotationPresent(SNBTFunction.class)) continue;
+            if(!Modifier.isPublic(method.getModifiers())){
+                NickelAPI.LOGGER.warn("Skipped loading SNBT operation {} in class {}, because it is not public.",method,cls.getName());
+                continue;
+            }
+            final SNBTFunction annotation = method.getAnnotation(SNBTFunction.class);
             final Class<?>[] paras = method.getParameterTypes();
             try{
                 final MethodHandle handle = PERMISSION.unreflect(method)
@@ -231,9 +234,19 @@ public final class SNBTOperations {
         }
     }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    private @interface SNBTFunc{
-        @Nonnull String name() default "";
+    public static void scanProviders(final @Nonnull ASMDataTable table){
+        NickelAPI.LOGGER.info("NickelAPI is scanning SNBT operation providers");
+        table.getAll(SNBTFunction.class.getName())
+                .stream()
+                .map(ASMDataTable.ASMData::getClassName)
+                .distinct()
+                .forEach(e ->{
+                    try {
+                        loadFuncs(Class.forName(e));
+                    } catch (final @Nonnull ClassNotFoundException exception) {
+                        NickelAPI.LOGGER.warn("Couldn't process SNBT Operation provider {}",e);
+                        NickelAPI.LOGGER.warn("Because:",exception);
+                    }
+                });
     }
 }

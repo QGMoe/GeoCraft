@@ -30,6 +30,7 @@ package moe.qingu.nickel.nbt;
 import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.node.parameter.generic.StringNode;
+import moe.qingu.nickel.util.reflect.FieldAccessor;
 import net.minecraft.nbt.*;
 
 import javax.annotation.Nonnull;
@@ -45,30 +46,36 @@ import static moe.qingu.nickel.text.Texts.translation;
  * @author QGMoe
  */
 public final class NBTUtils {
-    private static final Field longArrField;
-    private static final Field listTypeField;
+    private static final FieldAccessor longArrField;
+    private static final FieldAccessor listTypeField;
     private NBTUtils(){}
 
     static {
         longArrField = getLongArrField();
         listTypeField = getListTypeField();
-        longArrField.setAccessible(true);
-        listTypeField.setAccessible(true);
     }
 
-    private static @Nonnull Field getLongArrField(){
+    private static @Nonnull FieldAccessor getLongArrField(){
         final Field[] fields = NBTTagLongArray.class.getDeclaredFields();
-        for(final Field field:fields)
-            if(!Modifier.isStatic(field.getModifiers()) && field.getType() == long[].class)
-                return field;
+        try {
+            for(final Field field:fields)
+                if(!Modifier.isStatic(field.getModifiers()) && field.getType() == long[].class)
+                    return FieldAccessor.of(field);
+        } catch (final Exception e) {
+            throw new RuntimeException("Couldn't get long[] field in NBTTagLongArray!",e);
+        }
         throw new RuntimeException("Couldn't get long[] field in NBTTagLongArray!");
     }
 
-    private static @Nonnull Field getListTypeField(){
+    private static @Nonnull FieldAccessor getListTypeField(){
         final Field[] fields = NBTTagList.class.getDeclaredFields();
-        for(final Field field:fields)
-            if(!Modifier.isStatic(field.getModifiers()) && field.getType() == byte.class)
-                return field;
+        try{
+            for(final Field field:fields)
+                if(!Modifier.isStatic(field.getModifiers()) && field.getType() == byte.class)
+                    return FieldAccessor.of(field);
+        }catch (final Exception e){
+            throw new RuntimeException("Couldn't get byte field in NBTTagList!",e);
+        }
         throw new RuntimeException("Couldn't get byte field in NBTTagList!");
     }
 

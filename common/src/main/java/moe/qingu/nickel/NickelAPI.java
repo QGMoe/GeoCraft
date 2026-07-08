@@ -27,19 +27,19 @@
 
 package moe.qingu.nickel;
 
+import moe.qingu.nickel.nbt.operation.SNBTOperations;
 import moe.qingu.nickel.network.PackageNBTInfo;
 import moe.qingu.nickel.network.PacketSuggestionReminder;
-import net.minecraftforge.fml.common.DummyModContainer;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.ModMetadata;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = NickelAPI.MODID,version = NickelAPI.VERSION_NAME,acceptableRemoteVersions = "*")
-public final class NickelAPI extends DummyModContainer {
+@Mod(modid = NickelAPI.MODID,name = NickelAPI.NAME,version = NickelAPI.VERSION_NAME,acceptableRemoteVersions = "*")
+public final class NickelAPI{
     public final static long VERSION_ID = -1021;
     public final static String VERSION_NAME = "0.0.4";
     public final static String MODID = "nickelapi";
@@ -47,18 +47,10 @@ public final class NickelAPI extends DummyModContainer {
     public final static Logger LOGGER = LogManager.getLogger(NAME);
     public final static SimpleNetworkWrapper CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel(MODID+":network");
 
-    static {
+    @Mod.EventHandler
+    public void onPreInit(final FMLPreInitializationEvent event){
         CHANNEL.registerMessage(PacketSuggestionReminder.Handler.class, PacketSuggestionReminder.class,0, Side.CLIENT);
         CHANNEL.registerMessage(PackageNBTInfo.Handler.class,PackageNBTInfo.class,1,Side.CLIENT);
-    }
-
-    public NickelAPI(){
-        super(new ModMetadata());
-        final ModMetadata meta = this.getMetadata();
-        meta.modId = MODID;
-        meta.name = NAME;
-        meta.description = "A Experimental Command API inside 天圆地方 GeoCraft.";
-        meta.version=VERSION_NAME;
-        meta.authorList.add("QGMoe");
+        SNBTOperations.scanProviders(event.getAsmData());
     }
 }
