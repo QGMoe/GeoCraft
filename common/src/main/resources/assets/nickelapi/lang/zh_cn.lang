@@ -75,6 +75,7 @@ nickel.command.nbt.path.syntax.expect_name=需要一个 NBT 标签名称
 nickel.command.nbt.path.syntax.empty_name=NBT 标签名称不能是空字符串
 nickel.command.nbt.path.syntax.empty_method=NBT 路径方法的名称不能为空
 nickel.command.nbt.path.method.undefined= %s 使用了未定义的方法 %s
+nickel.command.nbt.path.method.process_err=处理方法 %s 的参数失败
 nickel.command.nbt.path.set.index.mismatch=无法操作，目标既不是列表也不是数组
 nickel.command.nbt.path.set.index.out_of_index.list=索引 %s 在目标列表的范围之外
 nickel.command.nbt.path.set.index.out_of_index.arr=索引 %s 在目标数组的范围之外

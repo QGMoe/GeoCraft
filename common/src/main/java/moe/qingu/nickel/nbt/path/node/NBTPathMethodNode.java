@@ -28,35 +28,67 @@
 package moe.qingu.nickel.nbt.path.node;
 
 import moe.qingu.nickel.I18nKeys;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.nbt.path.method.NBTPathArgsProcessor;
 import moe.qingu.nickel.nbt.path.method.NBTPathMethod;
 import moe.qingu.nickel.nbt.path.method.NBTPathMethods;
+import moe.qingu.nickel.reader.InputReader;
+import net.minecraft.command.CommandException;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.util.text.event.HoverEvent;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Function;
 
 /**
  * @author QGMoe
  */
 public class NBTPathMethodNode implements NBTPathNode{
 
-    private final NBTPathMethod method;
+    private final Function<NBTBase,Collection<NBTBase>> handle;
     private final NBTBase[] args;
+    private final Object obj;
 
-    public NBTPathMethodNode(final @Nonnull String name,final @Nonnull NBTBase[] args) throws NoSuchMethodException {
-        this.method = NBTPathMethods.resolve(name,args);
-        if(this.method == null) throw new NoSuchMethodException();
+    public NBTPathMethodNode(final int begin,
+                             final @Nonnull InputReader input,
+                             final @Nonnull String name,
+                             final @Nonnull NBTBase[] args)
+            throws NoSuchMethodException, CommandException {
         this.args = args;
+        final NBTPathMethod method = NBTPathMethods.resolveMethod(name,args);
+        if(method != null){
+            handle = tag ->{
+                final NBTBase[] actualArgs = new NBTBase[args.length+1];
+                actualArgs[0] = tag;
+                System.arraycopy(args, 0, actualArgs, 1, args.length);
+                return method.invoke(actualArgs);
+            };
+            this.obj = method;
+            return;
+        }
+        final NBTPathArgsProcessor processor = NBTPathMethods.resolveProcessor(name,args);
+        if(processor != null){
+            try {
+                handle = processor.process(args);
+            } catch (final NickelRuntimeException e){
+                input.panic(begin,I18nKeys.NBTPath.methodProcessFailed(processor).hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getInformation()));
+                throw new RuntimeException("Impossible",e);
+            }catch (final Exception e){
+                input.panic(begin,I18nKeys.NBTPath.methodProcessFailed(processor).hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getLocalizedMessage()));
+                throw new RuntimeException("Impossible",e);
+            }
+            this.obj = processor;
+            return;
+        }
+        throw new NoSuchMethodException();
     }
 
     @Nonnull
     @Override
     public Collection<NBTBase> resolve(@Nonnull final NBTBase base) {
-        final NBTBase[] actualArgs = new NBTBase[args.length+1];
-        actualArgs[0] = base;
-        System.arraycopy(args, 0, actualArgs, 1, args.length);
-        return method.invoke(actualArgs);
+        return handle.apply(base);
     }
 
     @Nonnull
@@ -67,17 +99,17 @@ public class NBTPathMethodNode implements NBTPathNode{
 
     @Override
     public int hashCode() {
-        return method.hashCode() ^ Arrays.hashCode(args);
+        return obj.hashCode() ^ Arrays.hashCode(args);
     }
 
     @Override
     public boolean equals(final Object obj) {
-        return obj instanceof NBTPathMethodNode && ((NBTPathMethodNode) obj).method == this.method && Arrays.equals(this.args, ((NBTPathMethodNode) obj).args);
+        return obj instanceof NBTPathMethodNode && ((NBTPathMethodNode) obj).obj == this.obj && Arrays.equals(this.args, ((NBTPathMethodNode) obj).args);
     }
 
     @Nonnull
     @Override
     public String toString() {
-        return NBTPathMethods.signatureOf(method);
+        return NBTPathMethods.signatureOf(obj);
     }
 }

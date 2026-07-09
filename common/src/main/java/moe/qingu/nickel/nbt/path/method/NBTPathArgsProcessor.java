@@ -27,18 +27,17 @@
 
 package moe.qingu.nickel.nbt.path.method;
 
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import net.minecraft.nbt.NBTBase;
+
 import javax.annotation.Nonnull;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Collection;
+import java.util.function.Function;
 
 /**
  * @author QGMoe
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface NBTPathFunction {
-    @Nonnull String name() default "";
-    boolean processor() default false;
+public interface NBTPathArgsProcessor {
+    @Nonnull
+    Function<NBTBase,Collection<NBTBase>> process(final @Nonnull NBTBase[] args) throws NickelRuntimeException;
 }

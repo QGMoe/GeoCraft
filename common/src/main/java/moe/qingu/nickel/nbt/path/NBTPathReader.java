@@ -135,7 +135,7 @@ public class NBTPathReader extends SNBTReader {
         if(begin == input.getCursor() || name.isEmpty()) input.panic(begin,translation(I18nKeys.NBTPath.EMPTY_METHOD_NAME));
         final List<NBTBase> args = readFunctionArguments();
         try {
-            path.append(new NBTPathMethodNode(name,args.toArray(new NBTBase[0])));
+            path.append(new NBTPathMethodNode(begin,input,name,args.toArray(new NBTBase[0])));
         } catch (final @Nonnull NoSuchMethodException e) {
             input.panic(begin,I18nKeys.NBTPath.methodUndefined(name,args));
         }

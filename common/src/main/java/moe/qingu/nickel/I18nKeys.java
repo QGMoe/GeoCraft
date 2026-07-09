@@ -29,6 +29,8 @@ package moe.qingu.nickel;
 
 import moe.qingu.nickel.nbt.operation.SNBTOperation;
 import moe.qingu.nickel.nbt.operation.SNBTOperations;
+import moe.qingu.nickel.nbt.path.method.NBTPathArgsProcessor;
+import moe.qingu.nickel.nbt.path.method.NBTPathMethods;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.text.TextFormatting;
@@ -165,6 +167,7 @@ public final class I18nKeys {
         public static final String NODE_METHOD = "nickel.command.nbt.path.node.method";
 
         public static final String METHOD_UNDEFINED = "nickel.command.nbt.path.method.undefined";
+        public static final String METHOD_PROCESS_ERR = "nickel.command.nbt.path.method.process_err";
 
         public static final String EOF = "nickel.command.nbt.path.syntax.eof";
         public static final String COMPOUND_MISPLACE = "nickel.command.nbt.path.syntax.compound_incorrected_place";
@@ -214,6 +217,10 @@ public final class I18nKeys {
 
         public static @Nonnull TextBuilder<?,?> compoundMisplace(final int fact){
             return translation(COMPOUND_MISPLACE,translation(NODE_COMPOUND),fact);
+        }
+
+        public static @Nonnull TextBuilder<?,?> methodProcessFailed(final @Nonnull NBTPathArgsProcessor processor){
+            return translation(METHOD_PROCESS_ERR, NBTPathMethods.signatureOf(processor));
         }
 
         public static @Nonnull TextBuilder<?,?> methodUndefined(final @Nonnull String name,final @Nonnull List<NBTBase> args){

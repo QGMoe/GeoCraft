@@ -75,6 +75,7 @@ nickel.command.nbt.path.syntax.expect_name=Expected an NBT tag name
 nickel.command.nbt.path.syntax.empty_name=NBT tag name cannot be an empty string
 nickel.command.nbt.path.syntax.empty_method=NBT path method name cannot be empty
 nickel.command.nbt.path.method.undefined= %s invoked undefined method %s
+nickel.command.nbt.path.method.process_err=Failed to process arguments for method %s
 nickel.command.nbt.path.set.index.mismatch=Cannot operate, target is neither a list nor an array
 nickel.command.nbt.path.set.index.out_of_index.list=Index %s is out of range for the target list
 nickel.command.nbt.path.set.index.out_of_index.arr=Index %s is out of range for the target array
