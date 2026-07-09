@@ -25,18 +25,19 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.nbt.operation;
-
-import moe.qingu.nickel.command.exception.NickelRuntimeException;
-import net.minecraft.nbt.*;
+package moe.qingu.nickel.nbt.path.method;
 
 import javax.annotation.Nonnull;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author QGMoe
  */
-@FunctionalInterface
-public interface SNBTOperation {
-    @Nonnull
-    NBTBase invoke(final @Nonnull NBTBase[] args) throws NickelRuntimeException;
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface NBTPathFunction {
+    @Nonnull String name() default "";
 }

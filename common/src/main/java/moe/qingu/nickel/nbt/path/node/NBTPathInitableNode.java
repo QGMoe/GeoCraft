@@ -30,10 +30,11 @@ package moe.qingu.nickel.nbt.path.node;
 import net.minecraft.nbt.NBTBase;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author QGMoe
  */
 public interface NBTPathInitableNode extends NBTPathNode{
-    void init(final @Nonnull NBTBase base,final @Nonnull NBTPathProvidableNode next);
+    void init(final @Nonnull NBTBase base,final @Nullable NBTPathProvidableNode next);
 }

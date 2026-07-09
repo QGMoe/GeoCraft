@@ -61,7 +61,7 @@ public class NBTPathScanner extends SNBTScanner {
                 scanPathArray();
                 break;
             }
-            default: scanPathTag();
+            default: scanPathTagOrMethod();
         }
         if(input.canRead()){
             switch (input.peek()){
@@ -94,12 +94,17 @@ public class NBTPathScanner extends SNBTScanner {
         expectOrEnd(']');
     }
 
-    public final void scanPathTag() throws CommandException, NickelScanEOFSignal {
+    public final void scanPathTagOrMethod() throws CommandException, NickelScanEOFSignal {
         input.skipWhitespaces();
         final int begin = input.getCursor();
         if(!input.canRead()) throw NickelScanEOFSignal.INSTANCE;
         if(input.peek() == '"' || input.peek() == '\'') input.scanString();
         else scanUnquotedPathString();
+        if(input.canRead() && input.peek() == '('){
+            if(begin == input.getCursor()) input.panic(begin,translation(I18nKeys.NBTPath.EMPTY_METHOD_NAME));
+            scanFunctionArguments();
+            return;
+        }
         if(begin == input.getCursor()) input.panic(begin,translation(I18nKeys.NBTPath.EMPTY_TAG_NAME));
         if(input.canRead() && input.peek() == '{') scanCompound();
     }

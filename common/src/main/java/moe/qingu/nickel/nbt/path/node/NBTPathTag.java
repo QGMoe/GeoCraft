@@ -37,6 +37,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 import static moe.qingu.nickel.text.Texts.translation;
 
@@ -55,7 +56,7 @@ public final class NBTPathTag implements NBTPathModifiableNode, NBTPathProvidabl
 
     @Nonnull
     @Override
-    public Collection<NBTBase> filter(final @Nonnull NBTBase nbtBase) {
+    public Collection<NBTBase> resolve(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagCompound){
             final NBTTagCompound compound = (NBTTagCompound) nbtBase;
             if(!compound.hasKey(key)) return Collections.emptyList();
@@ -94,7 +95,8 @@ public final class NBTPathTag implements NBTPathModifiableNode, NBTPathProvidabl
     }
 
     @Override
-    public void init(@Nonnull final NBTBase base, @Nonnull final NBTPathProvidableNode next) {
+    public void init(@Nonnull final NBTBase base, @Nullable final NBTPathProvidableNode next) {
+        if(next == null) return;
         if(!(base instanceof NBTTagCompound)) return;
         final NBTTagCompound compound = (NBTTagCompound) base;
         if(compound.hasKey(key)) return;
@@ -121,6 +123,16 @@ public final class NBTPathTag implements NBTPathModifiableNode, NBTPathProvidabl
     @Nullable
     public NBTCompoundMatcher getValueFilter() {
         return valueFilter;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.valueFilter == null? this.key.hashCode() : this.key.hashCode() ^ this.valueFilter.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        return obj instanceof NBTPathTag && this.key.equals(((NBTPathTag) obj).key) && Objects.equals(this.valueFilter, ((NBTPathTag) obj).valueFilter);
     }
 
     @Override

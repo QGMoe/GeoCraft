@@ -34,9 +34,12 @@ import moe.qingu.nickel.nbt.matcher.NBTMatcher;
 import moe.qingu.nickel.nbt.path.node.*;
 import moe.qingu.nickel.util.StringUtils;
 import net.minecraft.command.CommandException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
+
+import java.util.List;
 
 import static moe.qingu.nickel.text.Texts.translation;
 
@@ -65,7 +68,7 @@ public class NBTPathReader extends SNBTReader {
                 break;
             }
             default:{
-                readPathTag(path);
+                readPathTagOrMethod(path);
             }
         }
         if(input.canRead()){
@@ -112,16 +115,30 @@ public class NBTPathReader extends SNBTReader {
         }
     }
 
-    public final void readPathTag(final @Nonnull NBTPath path) throws CommandException {
+    public final void readPathTagOrMethod(final @Nonnull NBTPath path) throws CommandException {
         input.skipWhitespaces();
         final int begin = input.getCursor();
         final String key;
         if(!input.canRead()) input.panic(begin,translation(I18nKeys.NBTPath.EXPECT_TAG_NAME));
         if(input.peek() == '"' || input.peek() == '\'') key = StringUtils.strip(input.readString());
         else key = readUnquotedPathString();
+        if(input.canRead() && input.peek() == '('){
+            readPathMethod(begin,key,path);
+            return;
+        }
         if(begin == input.getCursor() || key.isEmpty()) input.panic(begin,translation(I18nKeys.NBTPath.EMPTY_TAG_NAME));
         if(!input.canRead() || input.peek() != '{') path.append(new NBTPathTag(key,null));
         else path.append(new NBTPathTag(key,NBTMatcher.toMatcher(readCompound())));
+    }
+
+    public final void readPathMethod(final int begin,final String name,final @Nonnull NBTPath path) throws CommandException{
+        if(begin == input.getCursor() || name.isEmpty()) input.panic(begin,translation(I18nKeys.NBTPath.EMPTY_METHOD_NAME));
+        final List<NBTBase> args = readFunctionArguments();
+        try {
+            path.append(new NBTPathMethodNode(name,args.toArray(new NBTBase[0])));
+        } catch (final @Nonnull NoSuchMethodException e) {
+            input.panic(begin,I18nKeys.NBTPath.methodUndefined(name,args));
+        }
     }
 
 

@@ -57,7 +57,7 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
 
     @Nonnull
     @Override
-    public Collection<NBTBase> filter(final @Nonnull NBTBase nbtBase) {
+    public Collection<NBTBase> resolve(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) nbtBase;
             final int i = index<0?list.tagCount()+index:index;
@@ -103,7 +103,7 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
             final int[] array = ((NBTTagIntArray) base).getIntArray();
             final int i = index<0?array.length+index:index;
             if(i<0 || i >= array.length) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_ARR_OUT,i));
-            if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_INT)
+            if(replacement.getId() != 0 && replacement.getId() > Constants.NBT.TAG_INT)
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_INT));
             array[i] = ((NBTPrimitive)replacement).getInt();
             return 1;
@@ -111,7 +111,7 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
             final long[] array = NBTUtils.getLongArray((NBTTagLongArray) base);
             final int i = index<0?array.length+index:index;
             if(i<0 || i >= array.length) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_ARR_OUT,i));
-            if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_LONG)
+            if(replacement.getId() != 0 && replacement.getId() > Constants.NBT.TAG_LONG)
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_LONG));
             array[i] = ((NBTPrimitive)replacement).getLong();
             return 1;
@@ -127,7 +127,8 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_INDEX_NO_TYPE)
                         .arg(NBTBase.NBT_TYPES[tag.getId()],NBTBase.NBT_TYPES[list.getTagType()]));
             final ArrayList<NBTBase> ca = cache.get();
-            while (list.tagCount()>=i) ca.add(list.removeTag(list.tagCount()-1));
+            ca.clear();
+            while (list.tagCount()>i) ca.add(list.removeTag(list.tagCount()-1));
             list.appendTag(tag.copy());
             for(int j=ca.size()-1;j>=0;j--) list.appendTag(ca.get(j));
             return 1;
@@ -149,6 +150,16 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
     @Override
     public String getLocalName() {
         return I18nKeys.NBTPath.NODE_INDEX;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(index);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        return obj instanceof NBTPathIndex && this.index == ((NBTPathIndex) obj).index;
     }
 
     @Override

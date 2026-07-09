@@ -42,7 +42,7 @@ import top.qiguaiaaaa.geocraft.geography.atmosphere.info.CloseAtmosphereSystemIn
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class CloseAtmosphereSystem extends QiguaiAtmosphereSystem {
+public class CloseAtmosphereSystem extends QGAtmosphereSystem {
     public static final float HELL_TEMP = 400;
     protected final float temp;
     protected final double maxWindSpeed,pressure;

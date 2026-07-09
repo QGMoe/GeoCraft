@@ -57,6 +57,9 @@ public final class I18nKeys {
     public static final class Syntax{
         public static final String NO_SPLIT = "nickel.command.syntax.no_split";
         public static final String STR_NO_CLOSE = "nickel.command.syntax.string.no_pair";
+        public static final String UNEXPECTED = "nickel.command.syntax.unexpected";
+        public static final String EOF = "nickel.command.syntax.eof";
+        public static final String UNDEFINED_UNICODE = "nickel.command.syntax.undefined_unicode";
         public static final String STR_TRUNCATED_ESCAPE = "nickel.command.syntax.string.truncated_escape";
         public static final String STR_TRUNCATED_ESCAPE_INT = "nickel.command.syntax.string.truncated_escape.int";
         public static final String NUM_INVALID = "nickel.command.syntax.num.invalid";
@@ -82,6 +85,10 @@ public final class I18nKeys {
         public static @Nonnull TextBuilder<?,?> intInvalidDigit(final int digit,final int radix){
             return translation(INT_INVALID_DIGIT,stringOf(digit),radix);
         }
+
+        public static @Nonnull TextBuilder<?,?> unexpected(final int need, final int fact){
+            return translation(UNEXPECTED,stringOf(need),stringOf(fact));
+        }
     }
 
     public static final class NBT{
@@ -89,7 +96,6 @@ public final class I18nKeys {
         public static final String EXPECT_KEY = "nickel.command.nbt.syntax.expect_key";
         public static final String EXPECT_VALUE = "nickel.command.nbt.syntax.expect_value";
         public static final String EMPTY_KEY = "nickel.command.nbt.syntax.empty_key";
-        public static final String UNEXPECTED = "nickel.command.nbt.syntax.unexpected";
         public static final String TOO_MIN = "nickel.command.nbt.syntax.too_min";
         public static final String TOO_MAX = "nickel.command.nbt.syntax.too_max";
         public static final String INVALID_NUM_SPLIT = "nickel.command.nbt.syntax.invalid_";
@@ -111,10 +117,6 @@ public final class I18nKeys {
         public static final String R_CT_LONG_ARR = "nickel.command.nbt.runtime.critical.long_arr";
         public static final String R_CT_LIST = "nickel.command.nbt.runtime.critical.list";
 
-
-        public static @Nonnull TextBuilder<?,?> unexpected(final int need, final int fact){
-            return translation(UNEXPECTED,stringOf(need),stringOf(fact));
-        }
 
         public static @Nonnull TextBuilder<?,?> tooMin(final long num,final long min){
             return translation(TOO_MIN,num,min);
@@ -160,12 +162,16 @@ public final class I18nKeys {
         public static final String NODE_LIST_COMPOUND = "nickel.command.nbt.path.node.list_compound";
         public static final String NODE_TAG = "nickel.command.nbt.path.node.tag";
         public static final String NODE_TAG_COMPOUND = "nickel.command.nbt.path.node.tag_compound";
+        public static final String NODE_METHOD = "nickel.command.nbt.path.node.method";
+
+        public static final String METHOD_UNDEFINED = "nickel.command.nbt.path.method.undefined";
 
         public static final String EOF = "nickel.command.nbt.path.syntax.eof";
         public static final String COMPOUND_MISPLACE = "nickel.command.nbt.path.syntax.compound_incorrected_place";
         public static final String LIST_OR_ARR_NO_CLOSE = "nickel.command.nbt.path.syntax.array_not_close";
         public static final String EXPECT_TAG_NAME = "nickel.command.nbt.path.syntax.expect_name";
         public static final String EMPTY_TAG_NAME = "nickel.command.nbt.path.syntax.empty_name";
+        public static final String EMPTY_METHOD_NAME = "nickel.command.nbt.path.syntax.empty_method";
 
         public static final String SET_INDEX_MISMATCH = "nickel.command.nbt.path.set.index.mismatch";
         public static final String SET_INDEX_LIST_OUT = "nickel.command.nbt.path.set.index.out_of_index.list";
@@ -208,6 +214,17 @@ public final class I18nKeys {
 
         public static @Nonnull TextBuilder<?,?> compoundMisplace(final int fact){
             return translation(COMPOUND_MISPLACE,translation(NODE_COMPOUND),fact);
+        }
+
+        public static @Nonnull TextBuilder<?,?> methodUndefined(final @Nonnull String name,final @Nonnull List<NBTBase> args){
+            return translation(METHOD_UNDEFINED)
+                    .arg(plain(name+'('+ args.stream()
+                            .map(NBTBase::toString)
+                            .collect(Collectors.joining(",")) +')')
+                            .color(TextFormatting.GOLD)
+                            .underlined(true))
+                    .arg(plain(SNBTOperations.signatureOf(name,args))
+                            .color(TextFormatting.AQUA).underlined(true));
         }
     }
 

@@ -35,6 +35,7 @@ import net.minecraft.nbt.*;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,7 +66,7 @@ public final class NBTPathAll implements NBTPathModifiableNode, NBTPathProvidabl
 
     @Nonnull
     @Override
-    public Collection<NBTBase> filter(final @Nonnull NBTBase nbtBase) {
+    public Collection<NBTBase> resolve(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagList){
             return Lists.newArrayList((NBTTagList) nbtBase);
         }else if(nbtBase instanceof NBTTagByteArray){
@@ -94,12 +95,12 @@ public final class NBTPathAll implements NBTPathModifiableNode, NBTPathProvidabl
             Arrays.fill(arr, ((NBTTagByte)replacement).getByte());
             return arr.length;
         }else if(base instanceof NBTTagIntArray){
-            if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_INT) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_ALL_NO_INT));
+            if(replacement.getId() != 0 && replacement.getId() > Constants.NBT.TAG_INT) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_ALL_NO_INT));
             final int[] arr = ((NBTTagIntArray)base).getIntArray();
             Arrays.fill(arr, ((NBTPrimitive)replacement).getInt());
             return arr.length;
         }else if(base instanceof NBTTagLongArray){
-            if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_LONG)
+            if(replacement.getId() != 0 && replacement.getId() > Constants.NBT.TAG_LONG)
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_ALL_NO_LONG));
             final long[] array = NBTUtils.getLongArray((NBTTagLongArray) base);
             Arrays.fill(array, ((NBTPrimitive)replacement).getLong());
@@ -121,7 +122,8 @@ public final class NBTPathAll implements NBTPathModifiableNode, NBTPathProvidabl
     }
 
     @Override
-    public void init(@Nonnull final NBTBase base, @Nonnull final NBTPathProvidableNode next) {
+    public void init(@Nonnull final NBTBase base, @Nullable final NBTPathProvidableNode next) {
+        if(next == null) return;
         if(base instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) base;
             if(!list.isEmpty()) return;

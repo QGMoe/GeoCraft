@@ -48,8 +48,9 @@ import static moe.qingu.nickel.text.Texts.translation;
 public final class NBTPath {
     private final List<NBTPathNode> nodes = new ArrayList<>();
 
-    public void append(final @Nonnull NBTPathNode node){
+    public @Nonnull NBTPath append(final @Nonnull NBTPathNode node){
         this.nodes.add(node);
+        return this;
     }
 
     public int length(){
@@ -70,7 +71,7 @@ public final class NBTPath {
     public List<NBTBase> resolve(final @Nonnull NBTTagCompound compound){
         Stream<NBTBase> c = Stream.of(compound);
         for(final NBTPathNode node:nodes) c = c
-                .flatMap(e -> node.filter(e).stream());
+                .flatMap(e -> node.resolve(e).stream());
         return c.collect(Collectors.toList());
     }
 
@@ -132,7 +133,7 @@ public final class NBTPath {
         Stream<NBTBase> c = Stream.of(compound);
         for(int i=0;i<nodes.size();i++){
             final int cur = i;
-            c = c.peek(e -> init(e,cur)).flatMap(e -> nodes.get(cur).filter(e).stream());
+            c = c.peek(e -> init(e,cur)).flatMap(e -> nodes.get(cur).resolve(e).stream());
         }
         return c.collect(Collectors.toList());
     }
@@ -142,22 +143,18 @@ public final class NBTPath {
         Stream<NBTBase> c = Stream.of(compound);
         for(int i=0;i<length()-1;i++){
             final int cur = i;
-            c = c.flatMap(e -> nodes.get(cur).filter(e).stream());
+            c = c.flatMap(e -> nodes.get(cur).resolve(e).stream());
         }
         return c.collect(Collectors.toList());
     }
 
     private void init(final @Nonnull NBTBase base,final int cur) {
-        switch (this.nodes.size()-cur){
-            case 0:
-            case 1: return;
-            default:{
-                final NBTPathNode node = this.nodes.get(cur);
-                if(node instanceof NBTPathInitableNode){
-                    final NBTPathInitableNode init = (NBTPathInitableNode) base;
-                    final NBTPathNode next = this.nodes.get(cur+1);
-                    if(next instanceof NBTPathProvidableNode) init.init(base,(NBTPathProvidableNode) next);
-                }
+        if (this.nodes.size() - cur > 0) {
+            final NBTPathNode node = this.nodes.get(cur);
+            if (node instanceof NBTPathInitableNode) {
+                final NBTPathInitableNode init = (NBTPathInitableNode) node;
+                final NBTPathNode next = this.nodes.size()-cur > 1? this.nodes.get(cur + 1):null;
+                if (next == null || next instanceof NBTPathProvidableNode) init.init(base, (NBTPathProvidableNode) next);
             }
         }
     }

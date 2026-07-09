@@ -28,60 +28,56 @@
 package moe.qingu.nickel.nbt.path.node;
 
 import moe.qingu.nickel.I18nKeys;
-import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
+import moe.qingu.nickel.nbt.path.method.NBTPathMethod;
+import moe.qingu.nickel.nbt.path.method.NBTPathMethods;
 import net.minecraft.nbt.NBTBase;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author QGMoe
  */
-public final class NBTPathCompound implements NBTPathProvidableNode {
-    final NBTCompoundMatcher matcher;
+public class NBTPathMethodNode implements NBTPathNode{
 
-    public NBTPathCompound(final @Nonnull NBTCompoundMatcher matcher) {
-        this.matcher = matcher;
-    }
+    private final NBTPathMethod method;
+    private final NBTBase[] args;
 
-    @Nonnull
-    public NBTCompoundMatcher getMatcher() {
-        return matcher;
+    public NBTPathMethodNode(final @Nonnull String name,final @Nonnull NBTBase[] args) throws NoSuchMethodException {
+        this.method = NBTPathMethods.resolve(name,args);
+        if(this.method == null) throw new NoSuchMethodException();
+        this.args = args;
     }
 
     @Nonnull
     @Override
-    public Collection<NBTBase> resolve(@Nonnull final NBTBase nbtBase) {
-        if(matcher.match(nbtBase)) return Collections.singletonList(nbtBase);
-        else return Collections.emptyList();
+    public Collection<NBTBase> resolve(@Nonnull final NBTBase base) {
+        final NBTBase[] actualArgs = new NBTBase[args.length+1];
+        actualArgs[0] = base;
+        System.arraycopy(args, 0, actualArgs, 1, args.length);
+        return method.invoke(actualArgs);
     }
 
     @Nonnull
     @Override
     public String getLocalName() {
-        return I18nKeys.NBTPath.NODE_COMPOUND;
+        return I18nKeys.NBTPath.NODE_METHOD;
     }
 
     @Override
     public int hashCode() {
-        return matcher.hashCode();
+        return method.hashCode() ^ Arrays.hashCode(args);
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if(obj instanceof NBTPathCompound) return this.matcher.equals(((NBTPathCompound) obj).matcher);
-        else return false;
+        return obj instanceof NBTPathMethodNode && ((NBTPathMethodNode) obj).method == this.method && Arrays.equals(this.args, ((NBTPathMethodNode) obj).args);
     }
 
-    @Override
     @Nonnull
+    @Override
     public String toString() {
-        return matcher.toString();
-    }
-
-    @Nonnull
-    @Override
-    public NBTBase provide() {
-        return matcher.toNBT();
+        return NBTPathMethods.signatureOf(method);
     }
 }

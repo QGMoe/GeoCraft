@@ -28,13 +28,16 @@
 package moe.qingu.nickel.nbt.path.node;
 
 import moe.qingu.nickel.I18nKeys;
+import moe.qingu.nickel.NickelAPI;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.nbt.NBTUtils;
 import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -45,7 +48,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
-public final class NBTPathListCompound implements NBTPathModifiableNode, NBTPathProvidableNode {
+public final class NBTPathListCompound implements NBTPathModifiableNode, NBTPathProvidableNode, NBTPathInitableNode {
     final NBTCompoundMatcher filter;
 
     public NBTPathListCompound(final @Nonnull NBTCompoundMatcher filter) {
@@ -59,7 +62,7 @@ public final class NBTPathListCompound implements NBTPathModifiableNode, NBTPath
 
     @Nonnull
     @Override
-    public Collection<NBTBase> filter(final @Nonnull NBTBase nbtBase) {
+    public Collection<NBTBase> resolve(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) nbtBase;
             return StreamSupport.stream(list.spliterator(),false)
@@ -101,6 +104,22 @@ public final class NBTPathListCompound implements NBTPathModifiableNode, NBTPath
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_LIST_COM_MISMATCH));
     }
 
+
+    @Override
+    public void init(@Nonnull final NBTBase base, @Nullable final NBTPathProvidableNode next) {
+        if(base instanceof NBTTagList){
+            final NBTTagList list = (NBTTagList) base;
+            if(list.isEmpty()){
+                try {
+                    NBTUtils.reset(list);
+                } catch (final IllegalAccessException e) {
+                    NickelAPI.LOGGER.warn("Couldn't reset list type",e);
+                }
+                list.appendTag(this.filter.toNBT());
+            }
+        }
+    }
+
     @Nonnull
     @Override
     public NBTBase provide() {
@@ -113,6 +132,16 @@ public final class NBTPathListCompound implements NBTPathModifiableNode, NBTPath
     @Override
     public String getLocalName() {
         return I18nKeys.NBTPath.NODE_LIST_COMPOUND;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.filter.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        return obj instanceof NBTPathListCompound && this.filter.equals(((NBTPathListCompound) obj).filter);
     }
 
     @Override

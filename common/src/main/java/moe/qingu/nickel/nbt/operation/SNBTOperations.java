@@ -32,6 +32,7 @@ import com.google.common.collect.Table;
 import moe.qingu.nickel.NickelAPI;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.node.parameter.generic.UUIDNode;
+import moe.qingu.nickel.nbt.NBTFunctionType;
 import moe.qingu.nickel.nbt.NBTUtils;
 import net.minecraft.nbt.*;
 import net.minecraftforge.fml.common.discovery.ASMDataTable;
@@ -50,11 +51,11 @@ import java.util.stream.LongStream;
  */
 @SuppressWarnings("unused")
 public final class SNBTOperations {
-    private static final Table<String, SNBTOperation.OperationType,SNBTOperation> functions = HashBasedTable.create();
+    private static final Table<String, NBTFunctionType,SNBTOperation> functions = HashBasedTable.create();
     private static final Map<SNBTOperation,String> signatures = new HashMap<>();
     private static final MethodHandles.Lookup PERMISSION = MethodHandles.lookup();
 
-    public static void register(final @Nonnull String name, final @Nonnull SNBTOperation.OperationType type, final @Nonnull SNBTOperation function){
+    public static void register(final @Nonnull String name, final @Nonnull NBTFunctionType type, final @Nonnull SNBTOperation function){
         final String signature = name + type;
         if(signatures.containsValue(signature)){
             NickelAPI.LOGGER.error("Duplicated register for SNBTOperation {}",signature);
@@ -154,33 +155,9 @@ public final class SNBTOperations {
 
     @Nullable
     public static SNBTOperation resolve(final @Nonnull String name, final @Nonnull NBTBase[] args){
-        final @Nullable Map<SNBTOperation.OperationType,SNBTOperation> candidates = functions.row(name);
+        final @Nullable Map<NBTFunctionType,SNBTOperation> candidates = functions.row(name);
         if(candidates == null) return null;
-
-        SNBTOperation bestOpt = null;
-        int bestScore = Integer.MAX_VALUE;
-        boolean ambiguous = false;
-        outer:
-        for(final Map.Entry<SNBTOperation.OperationType,SNBTOperation> entry:candidates.entrySet()){
-            final SNBTOperation.OperationType type = entry.getKey();
-            if(type.getParameterCount() != args.length) continue;
-
-            int score = 0;
-            for(int i=0;i<args.length;i++){
-                if(args[i] == null) return null;
-                final int dis = SNBTOperation.distance(args[i].getClass(),type.getInputTypeAt(i));
-                if(dis <0 ) continue outer;
-                score += dis;
-            }
-
-            if(score < bestScore){
-                bestScore = score;
-                ambiguous  =false;
-                bestOpt = entry.getValue();
-            } else if(score == bestScore) ambiguous = true;
-        }
-        if(ambiguous) return null;
-        return bestOpt;
+        return NBTFunctionType.resolve(candidates,args);
     }
 
     @Nonnull
@@ -193,7 +170,7 @@ public final class SNBTOperations {
     @Nonnull
     @SuppressWarnings("unchecked")
     public static String signatureOf(final @Nonnull String name,final @Nonnull List<NBTBase> args){
-        return name + new SNBTOperation.OperationType(args.stream()
+        return name + new NBTFunctionType(args.stream()
                 .map(Object::getClass)
                 .toArray(Class[]::new));
     }
@@ -214,7 +191,7 @@ public final class SNBTOperations {
                 final MethodHandle handle = PERMISSION.unreflect(method)
                         .asSpreader(NBTBase[].class,paras.length)
                         .asType(MethodType.methodType(NBTBase.class,Object.class));
-                final SNBTOperation.OperationType type = new SNBTOperation.OperationType((Class<? extends NBTBase>[]) paras);
+                final NBTFunctionType type = new NBTFunctionType((Class<? extends NBTBase>[]) paras);
                 final String name = annotation.name().isEmpty()? method.getName(): annotation.name();
 
                 @Nonnull
@@ -229,7 +206,8 @@ public final class SNBTOperations {
                 };
                 register(name, type, func);
             } catch (final @Nonnull Throwable e) {
-                throw new RuntimeException(e);
+                NickelAPI.LOGGER.error("Failed to load SNBT operation {} in class {}",method,cls.getName());
+                NickelAPI.LOGGER.error("Because: ",e);
             }
         }
     }

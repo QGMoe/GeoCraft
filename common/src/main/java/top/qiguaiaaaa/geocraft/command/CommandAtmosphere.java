@@ -29,7 +29,9 @@ package top.qiguaiaaaa.geocraft.command;
 
 import moe.qingu.nickel.NickelAPI;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.nbt.matcher.NBTMatcher;
 import moe.qingu.nickel.nbt.path.NBTPath;
+import moe.qingu.nickel.nbt.path.node.NBTPathCompound;
 import moe.qingu.nickel.network.PackageNBTInfo;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -403,6 +405,8 @@ public final class CommandAtmosphere {
                 .then(literals()
                         .when("query")
                         .then($NBTPath("nbt_path")
+                                .asOptional()
+                                .defaultAs(new NBTPath().append(new NBTPathCompound(NBTMatcher.toMatcher(new NBTTagCompound()))))
                                 .translate("geocraft.command.atmosphere.arg.nbt_path")
                                 .suggestRaw("{}")
                                 .then(_pos().then(_multiply().then(process(CommandAtmosphere::queryData)))))
@@ -620,8 +624,8 @@ public final class CommandAtmosphere {
         final NBTPath path = context.get("nbt_path");
         final NBTBase tag= context.get("nbt_tag");
         final NBTTagCompound compound = data.getSaveCompound();
-        path.set(compound,tag,false);
         final ICommandSender sender = context.getSender();
+        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,path.set(compound,tag,false));
         translation("geocraft.command.atmosphere.data.set").color(TextFormatting.GREEN).sendTo(sender);
         if(sender instanceof EntityPlayerMP){
             final NBTPath subPath = path.subPath(path.length()-1);

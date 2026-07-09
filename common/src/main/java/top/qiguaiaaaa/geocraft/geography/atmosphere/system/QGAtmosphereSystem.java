@@ -62,9 +62,9 @@ import java.util.Iterator;
 
 import static top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA;
 
-public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
+public abstract class QGAtmosphereSystem extends BaseAtmosphereSystem {
     protected final WorldServer world;
-    public QiguaiAtmosphereSystem(WorldServer server, AtmosphereInfo info, CommonAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider provider) {
+    public QGAtmosphereSystem(WorldServer server, AtmosphereInfo info, CommonAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider provider) {
         super(info, provider);
         this.world = server;
         worldInfo.setSystem(this);

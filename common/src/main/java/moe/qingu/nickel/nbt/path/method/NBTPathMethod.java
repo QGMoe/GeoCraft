@@ -25,63 +25,17 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.nbt.path.node;
+package moe.qingu.nickel.nbt.path.method;
 
-import moe.qingu.nickel.I18nKeys;
-import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
 import net.minecraft.nbt.NBTBase;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collection;
 
 /**
  * @author QGMoe
  */
-public final class NBTPathCompound implements NBTPathProvidableNode {
-    final NBTCompoundMatcher matcher;
+public interface NBTPathMethod {
 
-    public NBTPathCompound(final @Nonnull NBTCompoundMatcher matcher) {
-        this.matcher = matcher;
-    }
-
-    @Nonnull
-    public NBTCompoundMatcher getMatcher() {
-        return matcher;
-    }
-
-    @Nonnull
-    @Override
-    public Collection<NBTBase> resolve(@Nonnull final NBTBase nbtBase) {
-        if(matcher.match(nbtBase)) return Collections.singletonList(nbtBase);
-        else return Collections.emptyList();
-    }
-
-    @Nonnull
-    @Override
-    public String getLocalName() {
-        return I18nKeys.NBTPath.NODE_COMPOUND;
-    }
-
-    @Override
-    public int hashCode() {
-        return matcher.hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if(obj instanceof NBTPathCompound) return this.matcher.equals(((NBTPathCompound) obj).matcher);
-        else return false;
-    }
-
-    @Override
-    @Nonnull
-    public String toString() {
-        return matcher.toString();
-    }
-
-    @Nonnull
-    @Override
-    public NBTBase provide() {
-        return matcher.toNBT();
-    }
+    @Nonnull Collection<NBTBase> invoke(final @Nonnull NBTBase[] args);
 }

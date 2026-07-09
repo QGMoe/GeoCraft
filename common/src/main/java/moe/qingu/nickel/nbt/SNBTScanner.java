@@ -118,10 +118,10 @@ public class SNBTScanner extends SNBTReader{
 
     public final void scanTypedValue() throws CommandException, NickelScanEOFSignal {
         this.scanUnquotedString();
-        if(input.canRead() && input.peek() == '(') scanFunction();
+        if(input.canRead() && input.peek() == '(') scanFunctionArguments();
     }
 
-    public final void scanFunction() throws CommandException, NickelScanEOFSignal {
+    public final void scanFunctionArguments() throws CommandException, NickelScanEOFSignal {
         expectOrEnd('(');
         boolean beforeAnyArgs = true;
         while (input.canRead() && input.peek() != ')'){
@@ -136,7 +136,7 @@ public class SNBTScanner extends SNBTReader{
 
     public final void expectOrEnd(final int cp) throws CommandException, NickelScanEOFSignal{
         if(input.canRead()){
-            if(input.peek() != cp) input.panic(input.getCursor(), I18nKeys.NBT.unexpected(cp,input.peek()));
+            if(input.peek() != cp) input.panic(input.getCursor(), I18nKeys.Syntax.unexpected(cp,input.peek()));
             else input.skip();
         }else throw NickelScanEOFSignal.INSTANCE;
     }

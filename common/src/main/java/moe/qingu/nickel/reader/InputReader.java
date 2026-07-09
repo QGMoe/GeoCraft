@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.reader;
 
+import com.ibm.icu.lang.UCharacter;
 import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.exception.NickelCommandException;
@@ -97,6 +98,19 @@ public final class InputReader {
             this.skip();
             return true;
         }else return false;
+    }
+
+    public void expect(final int cp) throws CommandException {
+        if(this.skipIf(cp)) return;
+        if(!this.canRead()) this.panic(cursor, I18nKeys.Syntax.EOF);
+        else this.panic(cursor, I18nKeys.Syntax.unexpected(cp,this.peek()));
+    }
+
+    public void expectOrEnd(final int cp) throws CommandException, NickelScanEOFSignal{
+        if(this.canRead()){
+            if(this.peek() != cp) this.panic(cursor, I18nKeys.Syntax.unexpected(cp,this.peek()));
+            else skip();
+        }else throw NickelScanEOFSignal.INSTANCE;
     }
 
     public void skipCodepoints(final int cp){
@@ -188,6 +202,7 @@ public final class InputReader {
                 case 'x': return readInt(2,4);
                 case 'u': return readInt(4,4);
                 case 'U': return readInt(8,4);
+                case 'N': return readUnicodeName();
                 default:{
                     unread();
                     return readInt(3,3);
@@ -217,12 +232,39 @@ public final class InputReader {
                 case 'x': return scanInt(2,4);
                 case 'u': return scanInt(4,4);
                 case 'U': return scanInt(8,4);
+                case 'N': return scanUnicodeName();
                 default:{
                     unread();
                     return scanInt(3,3);
                 }
             }
         }else throw NickelScanEOFSignal.INSTANCE;
+    }
+
+    public int readUnicodeName() throws CommandException{
+        expect('{');
+        final int begin = cursor;
+        final StringBuilder builder = new StringBuilder();
+        while (canRead() && isValidUnicodeNameCP(peek())) builder.appendCodePoint(Character.toUpperCase(this.read()));
+        expect('}');
+        final int cp = UCharacter.getCharFromName(builder.toString());
+        if(cp == -1) this.panic(begin,translation(I18nKeys.Syntax.UNDEFINED_UNICODE,builder));
+        return cp;
+    }
+
+    public int scanUnicodeName() throws CommandException, NickelScanEOFSignal {
+        expectOrEnd('{');
+        final int begin = cursor;
+        final StringBuilder builder = new StringBuilder();
+        while (canRead() && isValidUnicodeNameCP(peek())) builder.appendCodePoint(Character.toUpperCase(this.read()));
+        expectOrEnd('}');
+        final int cp = UCharacter.getCharFromName(builder.toString());
+        if(cp == -1) this.panic(begin,translation(I18nKeys.Syntax.UNDEFINED_UNICODE,builder));
+        return cp;
+    }
+
+    public boolean isValidUnicodeNameCP(final int cp){
+        return cp >= 'A' && cp <= 'Z' || cp >= 'a' && cp <= 'z' || cp >= '0' && cp <= '9' || cp == ' ' || cp == '-';
     }
 
     public int readInt(int len,final int pow) throws CommandException{

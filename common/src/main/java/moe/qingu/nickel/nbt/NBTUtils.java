@@ -32,12 +32,15 @@ import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.node.parameter.generic.StringNode;
 import moe.qingu.nickel.util.reflect.FieldAccessor;
 import net.minecraft.nbt.*;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.LongStream;
 
 import static moe.qingu.nickel.text.Texts.translation;
@@ -79,16 +82,44 @@ public final class NBTUtils {
         throw new RuntimeException("Couldn't get byte field in NBTTagList!");
     }
 
+    public static void reset(final @Nonnull NBTTagList list) throws IllegalAccessException{
+        if(list.isEmpty()) throw new IllegalArgumentException();
+        if(list.getTagType() == 0) return;
+        listTypeField.setByte(list,(byte) 0);
+    }
+
     public static int empty(final @Nonnull NBTTagList list) throws NickelRuntimeException {
         final int size = list.tagCount();
         if(list.isEmpty()) return size;
         while (!list.isEmpty()) list.removeTag(0);
         try{
-            listTypeField.setByte(list,(byte) 0);
+            reset(list);
         } catch (final @Nonnull IllegalAccessException e) {
             throw new NickelRuntimeException(translation(I18nKeys.NBT.R_CT_LIST,list));
         }
         return size;
+    }
+
+    public static @Nonnull List<NBTBase> readMixedList(final @Nonnull NBTTagList list){
+        final ArrayList<NBTBase> res = new ArrayList<>();
+        if(list.getTagType() != Constants.NBT.TAG_COMPOUND) for(int i=0;i<list.tagCount();i++) res.add(list.get(i));
+        else for(final NBTBase base:list){
+            final NBTTagCompound compound = (NBTTagCompound) base;
+            if(compound.hasKey("")) res.add(compound.getTag(""));
+            else res.add(compound);
+        }
+        return res;
+    }
+
+    public static @Nonnull NBTTagList toMixedList(final @Nonnull List<NBTBase> list){
+        final NBTTagList res = new NBTTagList();
+        for(final NBTBase tag:list) if(tag instanceof NBTTagCompound) res.appendTag(tag);
+        else{
+            final NBTTagCompound container = new NBTTagCompound();
+            container.setTag("",tag);
+            res.appendTag(container);
+        }
+        return res;
     }
 
     @Nonnull

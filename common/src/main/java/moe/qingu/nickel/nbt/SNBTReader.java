@@ -208,7 +208,7 @@ public strictfp class SNBTReader {
             case "false":
                 return new NBTTagByte((byte) 0);
         }
-        if(input.canRead() && input.peek() == '(') return readFunction(begin,raw);
+        if(input.canRead() && input.peek() == '(') return invokeFunction(begin,raw);
         if(InputReader.isNumber(raw.charAt(0))){
             try{
                 if(raw.startsWith("0x")) return parseInt(begin+2,raw.substring(2),16,false,false,defaultNumType);
@@ -229,7 +229,22 @@ public strictfp class SNBTReader {
     }
 
     @Nonnull
-    public NBTBase readFunction(final int begin,final @Nonnull String name) throws CommandException {
+    public NBTBase invokeFunction(final int begin, final @Nonnull String name) throws CommandException {
+        final List<NBTBase> args = readFunctionArguments();
+        final NBTBase[] argsArr = args.toArray(new NBTBase[0]);
+        final @Nullable SNBTOperation func = SNBTOperations.resolve(name,argsArr);
+        if(func == null) return input.panic(begin,I18nKeys.NBT.optUndefined(name,args));
+        try{
+            return func.invoke(argsArr);
+        }catch (final NickelRuntimeException e){
+            return input.panic(begin,I18nKeys.NBT.optFailed(func).hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getInformation()));
+        }catch (final Exception e){
+            return input.panic(begin,I18nKeys.NBT.optFailed(func).hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getLocalizedMessage()));
+        }
+    }
+
+    @Nonnull
+    public List<NBTBase> readFunctionArguments() throws CommandException {
         expect('(');
         final List<NBTBase> args = new ArrayList<>();
         boolean beforeAnyArgs = true;
@@ -241,16 +256,7 @@ public strictfp class SNBTReader {
             if(shouldExit(')')) break;
         }
         expect(')');
-        final NBTBase[] argsArr = args.toArray(new NBTBase[0]);
-        final @Nullable SNBTOperation func = SNBTOperations.resolve(name,argsArr);
-        if(func == null) return input.panic(begin,I18nKeys.NBT.optUndefined(name,args));
-        try{
-            return func.invoke(argsArr);
-        }catch (final NickelRuntimeException e){
-            return input.panic(begin,I18nKeys.NBT.optFailed(func).hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getInformation()));
-        }catch (final Exception e){
-            return input.panic(begin,I18nKeys.NBT.optFailed(func).hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getLocalizedMessage()));
-        }
+        return args;
     }
 
     @Nonnull
@@ -399,7 +405,7 @@ public strictfp class SNBTReader {
     public void expect(final int cp) throws CommandException {
         if(input.skipIf(cp)) return;
         if(!input.canRead()) input.panic(input.getCursor(), I18nKeys.NBT.EOF);
-        else input.panic(input.getCursor(),I18nKeys.NBT.unexpected(cp,input.peek()));
+        else input.panic(input.getCursor(), I18nKeys.Syntax.unexpected(cp,input.peek()));
     }
 
     public static boolean isAllowedUnquoted(final int cp) {

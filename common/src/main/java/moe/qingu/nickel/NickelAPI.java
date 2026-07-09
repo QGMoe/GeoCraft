@@ -28,6 +28,7 @@
 package moe.qingu.nickel;
 
 import moe.qingu.nickel.nbt.operation.SNBTOperations;
+import moe.qingu.nickel.nbt.path.method.NBTPathMethods;
 import moe.qingu.nickel.network.PackageNBTInfo;
 import moe.qingu.nickel.network.PacketSuggestionReminder;
 import net.minecraftforge.fml.common.Mod;
@@ -52,5 +53,6 @@ public final class NickelAPI{
         CHANNEL.registerMessage(PacketSuggestionReminder.Handler.class, PacketSuggestionReminder.class,0, Side.CLIENT);
         CHANNEL.registerMessage(PackageNBTInfo.Handler.class,PackageNBTInfo.class,1,Side.CLIENT);
         SNBTOperations.scanProviders(event.getAsmData());
+        NBTPathMethods.scanProviders(event.getAsmData());
     }
 }

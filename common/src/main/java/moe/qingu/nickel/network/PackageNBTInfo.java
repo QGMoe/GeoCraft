@@ -41,6 +41,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
@@ -69,11 +70,7 @@ public final class PackageNBTInfo implements IMessage {
             final NBTTagCompound compound = ByteBufUtils.readTag(buf);
             if(compound == null) return;
             final NBTBase tag = compound.getTag("d");
-            if(tag instanceof NBTTagList){
-                final NBTTagList list = (NBTTagList) tag;
-                nbt = new NBTBase[list.tagCount()];
-                for(int i=0;i<nbt.length;i++) nbt[i] = list.get(i);
-            }
+            if(tag instanceof NBTTagList) nbt = NBTUtils.readMixedList((NBTTagList) tag).toArray(new NBTBase[0]);
         }
     }
 
@@ -82,8 +79,7 @@ public final class PackageNBTInfo implements IMessage {
         buf.writeBoolean(nbt != null);
         if(nbt == null) return;
         final NBTTagCompound compound = new NBTTagCompound();
-        final NBTTagList list = new NBTTagList();
-        for(final NBTBase tag:nbt) list.appendTag(tag);
+        final NBTTagList list = NBTUtils.toMixedList(Arrays.asList(nbt));
         compound.setTag("d",list);
         ByteBufUtils.writeTag(buf,compound);
     }

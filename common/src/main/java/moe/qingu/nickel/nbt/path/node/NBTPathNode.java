@@ -38,7 +38,7 @@ import java.util.Collection;
 public interface NBTPathNode{
 
     @Nonnull
-    Collection<NBTBase> filter(final @Nonnull NBTBase base);
+    Collection<NBTBase> resolve(final @Nonnull NBTBase base);
 
     @Nonnull String getLocalName();
 

@@ -48,7 +48,7 @@ import javax.annotation.Nullable;
 /**
  * 主世界大气系统
  */
-public class SurfaceAtmosphereSystem extends QiguaiAtmosphereSystem {
+public class SurfaceAtmosphereSystem extends QGAtmosphereSystem {
     public SurfaceAtmosphereSystem(WorldServer world, AtmosphereInfo worldInfo, SurfaceAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider dataProvider){
         super(world,worldInfo,systemInfo, dataProvider);
     }

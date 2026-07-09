@@ -39,7 +39,7 @@ import top.qiguaiaaaa.geocraft.geography.atmosphere.info.VanillaAtmosphereSystem
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class VanillaAtmosphereSystem extends QiguaiAtmosphereSystem{
+public class VanillaAtmosphereSystem extends QGAtmosphereSystem {
     protected final int maxWaterDrainedMultiplier;
     protected final double thunderingCloudExponent,rainingCloudExponent;
     public VanillaAtmosphereSystem(WorldServer server, AtmosphereInfo info, VanillaAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider provider) {
