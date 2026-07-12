@@ -1,0 +1,102 @@
+# 天圆地方 GeoCraft 术语表 —— 载流方块
+# 范围：分层流体承载方块（载流方块）及其单位、机制与典型案例（雪族）。
+# 格式与规则见本目录 README.md。
+
+- 中文: "分层流体承载方块"
+  英文: "Layered Fluid Host Block"
+  别称:
+    - ["载流方块"]
+    - []
+  旧称:
+    - ["透水方块"]
+    - []
+  定义: "一种能够以竖直方向的层状结构储存一种或多种流体的方块。"
+  出处:
+    - "https://www.mcmod.cn/item/895381.html"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-alpha.1"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+
+- 中文: "含水方块"
+  英文: null
+  定义: "可容纳水的方块（对应接口 IFluidloggable），是载流方块的子集。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-beta.2"
+
+- 中文: "层"
+  英文:
+    - "Layer"   # 描述非常规流体方块和其他载流方块（如雪）时使用
+    - "Quanta"  # 描述常规流体方块（继承 BlockFluidBase/BlockLiquid）或含水方块时使用，为 Forge 源码与 Fluidlogged API 的规范
+  别称:
+    - ["片"]
+    - []
+  定义: "一个流体单位，指流体方块和载流方块的最小不可分割部分，一般 8 层液体即为一个完整流体方块。"
+  出处:
+    - "https://www.mcmod.cn/item/892678.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.3"
+
+- 中文: "层—毫桶统一流体单位"
+  英文: "Quanta-Millibucket Unified Fluid Unit"
+  别称:
+    - []
+    - ["Q-mB Unified Unit"]
+  定义: "用于载流方块底层的高精度流体单位，符号 QB，1 B = 72072000 QB。"
+  出处:
+    - "https://www.mcmod.cn/item/895382.html"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-alpha.1"
+
+- 中文: "每方块最大层数"
+  英文: "Quanta Per Block"
+  别称:
+    - ["每方块流体量"]
+    - []
+  定义: "流体方块可容纳的最大层数，取值范围 1~16。"
+  出处:
+    - "https://www.mcmod.cn/item/895381.html"
+    - "https://www.mcmod.cn/item/895382.html"
+    - "又称\"每方块流体量\"见 https://www.mcmod.cn/item/919288.html"
+
+- 中文: "平均流动"
+  英文: "Average Flow"
+  定义: "有限模式流动方式之四，与水平相邻可流入方块平均分配流体。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-alpha.1"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-alpha.2"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-beta.2"
+
+- 中文: "平均流动算法"
+  英文: null
+  定义: "计算平均流动分配结果的算法。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "流动选择"
+  英文: "Flow Choice"
+  定义: "平均流动中记录一个可流入方向载流方块元数据的对象。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "雪"
+  英文: "Snow"
+  定义: "由松散固态水冰晶组成的方块，本模组拓展其方块状态与机制。"
+  出处:
+    - "https://www.mcmod.cn/item/894816.html"
+
+- 中文: "流体雪"
+  英文: null
+  定义: "流体意义上的雪（与雪方块相对）：以层为单位计量，可与水以任意比例在一格内混合，密度小于水。"
+  出处:
+    - "https://www.mcmod.cn/item/894816.html"
+
+- 中文: "雪水混合物"
+  英文: "snow-water mixture"
+  别称:
+    - ["混雪"]
+    - []
+  定义: "水和流体雪以 1:1 比例混合形成的雪方块。"
+  出处:
+    - "https://www.mcmod.cn/item/894816.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README_EN.md（\"Adds snow-water mixtures\"）"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.6"

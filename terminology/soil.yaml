@@ -1,0 +1,52 @@
+# 天圆地方 GeoCraft 术语表 —— 土壤系统
+# 范围：土壤系统的水分机制。
+# 格式与规则见本目录 README.md。
+- 中文: "土壤含水量"
+  英文: null
+  别称:
+    - ["土壤湿度"]
+    - []
+  定义: "土壤含水量，也称土壤湿度，是诸如泥土、草方块等属于土壤系统的方块所具有的特性。"
+  出处:
+    - "https://www.mcmod.cn/item/892679.html"
+
+- 中文: "下渗"
+  英文: "Infiltration"
+  定义: "包括降雨、地表径流等非土壤持有的水分从地表向下移动进入土壤的运动过程。"
+  出处:
+    - "https://www.mcmod.cn/item/892844.html"
+
+- 中文: "最大持水量"
+  英文: null
+  定义: "土壤作为多孔介质能够吸持水分使其不流动的量的上限：土壤含水量未超过该值时水不会流动，超过则缓慢流动形成壤中流。该值是土壤的特有属性，不因环境改变。"
+  出处:
+    - "https://www.mcmod.cn/item/892679.html"
+
+- 中文: "壤中流"
+  英文: null
+  定义: "土壤含水量超过最大持水量后，土壤水在土壤间缓慢移动、补充含水量较低区域所形成的径流。"
+  出处:
+    - "https://www.mcmod.cn/item/892679.html"
+
+- 中文: "被动下渗"
+  英文: null
+  定义: "土壤在随机刻更新时有概率吸收上方非土壤系统水分的下渗。"
+  出处:
+    - "https://www.mcmod.cn/item/892844.html"
+
+- 中文: "主动下渗"
+  英文: null
+  定义: "由土壤系统之外的其他游戏机制主动引发的下渗。"
+  出处:
+    - "https://www.mcmod.cn/item/892844.html"
+
+- 中文: "土壤系统"
+  英文: "Soil System"
+  别称:
+    - ["土壤（湿度）系统"]
+    - ["Soil (Moisture) System"]
+  定义: "构建在载流方块机制之上的土壤水文模拟系统。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README_EN.md"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.6"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md（章节\"土壤（湿度）系统 Soil (Moisture) System\"，EN 章节名 Soil Water）"

@@ -1,0 +1,556 @@
+# 天圆地方 GeoCraft 术语表 —— 流体物理
+# 范围：流体物理系统基础概念、各流体物理模式的独有概念，以及压强系统。
+# 格式与规则见本目录 README.md。
+
+# ============ 流体物理系统 ============
+
+- 中文: "流体物理系统"
+  英文: "Fluid Physics System"
+  别称:
+    - ["流体物理"]
+    - []
+  定义: "Minecraft 原版、天圆地方及其他模组中所有驱动流体方块所承载流体发生转移或相变的机制集合。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "流体物理模式"
+  英文: "Fluid Physics Mode"
+  定义: "天圆地方提供的多种流体物理系统，每种系统即一个模式。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "流体物理信息"
+  英文: "Fluid Physics Info"
+  定义: "维度层面针对流体物理系统的 JSON 配置，具有版本控制。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "设计"
+  英文: "Design"
+  定义: "流体方块承载流体的方式，目前存在经典设计和有限设计两种。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "经典设计"
+  英文: "Classic Design"
+  定义: "流体方块可以承载也可以不承载流体的设计，如原版流体。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md（中文版有定义句，英文版无对应命名）"
+
+- 中文: "有限设计"
+  英文: "Finite Design"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+
+- 中文: "流动等级"
+  英文: "Level"
+  别称:
+    - ["等级"]
+    - []
+  定义: "记录流体方块状态的等级值，经典模式下 0 级为流体源方块。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "流体源方块"
+  英文: "Fluid Source"
+  别称:
+    - ["流体源块", "流体源", "源块"]
+    - []
+  定义: "经典设计中，能够承载流体的流体方块，实际承载量往往为 1 B。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README_EN.md（\"the concept of fluid sources still applies\"）"
+
+- 中文: "非流体源方块"
+  英文: null
+  别称:
+    - ["非流体源", "非源块"]
+    - []
+  定义: "经典设计中，不能承载流体的流体方块。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "传播性"
+  英文: null
+  定义: "流体方块可以进行自然传播的性质。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "依赖性"
+  英文: null
+  定义: "在不考虑跨系统交互的前提下，非源块需依赖承载相同流体的流体方块维持其存在的性质。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "恒定性"
+  英文: null
+  定义: "流体方块在传播过程中本身承载流体量保持不变的性质。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "守恒性"
+  英文: null
+  定义: "传播范围内流体方块承载相同流体总量保持不变的性质。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "流动"
+  英文: "Flow"
+  定义: "流体方块的传播与所承载流体主动跨系统转移行为的统称。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "自然传播"
+  英文: null
+  别称:
+    - ["传播"]
+    - []
+  定义: "流体方块主动在附近生成新流体方块或改变附近同种流体方块承载量的过程。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "竖直下落"
+  英文: null
+  别称:
+    - ["垂直流动"]
+    - []
+  定义: "流体流动首先尝试的方式，发生于下方方块可被该流体流入时。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-beta.2"
+
+- 中文: "直接下落"
+  英文: null
+  定义: "竖直下落的一种，流体源方块直接将自身移动至下方一格。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+
+- 中文: "竖直下落算法"
+  英文: null
+  定义: "直接下落对应的算法。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+
+- 中文: "水平均衡"
+  英文: "Equalisation"
+  定义: "流动规则的一类，使流体在水平方向上趋于均衡。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "纳流"
+  英文: "Fluid Implacement"
+  定义: "放置载流方块时被填充流体优先填充新方块的被动转移过程。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+
+- 中文: "排流"
+  英文: "Fluid Displacement"
+  定义: "纳流后剩余流体以流体方块形式重新分布在周围的过程。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "重力系统"
+  英文: null
+  定义: "流体物理中与重力相关的机制。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+
+- 中文: "流体更新器"
+  英文: "Fluid Updater"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+
+- 中文: "标准测试"
+  英文: "Standard Test"
+  定义: "一种常用的流体物理性能测试方法，往往能够综合体现出各流动算法（规则）的物理和性能特性。"
+  出处:
+    - "https://www.mcmod.cn/item/907797.html"
+
+- 中文: "漏海测试"
+  英文: null
+  别称:
+    - ["漏海"]
+    - []
+  出处:
+    - "https://www.mcmod.cn/item/908015.html"
+    - "https://www.mcmod.cn/item/894341.html"
+    - "https://www.mcmod.cn/item/907797.html"
+    - "https://www.mcmod.cn/item/908016.html"
+
+- 中文: "含水方块困境"
+  英文: null
+  定义: "Minecraft 1.13+ 含水方块的二元态底层设计给有限设计流体带来的适配困境。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "涌泉难题"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "无限源需求"
+  英文: null
+  定义: "有限设计下玩家希望部分场景流体取之不尽、并借此降低流动计算开销的需求。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "水车问题"
+  英文: null
+  定义: "有限设计下水位差难以表达，致使经典设计水车玩法失效的问题。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+# ============ 原版模式 ============
+
+- 中文: "原版模式"
+  英文: "VANILLA"
+  定义: "一种保留原版流体行为的流体物理模式。"
+  出处:
+    - "https://www.mcmod.cn/item/904887.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+
+# ============ 经典模式 ============
+
+- 中文: "经典模式"
+  英文: "CLASSIC"
+  旧称:
+    - []
+    - ["VANILLA LIKE"]
+  定义: "在原版流体转移和相变机制上改良、使流体更符合物理直觉的经典设计拟真流体物理模式。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2（模式称呼改为\"经典\"（CLASSIC））"
+
+- 中文: "坡度流动"
+  英文: "Slope Flow"
+  定义: "流体流动最后尝试的方式，与原版保持一致的流动方式。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-beta.2"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.4"
+
+- 中文: "坡度流动算法"
+  英文: "Slope Algorithm"
+  定义: "基于坡度大小计算坡度最大方向集合的原版流动算法。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+
+- 中文: "溯源下落"
+  英文: null
+  定义: "竖直下落的一种，非源流体方块通过溯源算法寻找流体源并使其瞬移至下方。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+
+- 中文: "溯源搬运"
+  英文: null
+  定义: "经典模式流动方式，寻找更高水位流体源并与自身交换。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+
+- 中文: "溯源流动"
+  英文: null
+  定义: "溯源下落与溯源搬运的统称。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-beta.2"
+
+- 中文: "溯源搜索"
+  英文: null
+  定义: "溯源流动中寻找可被移动流体源的搜索过程。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-alpha.3"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-beta.2"
+
+- 中文: "溯源算法"
+  英文: null
+  定义: "基于广度优先搜索、按流动等级剪枝的流体源搜索算法。"
+  出处:
+    - "https://www.mcmod.cn/item/904888.html"
+
+# ============ 有限模式 ============
+
+- 中文: "有限模式"
+  英文: "FINITE"
+  旧称:
+    - []
+    - ["MORE REALITY"]
+  定义: "基于体素、使流体方块遵循基本转移与相变规则从而涌现物理直觉行为的有限设计拟真流体物理模式，默认启用。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2（模式称呼改为\"有限\"（FINITE））"
+
+- 中文: "单层坡度流动"
+  英文: "Single-slope Flow"
+  定义: "有限模式流动方式之三，单层流体沿坡度随机移动一格。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "单层坡度流动算法"
+  英文: "Single-slope Flow Algorithm"
+  定义: "为单层流体寻找可流动方向的算法。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "多层坡度流动"
+  英文: "Multi-slope Flow"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "多层坡度流动算法"
+  英文: "Multi-slope Flow Algorithm"
+  定义: "精确到流体方块层数的坡度流动算法。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "坡度搜寻距离"
+  英文: "Slope Find Distance"
+  定义: "单层坡度流动算法的搜寻范围，单位为格。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "多层坡度搜寻距离"
+  英文: null
+  定义: "多层坡度流动算法的搜寻范围，单位为格。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "密度交换下落"
+  英文: null
+  定义: "竖直下落的一种，基于密度差与下方流体交换位置。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "载流方块交互式下落"
+  英文: null
+  定义: "竖直下落的一种，流体下落进入下方载流方块。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "下沉阈值"
+  英文: "Sinking Threshold"
+  定义: "船周边最高水位需高于船碰撞箱顶部的距离，超过才触发下沉。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "小范围压强任务"
+  英文: null
+  定义: "最大搜寻范围为 511 格的压强任务。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "大范围压强任务"
+  英文: null
+  定义: "最大搜寻范围为 1048575 格的压强任务。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-beta.1"
+
+- 中文: "单次搜寻任务"
+  英文: null
+  定义: "可在单次搜寻中完成、可共用队列和集合的压强任务。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-beta.1"
+
+- 中文: "压强搜寻范围等级"
+  英文: null
+  定义: "表示发布压强任务时压强搜寻范围大小的等级值。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "小范围（原版）单次压强任务"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "小范围（原版）普通压强任务"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "大范围（原版）单次压强任务"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "大范围（原版）普通压强任务"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "小范围（模组）单次压强任务"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "小范围（模组）普通压强任务"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "大范围（模组）单次压强任务"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "大范围（模组）普通压强任务"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+# ============ 压强系统 ============
+
+- 中文: "压强系统"
+  英文: "Pressure System"
+  别称:
+    - []
+    - ["Fluid Pressure System"]
+  定义: "天圆地方流体物理系统中一个专门处理压强流动核心计算逻辑的子系统。"
+  出处:
+    - "https://www.mcmod.cn/item/894341.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+
+- 中文: "压强刻"
+  英文: "Pressure Tick"
+  定义: "计量异步压强系统大循环完成次数的单位，默认理想时长 40 毫秒。"
+  出处:
+    - "https://www.mcmod.cn/item/894341.html"
+
+- 中文: "压强任务"
+  英文: null
+  定义: "压强系统为寻找可流入位置而处理的广度优先搜寻任务。"
+  出处:
+    - "https://www.mcmod.cn/item/894341.html"
+
+- 中文: "压强流动"
+  英文: "Pressure Flow"
+  定义: "有限模式流动方式之二，按压强计算结果向可流入位置转移。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.1"
+
+- 中文: "压强任务执行颗粒度"
+  英文: "Pressure Task Execution Granularity"
+  别称:
+    - ["颗粒度"]
+    - []
+  定义: "压强系统每一批次处理的最大任务数量。"
+  出处:
+    - "https://www.mcmod.cn/item/894341.html"
+
+- 中文: "异步模式"
+  英文: "Asynchronous"
+  定义: "压强系统不阻塞服务器线程的运行模式，与同步模式相对。"
+  出处:
+    - "https://www.mcmod.cn/item/894341.html"
+
+- 中文: "异步多线程模式"
+  英文: null
+  旧称:
+    - ["多线程模式"]
+    - []
+  定义: "压强系统的运行模式之一。"
+  出处:
+    - "https://www.mcmod.cn/item/894341.html"
+
+- 中文: "异步单线程模式"
+  英文: null
+  旧称:
+    - ["线程池模式"]
+    - []
+  定义: "压强系统的运行模式之一。"
+  出处:
+    - "https://www.mcmod.cn/item/894341.html"
+
+- 中文: "同步单线程模式"
+  英文: "Synchronous Single-threaded"
+  旧称:
+    - ["非线程池模式"]
+    - []
+  定义: "压强系统的运行模式之一。"
+  出处:
+    - "https://www.mcmod.cn/item/894341.html"
+
+- 中文: "暂停机制"
+  英文: null
+  定义: "服务器线程执行重要操作前通过锁使压强系统暂停访问的机制。"
+  出处:
+    - "https://www.mcmod.cn/item/894341.html"
+
+- 中文: "压强处理比"
+  英文: "Pressure Processing Ratio"
+  别称:
+    - []
+    - ["PPR"]
+  定义: "服务器线程处理单个压强结果用时与压强系统处理单个任务用时之比。"
+  出处:
+    - "https://www.mcmod.cn/item/908015.html"
+
+- 中文: "压强系统饱和每刻毫秒数"
+  英文: "Pressure-System Saturated Millisecond Per Tick"
+  别称:
+    - []
+    - ["PSS-MSPT"]
+  定义: "PSS 现象出现时 MSPT 稳定的平台值。"
+  出处:
+    - "https://www.mcmod.cn/item/908015.html"
+
+- 中文: "伪压强系统饱和每刻毫秒数"
+  英文: "Quasi-Pressure-System Saturated Millisecond Per Tick"
+  别称:
+    - ["伪 PSS-MSPT"]
+    - []
+  定义: "伪 PSS 现象出现时 MSPT 达到的平衡值。"
+  出处:
+    - "https://www.mcmod.cn/item/908017.html"
+
+- 中文: "多线程压强系统理想模型"
+  英文: "Multi-threaded Pressure System Theoretical Model"
+  别称:
+    - ["压强系统饱和模型", "理想模型", "PSS 模型"]
+    - []
+  定义: "通过理想化假设建立服务器线程与压强系统间数学关系、推导高负载理论行为的抽象数学模型。"
+  出处:
+    - "https://www.mcmod.cn/item/908014.html"
+
+- 中文: "基础负载修正理想模型"
+  英文: null
+  定义: "引入服务器线程基础负载值后对多线程压强系统理想模型的修正。"
+  出处:
+    - "https://www.mcmod.cn/item/908015.html"
+
+- 中文: "压强系统饱和平衡"
+  英文: "Pressure-System Saturation Equilibrium"
+  别称:
+    - []
+    - ["PSS"]
+  定义: "压强处理比（PPR）小于等于 1 时，高负载下 MSPT 稳定波动于一个平台值的良性限流现象。"
+  出处:
+    - "https://www.mcmod.cn/item/908015.html"
+
+- 中文: "反压强系统饱和平衡"
+  英文: "Anti-Pressure-System Saturation Equilibrium"
+  别称:
+    - ["反 PSS"]
+    - []
+  定义: "PPR 大于 1 时 MSPT 不受控增长的理论现象，实际中会演化为伪 PSS 现象。"
+  出处:
+    - "https://www.mcmod.cn/item/908016.html"
+
+- 中文: "伪压强系统饱和平衡"
+  英文: "Quasi-Pressure-System Saturation Equilibrium"
+  别称:
+    - ["伪 PSS"]
+    - []
+  定义: "PPR 大于 1 时因服务器线程延长游戏刻而达到的表观平衡，并非压强系统真正饱和。"
+  出处:
+    - "https://www.mcmod.cn/item/908017.html"

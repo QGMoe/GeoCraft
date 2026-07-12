@@ -1,0 +1,126 @@
+# 天圆地方 GeoCraft 术语表 —— 通用概念与系统交集
+# 范围：跨系统共用的框架级基础概念（层级、地理属性/状态、海拔、配置类型、方块更新器等）。
+# 格式与规则见本目录 README.md。
+
+- 中文: "层级"
+  英文: "Layer"
+  定义: "在一个区块内，竖直方向上横跨一定距离的空间。"
+  出处:
+    - "https://www.mcmod.cn/item/892675.html"
+
+- 中文: "地理属性"
+  英文: "Geography Property"
+  别称:
+    - ["属性"]
+    - []
+  定义: "大气系统以及其它基于层级实现的系统中用以定义地理状态和创建地理状态实例的标识符。"
+  出处:
+    - "https://www.mcmod.cn/item/892676.html"
+
+- 中文: "地理状态"
+  英文: "Geography State"
+  别称:
+    - ["状态"]
+    - []
+  定义: "狭义指地理属性在特定层级中存储具体数据（部分可持久化为 NBT）的实例；广义指层级的所有具体数据。"
+  出处:
+    - "https://www.mcmod.cn/item/892677.html"
+
+- 中文: "流体状态"
+  英文: "Fluid State"
+  别称:
+    - ["流体地理状态"]
+    - []
+  定义: "地理状态的一种，可被调用 fill 方法补充流体。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "海拔"
+  英文: "Altitude"
+  定义: "以Y轴正方向为正方向，世界中某坐标相对于水平参考平面的垂直距离。"
+  出处:
+    - "https://www.mcmod.cn/item/892847.html"
+
+- 中文: "映射表"
+  英文: "Map"
+  定义: "本模组基于 Forge 配置文件字符串列表定义的新配置类型，表示一系列具有映射关系的数据。"
+  出处:
+    - "https://www.mcmod.cn/item/892905.html"
+
+- 中文: "方块状态选择器"
+  英文: "Configurable Block State"
+  定义: "本模组配置文件中用以选择一种或多种方块状态的值类型。"
+  出处:
+    - "https://www.mcmod.cn/item/892906.html"
+
+- 中文: "热容"
+  英文: "Heat Capacity"
+  定义: "天圆地方对方块添加的属性，也是层级的一种地理属性，表示温度每升高一单位所需吸收的热量。"
+  出处:
+    - "https://www.mcmod.cn/item/905244.html"
+
+- 中文: "大气属性"
+  英文: "Atmosphere Property"
+  定义: "一种地理属性，其往往具有流动性或会对大气层级本身的流动性（风）或其它地理状态造成影响，例如水蒸气。"
+  出处:
+    - "https://www.mcmod.cn/item/894342.html"
+
+- 中文: "温度属性"
+  英文: "Temperature Property"
+  别称:
+    - ["温度"]
+    - []
+  定义: "大气以及其他层级的一类采用单精度浮点数进行存储，单位为开尔文（K）的地理属性。"
+  出处:
+    - "https://www.mcmod.cn/item/894343.html"
+
+- 中文: "方块更新器"
+  英文: "Block Updater"
+  定义: "为管理流体方块计划刻引入的延时方块更新机制，在原版计划刻基础上针对流体更新拓展，可配置。"
+  出处:
+    - "https://www.mcmod.cn/item/904958.html"
+
+- 中文: "更新计划"
+  英文: "Next Tick Entry"
+  别称:
+    - []
+    - ["NTE"]
+  定义: "方块更新器中记录一次延时方块更新的条目。"
+  出处:
+    - "https://www.mcmod.cn/item/904958.html"
+
+- 中文: "游戏海拔"
+  英文: null
+  定义: "以 Y=0 水平面为参考平面、方块为单位的海拔，数值等于 Y 坐标。"
+  出处:
+    - "https://www.mcmod.cn/item/892847.html"
+
+- 中文: "物理海拔"
+  英文: null
+  定义: "以 Y=63 水平面为参考平面、米为单位的海拔，用于地理模型计算。"
+  出处:
+    - "https://www.mcmod.cn/item/892847.html"
+
+- 中文: "反射率"
+  英文: null
+  定义: "天圆地方为方块添加的物理属性之一，可经 /atmosphere util 查询。"
+  出处:
+    - "https://www.mcmod.cn/item/927875.html"
+
+- 中文: "流体属性"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/927875.html"
+    - "https://www.mcmod.cn/item/892845.html"
+
+- 中文: "延迟警报"
+  英文: null
+  定义: "天圆地方自带性能监控机制（延迟检测功能）的预警信息之一，有限模式流体物理系统据此限制流动计算开销。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "延迟应急响应"
+  英文: null
+  定义: "天圆地方性能监控机制中比延迟警报更高的预警信息（响应级别）。"
+  出处:
+    - "https://www.mcmod.cn/item/919288.html"

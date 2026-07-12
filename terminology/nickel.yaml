@@ -1,0 +1,213 @@
+# 天圆地方 GeoCraft 术语表 —— NickelAPI 底层框架
+# 范围：NickelAPI 命令框架的节点体系与参数类型名（NBT 相关的见 nickel-nbt.yaml）。
+# 格式与规则见本目录 README.md。
+- 中文: "高精度十进制数"
+  英文: "BigDecimal"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.big_decimal）"
+
+- 中文: "高精度整数"
+  英文: "BigInteger"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.big_integer）"
+
+- 中文: "布尔值"
+  英文: "Boolean"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.boolean）"
+
+- 中文: "双精度浮点数"
+  英文: "Double"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.double）"
+
+- 中文: "整型"
+  英文: "Integer"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.integer）"
+
+- 中文: "长整型"
+  英文: "Long"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.long）"
+
+- 中文: "字符串"
+  英文: "String"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.string）"
+
+- 中文: "词元"
+  英文: "Token"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.token）"
+
+- 中文: "贪婪字符串"
+  英文: "Greedy String"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.greed）"
+
+- 中文: "UUID"
+  英文: "UUID"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.generic.uuid）"
+
+- 中文: "方块坐标"
+  英文: "BlockPos"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.block_pos）"
+
+- 中文: "方块"
+  英文: "Block"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.block）"
+
+- 中文: "方块状态"
+  英文: "BlockState"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.block_state）"
+
+- 中文: "目标选择器"
+  英文: "TargetSelector"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.entity_selector）"
+
+- 中文: "物品"
+  英文: "Item"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.item）"
+
+- 中文: "物品堆"
+  英文: "ItemStack"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.item_stack）"
+
+- 中文: "三维向量"
+  英文: "Vector3D"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.vector3d）"
+
+- 中文: "流体"
+  英文: "Fluid"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.forge.fluid）"
+
+- 中文: "矿物词典"
+  英文: "Ore Directory"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.forge.ore_directory）"
+
+- 中文: "实体类型"
+  英文: "Entity Entry"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.forge.entity_entry）"
+
+- 中文: "镍 API"
+  英文: "Nickel API"
+  定义: "从天圆地方 API 分离出的自研命令构建 API，以内置模组方式内嵌。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "参数节点"
+  英文: "ParameterNode"
+  定义: "命令节点系统中承载参数解析的节点类型。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-rc.1"
+
+- 中文: "智能分支节点"
+  英文: "SmartSplitNode"
+  定义: "命令节点系统中根据输入自动选择分支的节点。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-rc.1"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.5"
+
+- 中文: "中继执行节点"
+  英文: "RelayExecuteNode"
+  定义: "可在执行子节点完成后在 finally 块运行指定逻辑的命令节点。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.0-rc.1"
+
+- 中文: "实体类型参数节点"
+  英文: "Entity Entry Selector Node"
+  定义: "Nickel API 命令参数节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "流体参数节点"
+  英文: "Fluid Selector Node"
+  定义: "Nickel API 命令参数节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "矿物词典参数节点"
+  英文: "Ore Dictionary Selector Node"
+  定义: "Nickel API 命令参数节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "双精度浮点数三维向量参数节点"
+  英文: "Vec3d Node"
+  定义: "Nickel API 命令参数节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "For-Each 节点"
+  英文: "For-Each Node"
+  定义: "Nickel API 命令节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "物品堆参数节点"
+  英文: "Item Stack Node"
+  定义: "Nickel API 命令参数节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "维度参数节点"
+  英文: "Dimension Node"
+  定义: "Nickel API 命令参数节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "方块状态参数节点"
+  英文: "Block State Node"
+  定义: "Nickel API 命令参数节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "命令运行节点"
+  英文: "Run Command Node"
+  定义: "Nickel API 命令节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "重定向运行命令节点"
+  英文: "Redirect Command Node"
+  定义: "Nickel API 命令节点之一。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "字符串节点"
+  英文: "String Node"
+  定义: "Nickel API 命令参数节点之一，允许白名单、黑名单和正则过滤。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"

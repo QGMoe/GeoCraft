@@ -1,0 +1,21 @@
+# 天圆地方 GeoCraft 术语表 —— NickelAPI NBT 系统
+# 范围：NickelAPI 中 NBT 相关的参数类型名（NBT 标签、复合标签、路径）。
+# 格式与规则见本目录 README.md。
+- 中文: "NBT 路径"
+  英文: "NBT Path"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.atmosphere.arg.nbt_path）"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.nbt.path）"
+
+- 中文: "NBT 标签"
+  英文: "NBT Tag"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.nbt.tag）"
+
+- 中文: "NBT 复合标签"
+  英文: "NBT Compound Tag"
+  定义: "NickelAPI 命令参数类型名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.nbt.compound）"

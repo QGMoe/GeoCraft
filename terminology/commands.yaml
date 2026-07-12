@@ -1,0 +1,141 @@
+# 天圆地方 GeoCraft 术语表 —— 命令与命令参数名
+# 范围：GeoCraft 的命令、命令概念，以及语言文件中已定的命令参数名（*.arg.*）。
+# 格式与规则见本目录 README.md。
+- 中文: "/atmosphere"
+  英文: null
+  定义: "/atmosphere 是用于管理大气系统的命令。"
+  出处:
+    - "https://www.mcmod.cn/item/927875.html"
+
+- 中文: "/fluidphysics"
+  英文: null
+  定义: "/fluidphysics 是用于管理流体物理的命令。"
+  出处:
+    - "https://www.mcmod.cn/item/927876.html"
+
+- 中文: "/geoconfig"
+  英文: null
+  定义: "/geoconfig 是用于管理天圆地方模组的配置的命令。"
+  出处:
+    - "https://www.mcmod.cn/item/950633.html"
+
+- 中文: "/geotest"
+  英文: null
+  定义: "/geotest 是用于在游戏中进行 GeoTest 集成测试的命令。"
+  出处:
+    - "https://www.mcmod.cn/item/950634.html"
+
+- 中文: "位置"
+  英文: "Position"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.common.arg.pos）"
+
+- 中文: "值"
+  英文: "Value"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.common.arg.value）"
+
+- 中文: "乘数"
+  英文: "Multiplier"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.common.arg.multiply）"
+
+- 中文: "属性"
+  英文: "Property"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.common.arg.property）"
+
+- 中文: "维度"
+  英文: "Dimension"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.common.arg.world）"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/nickelapi/lang/en_us.lang（键 nickel.command.parameter.minecraft.dimension）"
+
+- 中文: "执行"
+  英文: "Execute"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.common.arg.doit）"
+
+- 中文: "需要查询的方块状态"
+  英文: "Block State to Query"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.atmosphere.arg.block_to_query）"
+
+- 中文: "工具名称"
+  英文: "Utility Name"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.atmosphere.arg.util_name）"
+
+- 中文: "追踪时长"
+  英文: "Duration"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.atmosphere.arg.time）"
+
+- 中文: "文件名"
+  英文: "File Name"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.atmosphere.arg.file_name）"
+
+- 中文: "方块物理属性"
+  英文: "Block Physics Property"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.atmosphere.arg.blockProp）"
+
+- 中文: "NBT 值"
+  英文: "NBT Value"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.atmosphere.arg.nbt_tag）"
+
+- 中文: "测试ID"
+  英文: "Test ID"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.geotest.arg.test_id）"
+
+- 中文: "测试目标"
+  英文: "Test Target"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.geotest.arg.target）"
+
+- 中文: "配置项"
+  英文: "Config Item"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.geoconfig.arg.config_entry）"
+
+- 中文: "配置值"
+  英文: "Config Value"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.geoconfig.arg.config_value）"
+
+- 中文: "请求 ID"
+  英文: "Request ID"
+  定义: "命令参数名（本地化名称）"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/common/src/main/resources/assets/geocraft/lang/en_us.lang（键 geocraft.command.geoconfig.arg.request_id）"
+
+- 中文: "查询结果"
+  英文: "QueryResult"
+  定义: "命令执行后存储的数值结果，可被 /stats 追踪到计分板。"
+  出处:
+    - "https://www.mcmod.cn/item/927875.html"
+
+- 中文: "请求令牌"
+  英文: null
+  定义: "/geoconfig 重置操作携带的 UUID 令牌，用于确认操作。"
+  出处:
+    - "https://www.mcmod.cn/item/950633.html"

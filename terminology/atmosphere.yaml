@@ -1,0 +1,220 @@
+# 天圆地方 GeoCraft 术语表 —— 大气系统
+# 范围：大气系统及其层级、属性、机制与存储格式。
+# 格式与规则见本目录 README.md。
+
+- 中文: "大气层级"
+  英文: "Atmosphere Layer"
+  定义: "层级的一种，是大气系统的组成部分之一。"
+  出处:
+    - "https://www.mcmod.cn/item/892845.html"
+
+- 中文: "下垫面层级"
+  英文: "Underlying Layer"
+  定义: "层级的一种，往住代表一个维度的地表部分，也是大气系统的重要组成部分。"
+  出处:
+    - "https://www.mcmod.cn/item/892846.html"
+
+- 中文: "大气系统"
+  英文: "Atmosphere System"
+  定义: "负责管理各维度中所有大气实例，并作为游戏其它机制与大气交互的抽象层。"
+  出处:
+    - "https://www.mcmod.cn/item/894655.html"
+
+- 中文: "大气实例"
+  英文: "Atmosphere Instance"
+  别称:
+    - ["大气", "地理单元"]
+    - []
+  定义: "每个区块中用于管理层级链并承担一定模拟计算的基础单元。"
+  出处:
+    - "https://www.mcmod.cn/item/894817.html"
+
+- 中文: "大气受热过程"
+  英文: null
+  定义: "大气受热过程是主世界大气系统中，太阳辐射、地面辐射和大气辐射相互转化的机制。"
+  出处:
+    - "https://www.mcmod.cn/item/894818.html"
+
+- 中文: "深层温度"
+  英文: "Deep Temperature"
+  定义: "主世界大气系统中下垫面层级的温度属性（geocraft:deep_temperature），用于地表之下的温度计算。"
+  出处:
+    - "https://www.mcmod.cn/item/894819.html"
+
+- 中文: "原版大气系统"
+  英文: "Vanilla Atmosphere System"
+  定义: "一种基于原版生物群系机制的静态大气系统，其在游戏内 ID 为 vanilla。"
+  出处:
+    - "https://www.mcmod.cn/item/894965.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+
+- 中文: "封闭大气系统"
+  英文: "Close Atmosphere System"
+  定义: "一种恒温恒压的静态大气系统，适合空间上封闭的维度，例如下界。"
+  出处:
+    - "https://www.mcmod.cn/item/904889.html"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README_EN.md"
+
+- 中文: "大气区域文件"
+  英文: "Atmosphere Region File"
+  别称:
+    - ["大气数据文件"]
+    - []
+  定义: "天圆地方保存大气实例数据的文件格式，类似原版区域文件，后缀一般为 .atmdat。"
+  出处:
+    - "https://www.mcmod.cn/item/905005.html"
+
+- 中文: "类地大气系统"
+  英文: "Surface Atmosphere System"
+  别称:
+    - ["表面大气系统", "表层大气系统", "主世界大气系统"]
+    - ["Surface Atmospheric System"]
+  定义: "模仿地球表层大气环境下物质迁移和能量循环的动态大气系统，适合空间上开放、类地球环境的维度。"
+  出处:
+    - "https://www.mcmod.cn/item/929712.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
+
+- 中文: "大气刻"
+  英文: "Atmosphere Tick"
+  定义: "大气实例相邻两次运行的时间间隔，等于 60 游戏刻，是大气的模拟步长。"
+  出处:
+    - "https://www.mcmod.cn/item/894655.html"
+    - "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md（中文版有定义句，英文版无对应章节）"
+
+- 中文: "大气访问器"
+  英文: "Atmosphere Accessor"
+  定义: "大气系统向外提供、供外部逻辑与大气交互的接口。"
+  出处:
+    - "https://www.mcmod.cn/item/894655.html"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+- 中文: "大气系统信息"
+  英文: "Atmosphere System Information"
+  定义: "配置中描述维度所用大气系统的 JSON 对象。"
+  出处:
+    - "https://www.mcmod.cn/item/894655.html"
+
+- 中文: "大气数据"
+  英文: "Atmosphere Data"
+  定义: "封装大气实例的对象，用于对大气实例进行数据管理。"
+  出处:
+    - "https://www.mcmod.cn/item/894817.html"
+
+- 中文: "大气数据提供器"
+  英文: "Atmosphere Data Provider"
+  定义: "响应大气系统请求、提供区块大气数据的组件。"
+  出处:
+    - "https://www.mcmod.cn/item/894817.html"
+
+- 中文: "大气数据加载器"
+  英文: "Atmosphere Data Loader"
+  定义: "在大气数据尚未加载时根据区块坐标加载数据的组件。"
+  出处:
+    - "https://www.mcmod.cn/item/894817.html"
+
+- 中文: "大气区域文件缓存"
+  英文: "Atmosphere Region File Cache"
+  定义: "缓存大气区域文件、供大气数据加载器获取数据输入流的组件。"
+  出处:
+    - "https://www.mcmod.cn/item/894817.html"
+
+- 中文: "大气监听器"
+  英文: "Atmosphere Tracker"
+  出处:
+    - "https://www.mcmod.cn/item/894817.html"
+
+- 中文: "大气区域"
+  英文: "Atmosphere Region"
+  定义: "一个大气区域文件所存储的大气范围，大小为 128×128 区块。"
+  出处:
+    - "https://www.mcmod.cn/item/905005.html"
+
+- 中文: "水气压"
+  英文: "Vapor Pressure"
+  定义: "大气中由水蒸气产生的分压，反映大气水汽含量的多少。"
+  出处:
+    - "https://www.mcmod.cn/item/894656.html"
+
+- 中文: "饱和水气压"
+  英文: "Saturated Vapor Pressure"
+  定义: "大气持有的水蒸气量达到饱和时水蒸气产生的分压，是温度的函数。"
+  出处:
+    - "https://www.mcmod.cn/item/894656.html"
+
+- 中文: "水汽交换率"
+  英文: "Vapor Exchange Rate"
+  定义: "调节蒸发快慢的系数，每个维度可拥有不同的值。"
+  出处:
+    - "https://www.mcmod.cn/item/894656.html"
+
+- 中文: "水汽"
+  英文: null
+  定义: "大部分大气系统的大气层级往往持有的气态水地理状态，单位为 mB。"
+  出处:
+    - "https://www.mcmod.cn/item/892845.html"
+
+- 中文: "液态水"
+  英文: null
+  定义: "大部分大气系统的大气层级往往持有的液态水地理状态，即大气层中云的组成部分，单位为 mB。"
+  出处:
+    - "https://www.mcmod.cn/item/892845.html"
+
+- 中文: "层级链"
+  英文: null
+  定义: "大气实例在垂直方向上由一个或多个层级堆叠形成的结构。"
+  出处:
+    - "https://www.mcmod.cn/item/894817.html"
+
+- 中文: "下垫面"
+  英文: "Underlying"
+  定义: "大气系统中与大气进行物质和能量交换的地表部分，下垫面层级即以其命名。"
+  出处:
+    - "https://www.mcmod.cn/item/892846.html"
+
+- 中文: "云量指数"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/894965.html"
+
+- 中文: "大气水"
+  英文: null
+  出处:
+    - "https://www.mcmod.cn/item/894656.html"
+
+- 中文: "热量收支平衡的移动"
+  英文: null
+  定义: "地区温度在游戏进行中缓慢波动地趋向热量收支平衡状态的现象。"
+  出处:
+    - "https://www.mcmod.cn/item/929712.html"
+
+- 中文: "流动性"
+  英文: null
+  定义: "大气属性可能具有的特性，具有流动性的大气属性能以平流和对流方式流动。"
+  出处:
+    - "https://www.mcmod.cn/item/894342.html"
+
+- 中文: "平流"
+  英文: null
+  定义: "大气属性在水平方向上的流动，发生在区块与区块的交界处。"
+  出处:
+    - "https://www.mcmod.cn/item/894342.html"
+
+- 中文: "对流"
+  英文: "Convection"
+  定义: "大气属性在竖直方向上的流动，发生在大气层级竖直方向的交界处。"
+  出处:
+    - "https://www.mcmod.cn/item/894342.html"
+    - "https://www.mcmod.cn/item/894818.html"
+
+- 中文: "热对流"
+  英文: null
+  定义: "大气层级间通过对流传递热量的过程。"
+  出处:
+    - "https://www.mcmod.cn/item/894818.html"
+
+- 中文: "风"
+  英文: null
+  定义: "大气层级持有的地理状态，以三维向量表示，单位为方块/秒。"
+  出处:
+    - "https://www.mcmod.cn/item/892845.html"

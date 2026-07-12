@@ -1,0 +1,48 @@
+# 天圆地方 GeoCraft 术语表 —— 杂项（跨系统待定区）
+# 范围：横跨多个系统或不属于任何游戏系统的概念（雪、冻结、径流、测试框架）。归属确定后应迁往对应文件。
+# 格式与规则见本目录 README.md。
+
+- 中文: "蒸发"
+  英文: "Evaporation"
+  定义: "使水从液态转变为气态的相变机制。"
+  出处:
+    - "https://www.mcmod.cn/item/894656.html"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.4"
+
+- 中文: "冻结"
+  英文: "Freezing"
+  定义: "水从液态转变为固态的过程。"
+  出处:
+    - "https://www.mcmod.cn/item/894657.html"
+
+- 中文: "径流"
+  英文: "Runoff"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "地表径流"
+  英文: "Surface Runoff"
+  定义: "发生在地表的径流。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "地下径流"
+  英文: "Subsurface Runoff"
+  定义: "发生在地下的径流。"
+  出处:
+    - "https://www.mcmod.cn/item/938274.html"
+
+- 中文: "造"
+  英文: null
+  定义: "作者自研的沙盒测试框架（模拟世界/方块/光照），v0.2.5 引入。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.5"
+    - "https://github.com/QGMoe/GeoCraft/tree/b1bfa0906b967e0081364de36692866275bb944d/common/src/test/java/%E6%B8%85%E6%B1%A9%E8%90%8C/%E9%80%A0"
+
+- 中文: "格文件"
+  英文: null
+  定义: "\"造\"测试框架使用的 .格 后缀测试数据文件格式，配合网格与映射器系统使用。"
+  出处:
+    - "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.5"
+    - "https://github.com/QGMoe/GeoCraft/tree/b1bfa0906b967e0081364de36692866275bb944d/common/src/test/resources/data"
