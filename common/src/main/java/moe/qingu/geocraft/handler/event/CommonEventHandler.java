@@ -27,6 +27,8 @@
 
 package moe.qingu.geocraft.handler.event;
 
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdater;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -97,6 +99,7 @@ public final class CommonEventHandler {
                 return null;
             }
         });
+        event.addCapability(FluidUpdaterManager.ID,new FluidUpdaterManager(event.getObject()));
     }
 
     @SubscribeEvent
@@ -128,6 +131,7 @@ public final class CommonEventHandler {
                 }else return null;
             }
         });
+        event.addCapability(FluidUpdater.ID, new FluidUpdater());
     }
 
     @Nullable

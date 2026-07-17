@@ -69,6 +69,7 @@ public class ScheduledTicksData implements INBTSerializable<NBTTagCompound> {
     }
 
     @Override
+    @Nonnull
     public NBTTagCompound serializeNBT() {
         final NBTTagCompound compound = new NBTTagCompound();
         final BlockUpdater updater = BlockUpdater.getBlockUpdater(chunk.getWorld());
@@ -93,7 +94,7 @@ public class ScheduledTicksData implements INBTSerializable<NBTTagCompound> {
     }
 
     @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
+    public void deserializeNBT(final @Nonnull NBTTagCompound nbt) {
         entrySet.clear();
         final NBTTagList updateLists = nbt.getTagList("block_updating_entries", Constants.NBT.TAG_COMPOUND);
         final long savedTime = nbt.getLong("totalWorldTime");

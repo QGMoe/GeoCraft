@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,33 +25,31 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.util.annotation;
+package moe.qingu.geocraft.geography.fluidphysics.updater;
 
-import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
+import javax.annotation.Nonnull;
+import java.util.function.IntConsumer;
 
 /**
- * @since 0.1
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public enum ThreadType {
-    MINECRAFT_SERVER,
-    MINECRAFT_CLIENT,
-    /**
-     * @see FluidPressureSearchManager
-     */
-    FLUID_PRESSURE_MANAGER,
-    /**
-     * @see FluidPressureSearchManager
-     */
-    FLUID_PRESSURE_TASKS,
-    /**
-     * @since 0.2.0-alpha.3
-     * @see net.minecraft.world.storage.ThreadedFileIOBase
-     */
-    CHUNK_IO_THREADS,
-    /**
-     * @since 0.3.0-alpha.1
-     * @see moe.qingu.geocraft.geography.fluidphysics.updater.FluidDaemon
-     */
-    FLUID_DAEMON
+public abstract class FluidTaskQueue {
+
+    public boolean isEmpty(){
+        return size() == 0;
+    }
+
+    public abstract int size();
+
+    public abstract void queue(final int cx,final int cy,final int cz,final short taskID);
+
+    public void queue(final int task){
+        queue((task>>>4)&0xF,task>>>24,task & 0xF, (short) ((task>>>8)&0xFFFF));
+    }
+
+    public abstract boolean contains(final int cx,final int cy,final int cz);
+
+    public abstract int forNext(final @Nonnull FluidTaskConsumer consumer);
+
+    public abstract void forEach(final @Nonnull IntConsumer consumer);
 }

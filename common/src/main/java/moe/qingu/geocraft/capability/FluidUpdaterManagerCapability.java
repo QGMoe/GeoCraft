@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -27,38 +27,36 @@
 
 package moe.qingu.geocraft.capability;
 
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import moe.qingu.geocraft.world.storage.ScheduledTicksData;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class SavingScheduledTicksCapability {
-
-    @CapabilityInject(ScheduledTicksData.class)
-    public static Capability<ScheduledTicksData> SCHEDULED_TICKS_DATA;
+public class FluidUpdaterManagerCapability {
+    @CapabilityInject(FluidUpdaterManager.class)
+    public static Capability<FluidUpdaterManager> FLUID_UPDATER_MANAGER;
 
     public static void register(){
-        CapabilityManager.INSTANCE.register(ScheduledTicksData.class, new Capability.IStorage<ScheduledTicksData>() {
+        CapabilityManager.INSTANCE.register(FluidUpdaterManager.class, new Capability.IStorage<FluidUpdaterManager>() {
             @Nonnull
             @Override
-            public NBTBase writeNBT(Capability<ScheduledTicksData> capability, ScheduledTicksData instance, EnumFacing side) {
-                return instance.serializeNBT();
+            public NBTBase writeNBT(final @Nonnull Capability<FluidUpdaterManager> capability, final @Nonnull FluidUpdaterManager instance, final @Nullable EnumFacing side) {
+                return new NBTTagCompound();
             }
 
             @Override
-            public void readNBT(Capability<ScheduledTicksData> capability, ScheduledTicksData instance, EnumFacing side, NBTBase nbt) {
-                if(nbt instanceof NBTTagCompound){
-                    instance.deserializeNBT((NBTTagCompound) nbt);
-                }
-            }
-        },ScheduledTicksData::new);
+            public void readNBT(final @Nonnull Capability<FluidUpdaterManager> capability,final @Nonnull FluidUpdaterManager instance,final @Nullable EnumFacing side,final @Nonnull NBTBase nbt) {}
+        }, () ->{
+            throw new UnsupportedOperationException();
+        });
     }
 }

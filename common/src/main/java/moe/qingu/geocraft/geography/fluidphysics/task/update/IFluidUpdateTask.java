@@ -40,6 +40,7 @@ import java.util.Random;
  * 一个流体更新任务
  * @author QiguaiAAAA
  */
+@Deprecated
 public interface IFluidUpdateTask {
     void onUpdate(@Nonnull World world,@Nonnull IBlockState state,@Nonnull Random rand);
     void onFailure(@Nonnull World world,@Nonnull IBlockState state,@Nonnull Random rand);

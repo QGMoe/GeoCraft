@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft;
 
+import moe.qingu.geocraft.capability.FluidUpdaterCapability;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -65,6 +66,7 @@ public class CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         SchedulingTicksCapability.register();
         SavingScheduledTicksCapability.register();
+        FluidUpdaterCapability.register();
 
         if(ConfigurationLoader.isInitialised()) return;
         if(!isConfigInitialised) initConfig();

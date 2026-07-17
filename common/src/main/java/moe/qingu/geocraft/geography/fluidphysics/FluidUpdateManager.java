@@ -47,6 +47,7 @@ import static moe.qingu.geocraft.util.MiscUtil.getValidWorld;
  * @author QiguaiAAAA
  * @since 0.1
  */
+@Deprecated
 public final class FluidUpdateManager {
     private static int MAX_UPDATE_NUM;
     static final Map<WorldServer, Pair<PriorityQueue<IFluidUpdateTask>,PriorityQueue<IFluidUpdateTask>>> updateTaskQueuesMap = new HashMap<>();

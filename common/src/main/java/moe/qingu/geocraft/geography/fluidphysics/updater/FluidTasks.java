@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,33 +25,35 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.util.annotation;
+package moe.qingu.geocraft.geography.fluidphysics.updater;
 
-import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
 
 /**
- * @since 0.1
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public enum ThreadType {
-    MINECRAFT_SERVER,
-    MINECRAFT_CLIENT,
-    /**
-     * @see FluidPressureSearchManager
-     */
-    FLUID_PRESSURE_MANAGER,
-    /**
-     * @see FluidPressureSearchManager
-     */
-    FLUID_PRESSURE_TASKS,
-    /**
-     * @since 0.2.0-alpha.3
-     * @see net.minecraft.world.storage.ThreadedFileIOBase
-     */
-    CHUNK_IO_THREADS,
-    /**
-     * @since 0.3.0-alpha.1
-     * @see moe.qingu.geocraft.geography.fluidphysics.updater.FluidDaemon
-     */
-    FLUID_DAEMON
+public final class FluidTasks {
+    private static final ArrayList<IFluidTask> registry = new ArrayList<>();
+    private static final Object2IntMap<IFluidTask> IDLookup = new Object2IntOpenHashMap<>();
+
+    static {
+        IDLookup.defaultReturnValue(-1);
+    }
+
+    public static void register(final @Nonnull IFluidTask task){
+        registry.add(task);
+        IDLookup.put(task,registry.size()-1);
+    }
+
+    public static int getID(final @Nonnull IFluidTask task){
+        return IDLookup.get(task);
+    }
+
+    public static IFluidTask getTask(final int id){
+        return registry.get(id);
+    }
 }
