@@ -27,6 +27,8 @@
 
 package moe.qingu.geocraft;
 
+import moe.qingu.geocraft.api.util.DeferredActions;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidDaemon;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.server.MinecraftServer;
@@ -68,12 +70,14 @@ public class GeoCraft {
         proxy.preInit(event);
         GameRegistry.registerWorldGenerator(new GeoCraftPostPopulatingGenerator(),100000);
         GeoCompatLoader.loadCompats(LoaderState.PREINITIALIZATION);
+        DeferredActions.run(LoaderState.PREINITIALIZATION);
     }
 
     @EventHandler
     public void init(final @Nonnull FMLInitializationEvent event){
         proxy.init(event);
         GeoCompatLoader.loadCompats(LoaderState.INITIALIZATION);
+        DeferredActions.run(LoaderState.INITIALIZATION);
     }
 
     @EventHandler
@@ -81,6 +85,12 @@ public class GeoCraft {
         proxy.postInit(event);
         AtmosphereSystemRunner.onPostInit(event);
         GeoCompatLoader.loadCompats(LoaderState.POSTINITIALIZATION);
+        DeferredActions.run(LoaderState.POSTINITIALIZATION);
+    }
+
+    @EventHandler
+    public void inited(final @Nonnull FMLLoadCompleteEvent event){
+        DeferredActions.run(LoaderState.AVAILABLE);
     }
 
     @EventHandler
@@ -111,6 +121,7 @@ public class GeoCraft {
         }else{
             FluidPressureSearchManager.syncRun();
         }
+        FluidDaemon.start();
         GeoCompatLoader.loadCompats(LoaderState.SERVER_STARTING);
     }
 
@@ -118,6 +129,7 @@ public class GeoCraft {
     public void onServerStopping(final @Nonnull FMLServerStoppingEvent event){
         GeoDataFile.captureCurrentState();
         AtmosphereSystemRunner.onServerStopping(event);
+        FluidDaemon.stop();
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncStop();
         }else{

@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.handler.event;
 
+import moe.qingu.geocraft.capability.FluidUpdaterCapability;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdater;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.block.Block;
@@ -75,6 +76,18 @@ public final class CommonEventHandler {
         if(world == null || world.isRemote) return;
         event.addCapability(ScheduledTicksData.ID, new ScheduledTicksData());
         event.addCapability(FluidUpdater.ID, new FluidUpdater());
+    }
+
+    @SubscribeEvent
+    public static void onChunkLoad(final @Nonnull ChunkEvent.Load event){
+        final Chunk chunk = event.getChunk();
+        final FluidUpdater updater = chunk.getCapability(FluidUpdaterCapability.FLUID_UPDATER,null);
+        if(updater == null || !updater.hasLeft()) return;
+        final FluidUpdaterManager manager = FluidUpdaterManager.getManager(event.getWorld());
+        if(manager == null || manager.getWorld() != event.getWorld()) return;
+        final long pos = (long) event.getChunk().x << Integer.SIZE | event.getChunk().z;
+        manager.getUpdaters().put(pos,updater);
+        manager.getSchedules().add(pos);
     }
 
     @SubscribeEvent

@@ -30,6 +30,7 @@ package moe.qingu.geocraft.geography.fluidphysics.finite;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import moe.qingu.geocraft.handler.event.FiniteEventHandler;
 
+@Deprecated
 public interface IPostEventInitFinite {
     /**
      * @see FiniteEventHandler#onPostInit(FMLPostInitializationEvent)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,14 +25,24 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.block.finite;
+package moe.qingu.geocraft.geography.fluidphysics.finite.update;
 
-import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
-import moe.qingu.geocraft.geography.fluidphysics.finite.IPostEventInitFinite;
+import moe.qingu.geocraft.GeoCraft;
+import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
+import net.minecraft.util.ResourceLocation;
 
-import javax.annotation.Nonnull;
+/**
+ * @author QGMoe
+ */
+public final class FiniteFluidTasks {
+    public static final FiniteFluidVanillaUpdateTask WATER_TASK = new FiniteFluidVanillaUpdateTask(FiniteFlowings.WATER_FLOW);
+    public static final FiniteFluidVanillaUpdateTask LAVA_TASK = new FiniteFluidVanillaUpdateTask(FiniteFlowings.LAVA_FLOW);
 
-public interface IBlockLiquidFinite extends IPostEventInitFinite {
-    @Nonnull
-    FiniteFlowingVanilla 天圆地方$FINITE$getFlowingHandler();
+    private FiniteFluidTasks(){}
+
+    public static void register(){
+        FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"finite_water"),WATER_TASK);
+        FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"finite_lava"),LAVA_TASK);
+    }
 }

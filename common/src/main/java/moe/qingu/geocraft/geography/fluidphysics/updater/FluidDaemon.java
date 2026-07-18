@@ -31,15 +31,44 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author QGMoe
  */
 public final class FluidDaemon implements Runnable {
+    public static final String THREAD_NAME = "GeoFluidDaemon";
+    private static FluidDaemon daemon;
+    private static Thread thread;
+    private volatile boolean running;
+
+    private FluidDaemon(){}
+
+    public static void start(){
+        stop();
+        daemon = new FluidDaemon();
+        daemon.running = true;
+        thread = new Thread(daemon , THREAD_NAME);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    public static void stop(){
+        if(daemon != null) daemon.running = false;
+        if(thread != null && thread.isAlive()) {
+            thread.interrupt();
+            try {
+                thread.join(1000);
+            } catch (final @Nonnull InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     @Override
     public void run() {
-        while (true){
+        while (running){
             final long startTime = System.currentTimeMillis();
 
             tick();

@@ -32,6 +32,7 @@ import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassi
 
 import javax.annotation.Nonnull;
 
+@Deprecated
 public interface IBlockFluidClassicFinite extends IPostEventInitFinite {
     @Nonnull
     FiniteFlowingClassic 天圆地方$FINITE$getFlowingHandler();

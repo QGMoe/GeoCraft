@@ -37,11 +37,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(value = BlockFluidBase.class,remap = false)
 public interface BlockFluidBaseAccessor {
     @Accessor(value = "quantaPerBlock",remap = false)
-    int getQuantaPerBlock();
-
-    @Accessor(value = "tickRate",remap = false)
-    int getTickRate();
+    int 天圆地方$getQuantaPerBlock();
 
     @Invoker(value = "hasVerticalFlow",remap = false)
-    boolean hasVerticalFlowR(IBlockAccess world, BlockPos pos);
+    boolean 天圆地方$hasVerticalFlow(IBlockAccess world, BlockPos pos);
 }

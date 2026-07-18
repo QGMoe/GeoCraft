@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.finite.update;
 
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -50,11 +51,11 @@ import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
 import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import moe.qingu.geocraft.geography.fluidphysics.finite.pressure.FinitePressureTasks;
-import moe.qingu.geocraft.geography.fluidphysics.task.update.FluidUpdateBaseTask;
 import moe.qingu.geocraft.handler.ServerStatusMonitor;
 import moe.qingu.geocraft.util.MiscUtil;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
 import moe.qingu.geocraft.world.BlockUpdater;
+import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,7 +73,7 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
  */
 @ThreadOnly(ThreadType.MINECRAFT_SERVER)
 @NotThreadSafe
-public final class FiniteFluidVanillaUpdateTask extends FluidUpdateBaseTask {
+public final class FiniteFluidVanillaUpdateTask implements IFluidTask {
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) List<FlowChoice> averageFlowChoices = new ArrayList<>();
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> slopeFlowableDirections = EnumSet.noneOf(EnumFacing.class);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) EnumFacing[] slopeFlowDirectionsArr = new EnumFacing[4];
@@ -80,21 +81,19 @@ public final class FiniteFluidVanillaUpdateTask extends FluidUpdateBaseTask {
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) EnumFacing[] bestFlowDirectionsArr = new EnumFacing[4];
     private static final @Nonnull IBlockState AIR_DEFAULT_STATE = Blocks.AIR.getDefaultState();
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) MBlockPos facingPos$mut = new MBlockPos();
-    final @Nonnull FiniteFlowingVanilla flowing;
-    IBlockState state;
+    public final @Nonnull Fluid fluid;
+    public final @Nonnull FiniteFlowingVanilla flowing;
 
-    public FiniteFluidVanillaUpdateTask(@Nonnull final BlockPos pos, @Nonnull final FiniteFlowingVanilla flowing) {
-        super(flowing.fluid, pos);
+    public FiniteFluidVanillaUpdateTask(@Nonnull final FiniteFlowingVanilla flowing) {
         this.flowing = flowing;
+        this.fluid = flowing.fluid;
     }
 
     @Override
-    public void onUpdate(@Nonnull final World world, @Nonnull final IBlockState curState, @Nonnull final Random rand) {
+    public void onUpdate(@Nonnull final World world, @Nonnull IBlockState state,@Nonnull final BlockPos pos, @Nonnull final Random rand) {
         if (!world.isAreaLoaded(pos,1)){
             return;
         }
-
-        state = curState;
         int liquidMeta = state.getValue(LEVEL);
         final int updateFlag = ServerStatusMonitor.getRecommendedBlockFlags();
         if(liquidMeta >= 8){
@@ -105,7 +104,7 @@ public final class FiniteFluidVanillaUpdateTask extends FluidUpdateBaseTask {
         int updateRate = MiscUtil.modifyTickRateByGravity(world,this.flowing.dynamic.tickRate(world));
 
         if(updateRate <= 0){//无重力
-            flowing.placeStaticBlock(world,pos,curState);
+            flowing.placeStaticBlock(world,pos,state);
             return;
         }
 
@@ -151,7 +150,7 @@ public final class FiniteFluidVanillaUpdateTask extends FluidUpdateBaseTask {
         // *******************
         //  Pressure Flow
         // *******************
-        if(checkPressureTask(world)){
+        if(checkPressureTask(world,pos,state)){
             BlockUpdater.scheduleUpdate(world,pos,flowing.dynamic, updateRate);
             return;
         }
@@ -284,14 +283,13 @@ public final class FiniteFluidVanillaUpdateTask extends FluidUpdateBaseTask {
     }
 
     @Override
-    public void onFailure(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final Random rand) {
+    public void onFailure(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
         flowing.placeStaticBlock(world,pos,state);
     }
 
-    @Nonnull
     @Override
-    public Block getBlock() {
-        return flowing.dynamic;
+    public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state) {
+        return state.getBlock() == flowing.dynamic;
     }
 
     private void createFluidPressureSearchTask(final @Nonnull World world,
@@ -310,7 +308,7 @@ public final class FiniteFluidVanillaUpdateTask extends FluidUpdateBaseTask {
         }
     }
 
-    private boolean checkPressureTask(final @Nonnull World worldIn){
+    private boolean checkPressureTask(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state){
         final @Nullable IBlockState result = flowing.tryPressureFlow(worldIn,pos,state, Constants.BlockFlags.DEFAULT);
         return result != null && result != state;
     }

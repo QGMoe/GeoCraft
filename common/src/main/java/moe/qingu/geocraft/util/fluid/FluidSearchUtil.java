@@ -111,7 +111,7 @@ public final class FluidSearchUtil {
         try{
             return findSourceIterate(world,startPos,fluid,ignoreSameY,ignoreLevel,
                     (fluid.getDensity()>0)?-1:1,
-                    ((BlockFluidBaseAccessor)(fluid.getBlock())).getQuantaPerBlock(),
+                    ((BlockFluidBaseAccessor)(fluid.getBlock())).天圆地方$getQuantaPerBlock(),
                     maxIterations,sameQuantaIterationLimit);
         }catch (Throwable e){
             GeoCraft.getLogger().error(e);

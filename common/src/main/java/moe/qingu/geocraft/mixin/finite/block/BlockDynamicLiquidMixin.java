@@ -27,6 +27,9 @@
 
 package moe.qingu.geocraft.mixin.finite.block;
 
+import moe.qingu.geocraft.api.util.DeferredActions;
+import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteFluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.BlockLiquid;
@@ -36,16 +39,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import moe.qingu.geocraft.api.setting.GeoFluidSetting;
-import moe.qingu.geocraft.block.finite.IBlockLiquidFinite;
 import moe.qingu.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
-import moe.qingu.geocraft.geography.fluidphysics.FluidUpdateManager;
 import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteFluidVanillaUpdateTask;
 import moe.qingu.geocraft.util.MiscUtil;
@@ -54,12 +56,26 @@ import javax.annotation.Nonnull;
 import java.util.*;
 
 @Mixin(value = BlockDynamicLiquid.class)
-public class BlockDynamicLiquidMixin extends BlockLiquid implements IBlockLiquidFinite, ILayeredFluidHostFiniteLiquid {
+public class BlockDynamicLiquidMixin extends BlockLiquid implements ILayeredFluidHostFiniteLiquid {
     @Unique
     private FiniteFlowingVanilla 天圆地方$FINITE$flowingHandler;
+    @Unique
+    private FiniteFluidVanillaUpdateTask 天圆地方$FINITE$task;
 
     protected BlockDynamicLiquidMixin(final @Nonnull Material materialIn) {
         super(materialIn);
+    }
+
+    /**
+     * @author QGMoe
+     */
+    @Inject(method = "<init>",at = @At("TAIL"))
+    private void 天圆地方$FINITE$init(final @Nonnull Material material,final @Nonnull CallbackInfo ci) {
+        DeferredActions.onInit(() -> {
+            this.天圆地方$FINITE$flowingHandler = FiniteFlowingVanilla.getFlowingByMaterial(this.material);
+            if(天圆地方$FINITE$flowingHandler.fluid == FluidRegistry.WATER) 天圆地方$FINITE$task = FiniteFluidTasks.WATER_TASK;
+            else 天圆地方$FINITE$task = FiniteFluidTasks.LAVA_TASK;
+        });
     }
 
     @Override
@@ -91,7 +107,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements IBlockLiquid
             worldIn.setBlockState(pos, getStaticBlock(this.material).getDefaultState().withProperty(LEVEL, state.getValue(LEVEL)), Constants.BlockFlags.SEND_TO_CLIENTS);
             return;
         }
-        FluidUpdateManager.addTask(worldIn,new FiniteFluidVanillaUpdateTask(pos, 天圆地方$FINITE$flowingHandler));
+        FluidUpdaterManager.schedule(worldIn,pos, 天圆地方$FINITE$task,天圆地方$FINITE$task.fluid);
     }
 
     @Inject(method = "onBlockAdded",at = @At("HEAD"),cancellable = true)
@@ -114,20 +130,5 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements IBlockLiquid
     @Unique
     public Fluid 天圆地方$getFluid() {
         return this.天圆地方$FINITE$flowingHandler.fluid;
-    }
-
-    // **************
-    // IBlockLiquidFinite
-    // **************
-
-    @Nonnull
-    @Override
-    public FiniteFlowingVanilla 天圆地方$FINITE$getFlowingHandler() {
-        return this.天圆地方$FINITE$flowingHandler;
-    }
-
-    @Override
-    public void 天圆地方$FINITE$init() {
-        this.天圆地方$FINITE$flowingHandler = FiniteFlowingVanilla.getFlowingByMaterial(this.material);
     }
 }

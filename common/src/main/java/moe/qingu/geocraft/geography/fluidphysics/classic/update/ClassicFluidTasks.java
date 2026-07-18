@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -27,39 +27,27 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.classic.update;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDynamicLiquid;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fluids.Fluid;
-
-import javax.annotation.Nonnull;
-import java.util.Random;
+import moe.qingu.geocraft.GeoCraft;
+import moe.qingu.geocraft.api.util.DeferredActions;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
+import net.minecraft.util.ResourceLocation;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class ClassicFluidVanillaUpdateTask extends ClassicFluidUpdateTask {
-    protected final BlockDynamicLiquid block;
+public final class ClassicFluidTasks {
+    public static IFluidTask WATER_TASK;
+    public static IFluidTask LAVA_TASK;
+    public static IFluidTask CLASSIC_TASK = new ClassicFluidClassicUpdateTask();
 
-    public ClassicFluidVanillaUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos, final @Nonnull BlockDynamicLiquid block) {
-        super(fluid, pos);
-        this.block = block;
+    static {
+        DeferredActions.onPostInit(()->{
+            FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"classic_water"),WATER_TASK);
+            FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"classic_lava"),LAVA_TASK);
+            FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"classic_classic"),CLASSIC_TASK);
+        });
     }
 
-    @Override
-    public void onFailure(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
-        world.setBlockState(pos,
-                BlockLiquid.getStaticBlock(state.getMaterial()).getDefaultState().withProperty(BlockLiquid.LEVEL,state.getValue(BlockLiquid.LEVEL)),
-                Constants.BlockFlags.SEND_TO_CLIENTS);
-    }
-
-    @Nonnull
-    @Override
-    public Block getBlock() {
-        return block;
-    }
+    private ClassicFluidTasks(){}
 }

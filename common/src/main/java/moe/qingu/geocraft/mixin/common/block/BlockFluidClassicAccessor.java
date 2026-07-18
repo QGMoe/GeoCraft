@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,28 +25,27 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.classic.update;
+package moe.qingu.geocraft.mixin.common.block;
 
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.Fluid;
-import moe.qingu.geocraft.geography.fluidphysics.task.update.FluidUpdateBaseTask;
-import moe.qingu.geocraft.geography.fluidphysics.classic.mixin.IVanillaLikeFluidBlock;
-
-import javax.annotation.Nonnull;
-import java.util.Random;
+import net.minecraftforge.fluids.BlockFluidClassic;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public abstract class ClassicFluidUpdateTask extends FluidUpdateBaseTask {
-    public ClassicFluidUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos) {
-        super(fluid, pos);
-    }
+@Mixin(value = BlockFluidClassic.class,remap = false)
+public interface BlockFluidClassicAccessor {
+    @Accessor(value = "canCreateSources",remap = false)
+    boolean 天圆地方$canCreateSources();
 
-    @Override
-    public void onUpdate(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
-        ((IVanillaLikeFluidBlock)getBlock()).天圆地方$onFlowingTask(world,pos,state,rand);
-    }
+    @Invoker(value = "getLargerQuanta",remap = false)
+    int 天圆地方$getLargerQuanta(IBlockAccess world, BlockPos pos, int compare);
+
+    @Invoker(value = "getOptimalFlowDirections",remap = false)
+    boolean[] 天圆地方$getOptimalFlowDirections(World world, BlockPos pos);
 }

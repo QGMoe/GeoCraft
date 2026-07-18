@@ -45,7 +45,7 @@ public final class FluidMixinUtil {
     public static int getQuantaPerBlock(Block block){
         if(!FluidUtil.isFluid(block)) return -1;
         if(block instanceof BlockLiquid) return 8;
-        if(block instanceof BlockFluidBase) return ((BlockFluidBaseAccessor)block).getQuantaPerBlock();
+        if(block instanceof BlockFluidBase) return ((BlockFluidBaseAccessor)block).天圆地方$getQuantaPerBlock();
         throw new IllegalArgumentException("Unsupported Liquid");
     }
 

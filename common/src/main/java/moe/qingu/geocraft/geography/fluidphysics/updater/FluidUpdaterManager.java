@@ -155,6 +155,12 @@ public class FluidUpdaterManager implements ICapabilityProvider {
         managers.clear();
     }
 
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public static void schedule(final @Nonnull World world,final @Nonnull BlockPos pos, final @Nonnull IFluidTask task, final @Nonnull Fluid fluid){
+        final FluidUpdaterManager manager = getManager(world);
+        if(manager != null) manager.schedule(pos, task, fluid);
+    }
+
     @Nullable
     public static FluidUpdaterManager getManager(final @Nonnull World world){
         @Nullable FluidUpdaterManager manager = managers.get(world.provider.getDimension());

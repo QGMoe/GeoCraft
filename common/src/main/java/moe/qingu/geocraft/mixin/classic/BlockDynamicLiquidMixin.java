@@ -27,6 +27,10 @@
 
 package moe.qingu.geocraft.mixin.classic;
 
+import moe.qingu.geocraft.api.util.DeferredActions;
+import moe.qingu.geocraft.geography.fluidphysics.classic.update.ClassicFluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.BlockLiquid;
@@ -39,6 +43,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -49,14 +54,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import moe.qingu.geocraft.api.setting.GeoFluidSetting;
 import moe.qingu.geocraft.api.util.FluidUtil;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
-import moe.qingu.geocraft.geography.fluidphysics.FluidUpdateManager;
-import moe.qingu.geocraft.geography.fluidphysics.classic.mixin.IVanillaLikeFluidBlock;
-import moe.qingu.geocraft.geography.fluidphysics.classic.update.ClassicFluidVanillaUpdateTask;
 import moe.qingu.geocraft.util.MiscUtil;
 import moe.qingu.geocraft.world.BlockUpdater;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
 import moe.qingu.geocraft.util.fluid.FluidSearchUtil;
-import moe.qingu.geocraft.util.mixinapi.FluidSettable;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -66,23 +67,64 @@ import java.util.Set;
 
 import static moe.qingu.geocraft.configs.FluidPhysicsConfig.*;
 
+/**
+ * @author QGMoe
+ */
 @Mixin(value = BlockDynamicLiquid.class)
-public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettable, IVanillaLikeFluidBlock {
+public class BlockDynamicLiquidMixin extends BlockLiquid{
     @Shadow
     int adjacentSourceBlocks;
     @Unique
-    private Fluid 天圆地方$thisFluid;
+    private Fluid 天圆地方$CLASSIC$thisFluid;
+    @Unique
+    private IFluidTask 天圆地方$CLASSIC$task;
 
-    protected BlockDynamicLiquidMixin(Material materialIn) {
+    protected BlockDynamicLiquidMixin(final @Nonnull Material materialIn) {
         super(materialIn);
     }
 
     /**
-     * @author QiguaiAAAA
+     * @author QGMoe
+     */
+    @Inject(method = "<init>",at = @At("TAIL"))
+    private void 天圆地方$CLASSIC$init(final @Nonnull Material material,final @Nonnull CallbackInfo ci) {
+        DeferredActions.onInit(() -> {
+            this.天圆地方$CLASSIC$thisFluid = material == Material.LAVA? FluidRegistry.LAVA:FluidRegistry.WATER;
+            final Block dynamic = material == Material.LAVA? Blocks.FLOWING_LAVA:Blocks.FLOWING_WATER;
+            final Block static_ = material == Material.LAVA? Blocks.LAVA:Blocks.WATER;
+            this.天圆地方$CLASSIC$task = new IFluidTask() {
+                @Override
+                public void onUpdate(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
+                    天圆地方$CLASSIC$flowing(world, pos, state, rand);
+                }
+
+                @Override
+                public void onFailure(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
+                    world.setBlockState(pos,
+                            static_.getDefaultState().withProperty(BlockLiquid.LEVEL,state.getValue(BlockLiquid.LEVEL)),
+                            Constants.BlockFlags.SEND_TO_CLIENTS);
+                }
+
+                @Override
+                public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state) {
+                    return state.getBlock() == dynamic;
+                }
+            };
+            if(material == Material.LAVA) ClassicFluidTasks.LAVA_TASK = 天圆地方$CLASSIC$task;
+            else ClassicFluidTasks.WATER_TASK = 天圆地方$CLASSIC$task;
+        });
+    }
+
+    /**
+     * @author QGMoe
      */
     @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true)
-    public void 天圆地方$updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid)) return;
+    private void 天圆地方$CLASSIC$updateTick(final @Nonnull World worldIn,
+                                             final @Nonnull BlockPos pos,
+                                             final @Nonnull IBlockState state,
+                                             final @Nonnull Random rand,
+                                             final @Nonnull CallbackInfo ci) {
+        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$CLASSIC$thisFluid)) return;
         ci.cancel();
         if(worldIn.isRemote) return;
         if(!GeoFluidSetting.hasGravity(worldIn)){
@@ -90,11 +132,11 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
             worldIn.setBlockState(pos, getStaticBlock(this.material).getDefaultState().withProperty(LEVEL, state.getValue(LEVEL)), Constants.BlockFlags.SEND_TO_CLIENTS);
             return;
         }
-        FluidUpdateManager.addTask(worldIn,new ClassicFluidVanillaUpdateTask(天圆地方$thisFluid,pos,(BlockDynamicLiquid) (Block)this));
+        FluidUpdaterManager.schedule(worldIn,pos,天圆地方$CLASSIC$task, 天圆地方$CLASSIC$thisFluid);
     }
 
     @Inject(method = "onBlockAdded",at = @At("HEAD"),cancellable = true)
-    public void 天圆地方$onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull CallbackInfo ci) {
+    private void 天圆地方$CLASSIC$onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull CallbackInfo ci) {
         ci.cancel();
         if (!this.checkForMixing(worldIn, pos, state)) {
             MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
@@ -102,6 +144,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
     }
 
     @Override
+    @Unique
     public void neighborChanged(@Nonnull final IBlockState state,
                                 @Nonnull final World worldIn,
                                 @Nonnull final BlockPos pos,
@@ -114,9 +157,8 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
         MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
     }
 
-    @Override
     @Unique
-    public void 天圆地方$onFlowingTask(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand){
+    public void 天圆地方$CLASSIC$flowing(@Nonnull final World world, @Nonnull final BlockPos pos, @Nonnull IBlockState state, @Nonnull final Random rand){
         if (!world.isAreaLoaded(pos, this.getSlopeFindDistance(world))) return;
         int liquidMeta = state.getValue(LEVEL);
         int spreadLevel = 天圆地方$getSpreadLevel(world);
@@ -235,7 +277,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
     }
 
     @Unique
-    private boolean 天圆地方$canMoveInto(World worldIn, BlockPos pos, IBlockState state){
+    private boolean 天圆地方$canMoveInto(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state){
         if(state.getBlock() instanceof IFluidBlock) return false;
         final Material material = state.getMaterial();
         if(material.isLiquid()){
@@ -247,12 +289,19 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
     }
 
     @Unique
-    private int 天圆地方$getSpreadLevel(World world){
+    private int 天圆地方$getSpreadLevel(final @Nonnull World world){
         if (material == Material.LAVA && !world.provider.doesWaterVaporize()) {
             return 2;
         }
         return 1;
     }
+
+    /* --------------------------
+
+            Shadow Methods
+
+      ---------------------------
+     */
 
     @Shadow
     private void tryFlowInto(World worldIn, BlockPos pos, IBlockState state, int level) {}
@@ -270,11 +319,4 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
     private Set<EnumFacing> getPossibleFlowDirections(World worldIn, BlockPos pos) {return Collections.emptySet();}
     @Shadow
     private boolean isBlocked(World worldIn, BlockPos pos, IBlockState state){return false;}
-
-    @Override
-    public void 天圆地方$setCorrespondingFluid(Fluid fluid) {
-        if(天圆地方$thisFluid != null)return;
-        天圆地方$thisFluid = fluid;
-    }
-
 }

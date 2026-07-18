@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.mixin.finite.block;
 
+import moe.qingu.geocraft.api.util.DeferredActions;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockStaticLiquid;
@@ -46,7 +47,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import moe.qingu.geocraft.api.event.EventFactory;
 import moe.qingu.geocraft.api.setting.GeoFluidSetting;
-import moe.qingu.geocraft.block.finite.IBlockLiquidFinite;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
 import moe.qingu.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
@@ -61,7 +61,7 @@ import javax.annotation.Nullable;
 import java.util.Random;
 
 @Mixin(value = BlockStaticLiquid.class)
-public class BlockStaticLiquidMixin extends BlockLiquid implements IBlockLiquidFinite, ILayeredFluidHostFiniteLiquid {
+public class BlockStaticLiquidMixin extends BlockLiquid implements ILayeredFluidHostFiniteLiquid {
 //    @Unique
 //    private static final boolean 天圆地方$debug = false;
     @Unique
@@ -72,6 +72,15 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IBlockLiquidF
     protected BlockStaticLiquidMixin(final @Nonnull Material materialIn) {
         super(materialIn);
     }
+
+    /**
+     * @author QGMoe
+     */
+    @Inject(method = "<init>",at = @At("TAIL"))
+    private void 天圆地方$FINITE$init(final @Nonnull Material material,final @Nonnull CallbackInfo ci) {
+        DeferredActions.onInit(() -> this.天圆地方$FINITE$flowingHandler = FiniteFlowingVanilla.getFlowingByMaterial(this.material));
+    }
+
 
     @Override
     @Unique
@@ -98,13 +107,13 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IBlockLiquidF
         if(worldIn.isRemote) return;
         if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$FINITE$flowingHandler.fluid)) return;
         if(!天圆地方$isValidState(worldIn,pos,state)) return;
-        if(!天圆地方$FINITE$getFlowingHandler().canFlow(worldIn, pos, state)){
+        if(!天圆地方$FINITE$flowingHandler.canFlow(worldIn, pos, state)){
             // *******
             // Pressure Flow
             // *******
             final @Nullable IBlockState nowState = 天圆地方$FINITE$flowingHandler.tryPressureFlow(worldIn,pos,state,ServerStatusMonitor.getRecommendedBlockFlags());
             if(nowState != null){
-                if(nowState!=state && 天圆地方$FINITE$getFlowingHandler().isEqualFluid(nowState)){
+                if(nowState!=state && 天圆地方$FINITE$flowingHandler.isEqualFluid(nowState)){
                     天圆地方$sendPressureQuery(worldIn,pos,nowState,rand,true);
                 }else if(nowState == state){
                     天圆地方$sendPressureQuery(worldIn,pos,state,rand,false);
@@ -152,7 +161,7 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IBlockLiquidF
             return;
         }
         final @Nonnull IBlockState up = world.getBlockState(pos.up());
-        if(天圆地方$FINITE$getFlowingHandler().isEqualFluid(up) && up.getValue(LEVEL)==0){
+        if(天圆地方$FINITE$flowingHandler.isEqualFluid(up) && up.getValue(LEVEL)==0){
 //            if(天圆地方$debug) GeoCraft.getLogger().info("{}: up is full water, returned",pos);
             return;
         }
@@ -179,20 +188,5 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IBlockLiquidF
     @Unique
     public Fluid 天圆地方$getFluid() {
         return 天圆地方$FINITE$flowingHandler.fluid;
-    }
-
-    // ********************
-    // IBlockLiquidFinite
-    // ********************
-
-    @Nonnull
-    @Override
-    public FiniteFlowingVanilla 天圆地方$FINITE$getFlowingHandler() {
-        return 天圆地方$FINITE$flowingHandler;
-    }
-
-    @Override
-    public void 天圆地方$FINITE$init() {
-        this.天圆地方$FINITE$flowingHandler = FiniteFlowingVanilla.getFlowingByMaterial(this.material);
     }
 }
