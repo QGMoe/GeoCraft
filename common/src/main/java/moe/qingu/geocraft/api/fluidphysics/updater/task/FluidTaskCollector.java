@@ -27,11 +27,16 @@
 
 package moe.qingu.geocraft.api.fluidphysics.updater.task;
 
+import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
+import moe.qingu.geocraft.api.util.annotation.ThreadType;
+import net.minecraftforge.fluids.Fluid;
+
 import javax.annotation.Nonnull;
 
 /**
  * @author QGMoe
  */
-public interface IFluidTaskAcceptor {
-    boolean accepts(final @Nonnull IFluidTask task);
+public abstract class FluidTaskCollector {
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public abstract void schedule(final @Nonnull IFluidTask task, final @Nonnull Fluid fluid);
 }

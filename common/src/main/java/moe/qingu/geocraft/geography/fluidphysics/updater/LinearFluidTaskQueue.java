@@ -108,4 +108,9 @@ public class LinearFluidTaskQueue extends FluidTaskQueue{
     public void forEach(@Nonnull final IntConsumer consumer) {
         for(int i=0;i<list.size();i++) consumer.accept(list.getInt(i));
     }
+
+    public void clear(){
+        list.clear();
+        presence.clear();
+    }
 }

@@ -31,7 +31,7 @@ import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidDaemon;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
-import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -111,6 +111,7 @@ public class GeoCraft {
             }
         }
         FluidTaskRegistry.reloadMapping(GeoDataFile.CURRENT.getFluidTasksMapping());
+        DeferredActions.run(LoaderState.SERVER_ABOUT_TO_START);
     }
 
     @EventHandler
@@ -127,11 +128,13 @@ public class GeoCraft {
         }
         FluidDaemon.start();
         GeoCompatLoader.loadCompats(LoaderState.SERVER_STARTING);
+        DeferredActions.run(LoaderState.SERVER_STARTING);
     }
 
     @EventHandler
     public void onServerStarted(final @Nonnull FMLServerStartedEvent event){
         GeoDataFile.captureCurrentState();
+        DeferredActions.run(LoaderState.SERVER_STARTED);
     }
 
     @EventHandler
@@ -144,7 +147,7 @@ public class GeoCraft {
         }else{
             FluidPressureSearchManager.syncStop();
         }
-        FluidUpdaterManager.onServerStop();
+        FluidTaskScheduler.onServerStop();
         BlockUpdater.onServerStop();
         GeoCompatLoader.loadCompats(LoaderState.SERVER_STOPPING);
     }
@@ -154,6 +157,7 @@ public class GeoCraft {
         AtmosphereRegionFileCache.clearRegionFileReferences();
         AtmosphereSystemRunner.onServerStopped(event);
         GeoCompatLoader.loadCompats(LoaderState.SERVER_STOPPED);
+        DeferredActions.restore();
     }
 
     @Nonnull

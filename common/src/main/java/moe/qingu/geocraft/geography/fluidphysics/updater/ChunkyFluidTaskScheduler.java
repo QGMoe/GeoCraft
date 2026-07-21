@@ -29,7 +29,8 @@ package moe.qingu.geocraft.geography.fluidphysics.updater;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskCollector;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
@@ -47,19 +48,21 @@ import net.minecraftforge.fluids.Fluid;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.IntConsumer;
 
 /**
  * @author QGMoe
  */
-public final class ChunkyFluidUpdaterManager extends FluidUpdaterManager implements ICapabilityProvider {
+public final class ChunkyFluidTaskScheduler extends FluidTaskScheduler implements ICapabilityProvider {
     private final MBlockPos posContainer = new MBlockPos();
     private final int maxUpdateNum;
     private final Long2ObjectOpenHashMap<FluidUpdater> updaters = new Long2ObjectOpenHashMap<>();
     private final ConcurrentLinkedQueue<FluidUpdater> dirties = new ConcurrentLinkedQueue<>();
     private final LongOpenHashSet schedules = new LongOpenHashSet();
+    private final ChunkyCollector collector = new ChunkyCollector();
     private long[] temp = new long[0];
 
-    public ChunkyFluidUpdaterManager(final @Nonnull World world) {
+    public ChunkyFluidTaskScheduler(final @Nonnull World world) {
         super(world);
         maxUpdateNum = FluidPhysicsConfig.FLUID_UPDATER_MAX_TASKS_PER_TICK.getValue();
     }
@@ -107,11 +110,11 @@ public final class ChunkyFluidUpdaterManager extends FluidUpdaterManager impleme
             int cot = 0;
             final Chunk chunk = world.getChunk(x,z);
             do {
-                final int n = updater.update(posContainer,chunk);
+                final int n = updater.update(posContainer,chunk,collector);
                 count += n;
                 cot += n;
-            }
-            while (updater.hasLeft() && count < maxUpdateNum);
+            } while (updater.hasLeft() && count < maxUpdateNum);
+            collector.cleanup(updater);
             if(cot != 0 && updater.markDirty()){
                 chunk.markDirty();
                 dirties.add(updater);
@@ -164,9 +167,56 @@ public final class ChunkyFluidUpdaterManager extends FluidUpdaterManager impleme
     }
 
     @Nullable
-    public static ChunkyFluidUpdaterManager getChunkyManager(final @Nonnull World world){
-        final FluidUpdaterManager manager = getManager(world);
-        if(manager instanceof ChunkyFluidUpdaterManager) return (ChunkyFluidUpdaterManager) manager;
+    public static ChunkyFluidTaskScheduler getChunkyScheduler(final @Nonnull World world){
+        final FluidTaskScheduler scheduler = getScheduler(world);
+        if(scheduler instanceof ChunkyFluidTaskScheduler) return (ChunkyFluidTaskScheduler) scheduler;
         else return null;
+    }
+
+    static final class ChunkyCollector extends FluidTaskCollector{
+        private final LinearFluidTaskQueue heavy = new LinearFluidTaskQueue();
+        private final LinearFluidTaskQueue light = new LinearFluidTaskQueue();
+        private final FluidTaskTransformer transformer = new FluidTaskTransformer();
+        int x;
+        int y;
+        int z;
+
+        private boolean isEmpty(){
+            return heavy.isEmpty() && light.isEmpty();
+        }
+
+        @Override
+        public void schedule(@Nonnull final IFluidTask task, @Nonnull final Fluid fluid) {
+            final int taskID = FluidTaskRegistry.getID(task);
+            if(taskID <0 || taskID > 65535) throw new IllegalArgumentException();
+            (fluid.getDensity() >0 ? heavy:light).queue(x, y, z, taskID);
+        }
+
+        private void cleanup(@Nonnull final FluidUpdater updater){
+            if(isEmpty()) return;
+            transformer.updater = updater;
+            transformer.light = false;
+            heavy.forEach(transformer);
+            heavy.clear();
+            transformer.light = true;
+            light.forEach(transformer);
+            light.clear();
+        }
+    }
+
+    private static final class FluidTaskTransformer implements IntConsumer{
+        private FluidUpdater updater;
+        private boolean light = false;
+
+        @Override
+        public void accept(final int task) {
+            final int x = (task >>> 4) & 0xF;
+            final int y = task >>> 24;
+            final int z = task & 0xF;
+            if(!updater.isScheduled(x,y,z)){
+                final int taskID = (task >> 8) & 0xFFFF;
+                if(light) updater.scheduleLight(x,y,z,taskID); else updater.scheduleHeavy(x,y,z,taskID);
+            }
+        }
     }
 }

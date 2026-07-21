@@ -52,10 +52,9 @@ import java.util.Random;
 
 @Mixin(value = BlockStaticLiquid.class)
 public class BlockStaticLiquidMixin extends BlockLiquid{
-    @Unique
-    private Fluid 天圆地方$thisFluid;
-    @Unique
-    private boolean 天圆地方$curRandomTick = false;
+    @Unique private Fluid 天圆地方$thisFluid;
+    @Unique private boolean 天圆地方$curRandomTick = false;
+    @Unique private boolean 天圆地方$CLASSIC$physical = true;
 
     protected BlockStaticLiquidMixin(Material materialIn) {
         super(materialIn);
@@ -64,19 +63,23 @@ public class BlockStaticLiquidMixin extends BlockLiquid{
     @Inject(method = "<init>",at = @At("RETURN"))
     private void 天圆地方$onInit(Material materialIn, CallbackInfo ci) {
         this.setTickRandomly(true);
-        DeferredActions.onPostInit(()-> 天圆地方$thisFluid = Material.LAVA == materialIn ? FluidRegistry.LAVA:FluidRegistry.WATER);
+        DeferredActions.onInited(()-> 天圆地方$thisFluid = Material.LAVA == materialIn ? FluidRegistry.LAVA:FluidRegistry.WATER);
+        DeferredActions.onServerAboutToStart(()-> this.天圆地方$CLASSIC$physical = GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid));
     }
 
     @Override
     public void randomTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random) {
-        天圆地方$curRandomTick = true;
-        super.randomTick(worldIn, pos, state, random);
-        天圆地方$curRandomTick = false;
+        try {
+            天圆地方$curRandomTick = true;
+            super.randomTick(worldIn, pos, state, random);
+        }finally {
+            天圆地方$curRandomTick = false;
+        }
     }
 
     @Inject(method = "updateTick",at = @At("RETURN"))
     public void 天圆地方$updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid)) return;
+        if(!天圆地方$CLASSIC$physical) return;
         IBlockState newState = EventFactory.afterBlockLiquidStaticUpdate(天圆地方$thisFluid,worldIn,pos,state, 天圆地方$curRandomTick);
         if(newState != null){
             worldIn.setBlockState(pos,newState);

@@ -27,10 +27,12 @@
 
 package moe.qingu.geocraft.mixin.classic;
 
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskCollector;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskResponder;
 import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
-import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.BlockLiquid;
@@ -71,13 +73,11 @@ import static moe.qingu.geocraft.configs.FluidPhysicsConfig.*;
  * @author QGMoe
  */
 @Mixin(value = BlockDynamicLiquid.class)
-public class BlockDynamicLiquidMixin extends BlockLiquid{
-    @Shadow
-    int adjacentSourceBlocks;
-    @Unique
-    private Fluid 天圆地方$CLASSIC$thisFluid;
-    @Unique
-    private IFluidTask 天圆地方$CLASSIC$task;
+public class BlockDynamicLiquidMixin extends BlockLiquid implements IFluidTaskResponder {
+    @Shadow int adjacentSourceBlocks;
+    @Unique private Fluid 天圆地方$CLASSIC$thisFluid;
+    @Unique private IFluidTask 天圆地方$CLASSIC$task;
+    @Unique private boolean 天圆地方$CLASSIC$physical = true;
 
     protected BlockDynamicLiquidMixin(final @Nonnull Material materialIn) {
         super(materialIn);
@@ -113,6 +113,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid{
             if(material == Material.LAVA) FluidTasks.LAVA_TASK = 天圆地方$CLASSIC$task;
             else FluidTasks.WATER_TASK = 天圆地方$CLASSIC$task;
         });
+        DeferredActions.onServerAboutToStart(()-> this.天圆地方$CLASSIC$physical = GeoFluidSetting.isFluidToBePhysical(天圆地方$CLASSIC$thisFluid));
     }
 
     /**
@@ -124,23 +125,16 @@ public class BlockDynamicLiquidMixin extends BlockLiquid{
                                              final @Nonnull IBlockState state,
                                              final @Nonnull Random rand,
                                              final @Nonnull CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$CLASSIC$thisFluid)) return;
+        if(!天圆地方$CLASSIC$physical) return;
         ci.cancel();
         if(worldIn.isRemote) return;
-        if(!GeoFluidSetting.hasGravity(worldIn)){
-            //变成静态方块
-            worldIn.setBlockState(pos, getStaticBlock(this.material).getDefaultState().withProperty(LEVEL, state.getValue(LEVEL)), Constants.BlockFlags.SEND_TO_CLIENTS);
-            return;
-        }
-        FluidUpdaterManager.schedule(worldIn,pos,天圆地方$CLASSIC$task, 天圆地方$CLASSIC$thisFluid);
+        FluidTaskScheduler.schedule(worldIn,pos,天圆地方$CLASSIC$task, 天圆地方$CLASSIC$thisFluid);
     }
 
     @Inject(method = "onBlockAdded",at = @At("HEAD"),cancellable = true)
     private void 天圆地方$CLASSIC$onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull CallbackInfo ci) {
         ci.cancel();
-        if (!this.checkForMixing(worldIn, pos, state)) {
-            MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
-        }
+        if (!this.checkForMixing(worldIn, pos, state)) MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
     }
 
     @Override
@@ -298,10 +292,33 @@ public class BlockDynamicLiquidMixin extends BlockLiquid{
 
     /* --------------------------
 
+         Fluid Task Responder
+
+      --------------------------- */
+
+    @Override
+    @Unique
+    @SuppressWarnings("AddedMixinMembersNamePattern")
+    public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final IFluidTask task) {
+        return 天圆地方$CLASSIC$physical;
+    }
+
+    @Override
+    @Unique
+    @SuppressWarnings("AddedMixinMembersNamePattern")
+    public void onStaleTask(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nonnull final IFluidTask task,
+                            @Nonnull final FluidTaskCollector collector) {
+        if(天圆地方$CLASSIC$physical) collector.schedule(天圆地方$CLASSIC$task,天圆地方$CLASSIC$thisFluid);
+    }
+
+    /* --------------------------
+
             Shadow Methods
 
-      ---------------------------
-     */
+      --------------------------- */
 
     @Shadow
     private void tryFlowInto(World worldIn, BlockPos pos, IBlockState state, int level) {}

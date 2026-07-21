@@ -27,11 +27,12 @@
 
 package moe.qingu.geocraft.mixin.classic;
 
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskCollector;
 import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskAcceptor;
-import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskResponder;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
@@ -67,16 +68,15 @@ import java.util.*;
 import static moe.qingu.geocraft.configs.FluidPhysicsConfig.*;
 
 @Mixin(value = BlockFluidClassic.class)
-public abstract class BlockFluidClassicMixin extends BlockFluidBase implements IClassicBlock, IFluidTaskAcceptor {
+public abstract class BlockFluidClassicMixin extends BlockFluidBase implements IClassicBlock, IFluidTaskResponder {
     @Final
     @Shadow(remap = false)
     protected static final List<EnumFacing> SIDES = Collections.unmodifiableList(Arrays.asList(
             EnumFacing.WEST, EnumFacing.EAST, EnumFacing.NORTH, EnumFacing.SOUTH));
-    @Shadow(remap = false)
-    protected boolean canCreateSources;
+    @Shadow(remap = false) protected boolean canCreateSources;
 
-    @Unique
-    private Fluid 天圆地方$CLASSIC$fluid;
+    @Unique private Fluid 天圆地方$CLASSIC$fluid;
+    @Unique private boolean 天圆地方$CLASSIC$physical = true;
 
     public BlockFluidClassicMixin(final Fluid fluid, final Material material) {
         super(fluid, material);
@@ -85,7 +85,8 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
     @Inject(method = "Lnet/minecraftforge/fluids/BlockFluidClassic;<init>(Lnet/minecraftforge/fluids/Fluid;Lnet/minecraft/block/material/Material;Lnet/minecraft/block/material/MapColor;)V",
             at = @At("TAIL"))
     private void 天圆地方$FINITE$init(final @Nonnull Fluid fluid, final @Nonnull Material material, final @Nonnull MapColor color, final @Nonnull CallbackInfo ci) {
-        DeferredActions.onPostInit(() -> this.天圆地方$CLASSIC$fluid = this.getFluid());
+        DeferredActions.onInited(() -> this.天圆地方$CLASSIC$fluid = this.getFluid());
+        DeferredActions.onServerAboutToStart(() -> this.天圆地方$CLASSIC$physical = GeoFluidSetting.isFluidToBePhysical(this.天圆地方$CLASSIC$fluid));
     }
 
     /**
@@ -98,13 +99,10 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                                     @Nonnull final IBlockState state,
                                     @Nonnull final Random rand,
                                     @Nonnull final CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$CLASSIC$fluid)) return;
+        if(!天圆地方$CLASSIC$physical) return;
         ci.cancel();
         if(world.isRemote) return;
-        if(!GeoFluidSetting.hasGravity(world)){
-            return;
-        }
-        FluidUpdaterManager.schedule(world,pos, FluidTasks.CLASSIC_TASK,天圆地方$CLASSIC$fluid);
+        FluidTaskScheduler.schedule(world,pos, FluidTasks.CLASSIC_TASK,天圆地方$CLASSIC$fluid);
     }
 
     @Override
@@ -226,8 +224,19 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
     @Override
     @Unique
     @SuppressWarnings("AddedMixinMembersNamePattern")
-    public boolean accepts(@Nonnull final IFluidTask task) {
-        return GeoFluidSetting.isFluidToBePhysical(天圆地方$CLASSIC$fluid);
+    public boolean accepts(@Nonnull final World world,@Nonnull final IBlockState state,@Nonnull final IFluidTask task) {
+        return 天圆地方$CLASSIC$physical;
+    }
+
+    @Override
+    @Unique
+    @SuppressWarnings("AddedMixinMembersNamePattern")
+    public void onStaleTask(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nonnull final IFluidTask task,
+                            @Nonnull final FluidTaskCollector collector) {
+        if(天圆地方$CLASSIC$physical) collector.schedule(FluidTasks.CLASSIC_TASK,天圆地方$CLASSIC$fluid);
     }
 
     @Shadow(remap = false)

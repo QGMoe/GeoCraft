@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.handler.event;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -80,6 +80,6 @@ public final class CommonEventHandler {
     public static void onWorldUnload(final @Nonnull WorldEvent.Unload event){
         final World world = event.getWorld();
         if(world.isRemote) return;
-        FluidUpdaterManager.getManagers().remove(world.provider.getDimension());
+        FluidTaskScheduler.getSchedulers().remove(world.provider.getDimension());
     }
 }

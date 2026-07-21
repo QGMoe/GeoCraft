@@ -139,11 +139,17 @@
   定义: "流体物理中与重力相关的机制。"
   出处: "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
 
-- 中文: "流体更新器"
-  英文: "Fluid Updater"
+- 中文: "流体任务调度器"
+  英文: "Fluid Tasks Scheduler"
+  别称:
+    - ["流体调度器"]
+    - ["Fluid Scheduler"]
+  旧称:
+    - ["流体更新器"]
+    - ["Fluid Updater"]
   出处:
     - "https://www.mcmod.cn/item/904888.html"
-    - 类: moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager
+    - 类: moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler
 
 - 中文: "标准测试"
   英文: "Standard Test"

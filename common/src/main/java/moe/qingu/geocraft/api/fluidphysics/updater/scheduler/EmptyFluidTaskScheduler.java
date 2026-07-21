@@ -25,46 +25,33 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.event.fluidphysics;
+package moe.qingu.geocraft.api.fluidphysics.updater.scheduler;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 
 /**
  * @author QGMoe
  */
-public class FluidUpdaterManagerEvent extends Event {
-    private final World world;
-
-    public FluidUpdaterManagerEvent(final @Nonnull World world) {
-        this.world = world;
+public final class EmptyFluidTaskScheduler extends FluidTaskScheduler {
+    public EmptyFluidTaskScheduler(@Nonnull final World world) {
+        super(world);
     }
 
-    @Nonnull
-    public final World getWorld() {
-        return world;
-    }
+    @Override
+    public void schedule(@Nonnull final BlockPos pos, @Nonnull final IFluidTask task, @Nonnull final Fluid fluid) {}
 
-    @HasResult
-    public static class Create extends FluidUpdaterManagerEvent{
-        private Supplier<FluidTaskScheduler> candidate;
+    @Override
+    public void update() {}
 
-        public Create(@Nonnull final World world) {
-            super(world);
-        }
-
-        public final void setCandidate(final Supplier<FluidTaskScheduler> candidate) {
-            this.candidate = candidate;
-        }
-
-        @Nullable
-        public Supplier<FluidTaskScheduler> getCandidate() {
-            return candidate;
-        }
+    @Nullable
+    @Override
+    public IFluidTask query(@Nonnull final BlockPos pos) {
+        return null;
     }
 }

@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.updater;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -91,15 +91,15 @@ public final class FluidDaemon implements Runnable {
         final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
         if(server == null) return;
         for(final WorldServer world : server.worlds){
-            final ChunkyFluidUpdaterManager manager;
+            final ChunkyFluidTaskScheduler scheduler;
             try {
-                 final FluidUpdaterManager m = FluidUpdaterManager.getManagers().get(world.provider.getDimension());
-                 if(m instanceof ChunkyFluidUpdaterManager) manager = (ChunkyFluidUpdaterManager) m;
+                 final FluidTaskScheduler s = FluidTaskScheduler.getSchedulers().get(world.provider.getDimension());
+                 if(s instanceof ChunkyFluidTaskScheduler) scheduler = (ChunkyFluidTaskScheduler) s;
                  else continue;
             }catch (final IndexOutOfBoundsException e){  //Fastutil的多线程错误
                 continue;
             }
-            final ConcurrentLinkedQueue<FluidUpdater> dirties = manager.getDirties();
+            final ConcurrentLinkedQueue<FluidUpdater> dirties = scheduler.getDirties();
             final int size = dirties.size();
             int cot = 0;
             while (cot++ < size){

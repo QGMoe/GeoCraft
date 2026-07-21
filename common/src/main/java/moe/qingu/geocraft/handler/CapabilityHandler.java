@@ -28,7 +28,7 @@
 package moe.qingu.geocraft.handler;
 
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdater;
-import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
 import moe.qingu.geocraft.world.BlockUpdater;
 import moe.qingu.geocraft.world.storage.ScheduledTicksData;
 import net.minecraft.nbt.NBTBase;
@@ -47,7 +47,6 @@ import java.util.concurrent.Callable;
  * @author QGMoe
  */
 public final class CapabilityHandler {
-    public static @CapabilityInject(FluidUpdaterManager.class) Capability<FluidUpdaterManager> FLUID_UPDATER_MANAGER;
     public static @CapabilityInject(BlockUpdater.class) Capability<BlockUpdater> BLOCK_UPDATER;
     public static @CapabilityInject(FluidUpdater.class) Capability<FluidUpdater> FLUID_UPDATER;
     public static @CapabilityInject(ScheduledTicksData.class) Capability<ScheduledTicksData> SCHEDULED_TICKS_DATA;
@@ -55,7 +54,7 @@ public final class CapabilityHandler {
     private CapabilityHandler(){}
 
     public static void register(){
-        CapabilityManager.INSTANCE.register(FluidUpdaterManager.class,new UselessCapabilityStorage<>(),unsupported());
+        CapabilityManager.INSTANCE.register(FluidTaskScheduler.class,new UselessCapabilityStorage<>(),unsupported());
         CapabilityManager.INSTANCE.register(BlockUpdater.class,new UselessCapabilityStorage<>(),BlockUpdater::new);
         CapabilityManager.INSTANCE.register(FluidUpdater.class,new NBTCompoundCapabilityStorage<>(),FluidUpdater::new);
         CapabilityManager.INSTANCE.register(ScheduledTicksData.class, new NBTCompoundCapabilityStorage<>(),ScheduledTicksData::new);

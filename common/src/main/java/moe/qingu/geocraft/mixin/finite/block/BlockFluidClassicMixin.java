@@ -27,11 +27,12 @@
 
 package moe.qingu.geocraft.mixin.finite.block;
 
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskCollector;
 import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskAcceptor;
-import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskResponder;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
@@ -59,19 +60,19 @@ import java.util.Random;
  * @author QiguaiAAAA
  */
 @Mixin(value = BlockFluidClassic.class)
-public abstract class BlockFluidClassicMixin extends BlockFluidBase implements IFluidTaskAcceptor {
+public abstract class BlockFluidClassicMixin extends BlockFluidBase implements IFluidTaskResponder {
+    @Unique private Fluid 天圆地方$FINITE$fluid;
+    @Unique private boolean 天圆地方$FINITE$physical = true;
 
-    @Unique
-    private Fluid 天圆地方$FINITE$fluid;
-
-    public BlockFluidClassicMixin(Fluid fluid, Material material, MapColor mapColor) {
+    public BlockFluidClassicMixin(final @Nonnull Fluid fluid,final @Nonnull Material material,final @Nonnull MapColor mapColor) {
         super(fluid, material, mapColor);
     }
 
     @Inject(method = "Lnet/minecraftforge/fluids/BlockFluidClassic;<init>(Lnet/minecraftforge/fluids/Fluid;Lnet/minecraft/block/material/Material;Lnet/minecraft/block/material/MapColor;)V",
             at = @At("TAIL"))
     private void 天圆地方$FINITE$init(final @Nonnull Fluid fluid,final @Nonnull Material material,final @Nonnull MapColor color,final @Nonnull CallbackInfo ci) {
-        DeferredActions.onPostInit(() -> this.天圆地方$FINITE$fluid = this.getFluid());
+        DeferredActions.onInited(() -> this.天圆地方$FINITE$fluid = this.getFluid());
+        DeferredActions.onServerAboutToStart(() -> 天圆地方$FINITE$physical = GeoFluidSetting.isFluidToBePhysical(this.天圆地方$FINITE$fluid));
     }
 
     /**
@@ -83,13 +84,10 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                                     final @Nonnull IBlockState state,
                                     final @Nonnull Random rand,
                                     final @Nonnull CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$FINITE$fluid)) return;
+        if(!天圆地方$FINITE$physical) return;
         ci.cancel();
         if(world.isRemote) return;
-        if(!GeoFluidSetting.hasGravity(world)){
-            return;
-        }
-        FluidUpdaterManager.schedule(world,pos, FluidTasks.CLASSIC_TASK,天圆地方$FINITE$fluid);
+        FluidTaskScheduler.schedule(world,pos, FluidTasks.CLASSIC_TASK,天圆地方$FINITE$fluid);
     }
 
     @Inject(method = "drain",at = @At("HEAD"),cancellable = true,remap = false)
@@ -97,7 +95,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                                 final @Nonnull BlockPos pos,
                                 final boolean doDrain,
                                 final @Nonnull CallbackInfoReturnable<FluidStack> cir) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$FINITE$fluid)) return;
+        if(!天圆地方$FINITE$physical) return;
         final FluidStack fluidStack = new FluidStack(this.getFluid(), MathHelper.floor((this.getQuantaPercentage(world, pos) * Fluid.BUCKET_VOLUME)));
 
         if (doDrain) {
@@ -116,7 +114,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                                 final @Nonnull FluidStack fluidStack,
                                 final boolean doPlace,
                                 final @Nonnull CallbackInfoReturnable<Integer> cir) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$FINITE$fluid)) return;
+        if(!天圆地方$FINITE$physical) return;
         cir.cancel();
         IBlockState existing = world.getBlockState(pos);
         float amountPerQuanta = Fluid.BUCKET_VOLUME / this.quantaPerBlockFloat;
@@ -149,9 +147,8 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
     private void 天圆地方$canDrain(final @Nonnull World world,
                                    final @Nonnull BlockPos pos,
                                    final @Nonnull CallbackInfoReturnable<Boolean> cir) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$FINITE$fluid)) return;
+        if(!天圆地方$FINITE$physical) return;
         cir.setReturnValue(true);
-        cir.cancel();
     }
 
     /**
@@ -179,7 +176,18 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
     @Override
     @Unique
     @SuppressWarnings("AddedMixinMembersNamePattern")
-    public boolean accepts(@Nonnull final IFluidTask task) {
-        return GeoFluidSetting.isFluidToBePhysical(天圆地方$FINITE$fluid);
+    public boolean accepts(@Nonnull final World world,@Nonnull final IBlockState state,@Nonnull final IFluidTask task) {
+        return 天圆地方$FINITE$physical;
+    }
+
+    @Override
+    @Unique
+    @SuppressWarnings("AddedMixinMembersNamePattern")
+    public void onStaleTask(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nonnull final IFluidTask task,
+                            @Nonnull final FluidTaskCollector collector) {
+        if(天圆地方$FINITE$physical) collector.schedule(FluidTasks.CLASSIC_TASK,天圆地方$FINITE$fluid);
     }
 }

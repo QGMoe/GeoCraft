@@ -39,10 +39,17 @@ import java.util.List;
  */
 public final class DeferredActions {
     private static final EnumMap<LoaderState, List<Runnable>> queues = new EnumMap<>(LoaderState.class);
+    private static final EnumMap<LoaderState, List<Runnable>> consumed = new EnumMap<>(LoaderState.class);
     private static final LoaderState[] states = LoaderState.values();
 
     private static void on(final @Nonnull LoaderState state,final @Nonnull Runnable runnable){
         final List<Runnable> list = queues.computeIfAbsent(state,(k->new ArrayList<>()));
+        list.add(runnable);
+    }
+
+    private static void consume(final @Nonnull LoaderState state,final @Nonnull Runnable runnable){
+        runnable.run();
+        final List<Runnable> list = consumed.computeIfAbsent(state,(k -> new ArrayList<>()));
         list.add(runnable);
     }
 
@@ -62,13 +69,49 @@ public final class DeferredActions {
         on(LoaderState.AVAILABLE,runnable);
     }
 
+    public static void onServerAboutToStart(final @Nonnull Runnable runnable){
+        on(LoaderState.SERVER_ABOUT_TO_START,runnable);
+    }
+
+    public static void onServerStarting(final @Nonnull Runnable runnable){
+        on(LoaderState.SERVER_STARTING,runnable);
+    }
+
+    public static void onServerStarted(final @Nonnull Runnable runnable){
+        on(LoaderState.SERVER_STARTED,runnable);
+    }
+
     public static void run(final @Nonnull LoaderState state){
-        if(state.ordinal() >= LoaderState.SERVER_ABOUT_TO_START.ordinal()) throw new IllegalArgumentException();
+        if(state.ordinal() >= LoaderState.ERRORED.ordinal()) throw new IllegalArgumentException();
+        if(state.ordinal() < LoaderState.SERVER_ABOUT_TO_START.ordinal()) runSingle(state);
+        else runMulti(state);
+    }
+
+    public static void restore(){
+        consumed.forEach((state,queue)->{
+            queues.get(state).addAll(queue);
+            queue.clear();
+        });
+    }
+
+    private static void runSingle(final @Nonnull LoaderState state){
         for(int i=0;i<=state.ordinal();i++){
             final LoaderState s = states[i];
             final List<Runnable> queue = queues.get(s);
             if(queue != null){
                 queue.forEach(Runnable::run);
+                queue.clear();
+            }
+        }
+    }
+
+    private static void runMulti(final @Nonnull LoaderState state){
+        runSingle(LoaderState.AVAILABLE);
+        for(int i=LoaderState.SERVER_ABOUT_TO_START.ordinal();i<=state.ordinal();i++){
+            final LoaderState s = states[i];
+            final List<Runnable> queue = queues.get(s);
+            if(queue != null){
+                queue.forEach(r -> consume(state,r));
                 queue.clear();
             }
         }

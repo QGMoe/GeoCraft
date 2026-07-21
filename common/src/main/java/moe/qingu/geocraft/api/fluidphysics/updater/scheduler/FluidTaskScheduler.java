@@ -25,20 +25,21 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.fluidphysics.updater.manager;
+package moe.qingu.geocraft.api.fluidphysics.updater.scheduler;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import moe.qingu.geocraft.api.GeoCraftAPI;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
-import moe.qingu.geocraft.handler.CapabilityHandler;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fluids.Fluid;
 
@@ -48,12 +49,13 @@ import javax.annotation.Nullable;
 /**
  * @author QGMoe
  */
-public abstract class FluidUpdaterManager implements ICapabilityProvider {
-    public static final ResourceLocation ID = new ResourceLocation(GeoCraftAPI.MODID,"fluid_updater_manager");
-    private static final Int2ObjectOpenHashMap<FluidUpdaterManager> managers = new Int2ObjectOpenHashMap<>();
+public abstract class FluidTaskScheduler implements ICapabilityProvider {
+    public static final ResourceLocation ID = new ResourceLocation(GeoCraftAPI.MODID,"fluid_task_scheduler");
+    public static @CapabilityInject(FluidTaskScheduler.class) Capability<FluidTaskScheduler> FLUID_TASK_SCHEDULER;
+    private static final Int2ObjectOpenHashMap<FluidTaskScheduler> schedulers = new Int2ObjectOpenHashMap<>();
     protected final World world;
 
-    protected FluidUpdaterManager(final @Nonnull World world) {
+    protected FluidTaskScheduler(final @Nonnull World world) {
         this.world = world;
     }
 
@@ -82,13 +84,13 @@ public abstract class FluidUpdaterManager implements ICapabilityProvider {
 
     @Override
     public final boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.FLUID_UPDATER_MANAGER;
+        return capability == FLUID_TASK_SCHEDULER;
     }
 
     @Nullable
     @Override
     public final <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.FLUID_UPDATER_MANAGER ? CapabilityHandler.FLUID_UPDATER_MANAGER.cast(this):null;
+        return capability == FLUID_TASK_SCHEDULER ? FLUID_TASK_SCHEDULER.cast(this):null;
     }
 
     /* ------------------
@@ -96,34 +98,34 @@ public abstract class FluidUpdaterManager implements ICapabilityProvider {
        ------------------ */
 
     public static void onServerStop(){
-        managers.clear();
+        schedulers.clear();
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public static void onWorldTick(@Nonnull final WorldServer world){
-        final FluidUpdaterManager manager = getManager(world);
-        if(manager == null) return;
-        manager.update();
+        final FluidTaskScheduler scheduler = getScheduler(world);
+        if(scheduler == null) return;
+        scheduler.update();
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public static void schedule(final @Nonnull World world,final @Nonnull BlockPos pos, final @Nonnull IFluidTask task, final @Nonnull Fluid fluid){
-        final FluidUpdaterManager manager = getManager(world);
-        if(manager != null) manager.schedule(pos, task, fluid);
+        final FluidTaskScheduler scheduler = getScheduler(world);
+        if(scheduler != null) scheduler.schedule(pos, task, fluid);
     }
 
     @Nullable
-    public static FluidUpdaterManager getManager(final @Nonnull World world){
-        @Nullable FluidUpdaterManager manager = managers.get(world.provider.getDimension());
+    public static FluidTaskScheduler getScheduler(final @Nonnull World world){
+        @Nullable FluidTaskScheduler manager = schedulers.get(world.provider.getDimension());
         if(manager != null) return manager;
-        if(world.hasCapability(CapabilityHandler.FLUID_UPDATER_MANAGER,null)){
-            managers.put(world.provider.getDimension(),manager = world.getCapability(CapabilityHandler.FLUID_UPDATER_MANAGER,null));
+        if(world.hasCapability(FLUID_TASK_SCHEDULER,null)){
+            schedulers.put(world.provider.getDimension(),manager = world.getCapability(FLUID_TASK_SCHEDULER,null));
             return manager;
         }else return null;
     }
 
     @Nonnull
-    public static Int2ObjectOpenHashMap<FluidUpdaterManager> getManagers() {
-        return managers;
+    public static Int2ObjectMap<FluidTaskScheduler> getSchedulers() {
+        return schedulers;
     }
 }

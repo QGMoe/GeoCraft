@@ -29,10 +29,12 @@ package moe.qingu.geocraft.mixin.finite.compat.immersiveengineering;
 
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluid;
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluidConcrete;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskCollector;
+import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskAcceptor;
-import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskResponder;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -50,24 +52,43 @@ import javax.annotation.Nonnull;
 import java.util.Random;
 
 @Mixin(value = BlockIEFluidConcrete.class,remap = false)
-public class BlockIEFluidConcreteMixin extends BlockIEFluid implements IFluidTaskAcceptor {
+public class BlockIEFluidConcreteMixin extends BlockIEFluid implements IFluidTaskResponder {
 
-    public BlockIEFluidConcreteMixin(String name, Fluid fluid, Material material) {
+    @Unique private boolean 天圆地方$FINITE$沉浸工程$physical = true;
+
+    public BlockIEFluidConcreteMixin(final @Nonnull String name,final @Nonnull Fluid fluid,final @Nonnull Material material) {
         super(name, fluid, material);
+    }
+
+    @Inject(method = "Lblusunrize/immersiveengineering/common/blocks/BlockIEFluidConcrete;<init>(Ljava/lang/String;Lnet/minecraftforge/fluids/Fluid;Lnet/minecraft/block/material/Material;)V",
+            at = @At("TAIL"))
+    private void 天圆地方$FINITE$init(final @Nonnull String name,final @Nonnull Fluid fluid,final @Nonnull Material material,final @Nonnull CallbackInfo ci) {
+        DeferredActions.onServerAboutToStart(() -> 天圆地方$FINITE$沉浸工程$physical = GeoFluidSetting.isFluidToBePhysical(FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid));
     }
 
     @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true,remap = true)
     public void updateTick(final World world,final BlockPos pos,final IBlockState state,final Random rand,final CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid)) return;
+        if(!天圆地方$FINITE$沉浸工程$physical) return;
         ci.cancel();
         if(world.isRemote) return;
-        FluidUpdaterManager.schedule(world,pos, FluidTasks.IE_CONCRETE_TASK, FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid);
+        FluidTaskScheduler.schedule(world,pos, FluidTasks.IE_CONCRETE_TASK, FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid);
     }
 
     @Override
     @Unique
     @SuppressWarnings("AddedMixinMembersNamePattern")
-    public boolean accepts(@Nonnull final IFluidTask task) {
-        return task == FluidTasks.IE_CONCRETE_TASK;
+    public boolean accepts(@Nonnull final World world,@Nonnull final IBlockState state,@Nonnull final IFluidTask task) {
+        return 天圆地方$FINITE$沉浸工程$physical && task == FluidTasks.IE_CONCRETE_TASK;
+    }
+
+    @Override
+    @Unique
+    @SuppressWarnings("AddedMixinMembersNamePattern")
+    public void onStaleTask(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nonnull final IFluidTask task,
+                            @Nonnull final FluidTaskCollector collector) {
+        if(天圆地方$FINITE$沉浸工程$physical) collector.schedule(FluidTasks.IE_CONCRETE_TASK,FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid);
     }
 }

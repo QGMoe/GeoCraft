@@ -64,10 +64,9 @@ import java.util.Random;
 public class BlockStaticLiquidMixin extends BlockLiquid implements ILayeredFluidHostFiniteLiquid {
 //    @Unique
 //    private static final boolean 天圆地方$debug = false;
-    @Unique
-    private FiniteFlowingVanilla 天圆地方$FINITE$flowingHandler;
-    @Unique
-    private final ThreadLocal<Boolean> 天圆地方$curRandomTick = ThreadLocal.withInitial(()->Boolean.FALSE);
+    @Unique private FiniteFlowingVanilla 天圆地方$FINITE$flowingHandler;
+    @Unique private final ThreadLocal<Boolean> 天圆地方$curRandomTick = ThreadLocal.withInitial(()->Boolean.FALSE);
+    @Unique private boolean 天圆地方$FINITE$physical = true;
 
     protected BlockStaticLiquidMixin(final @Nonnull Material materialIn) {
         super(materialIn);
@@ -78,7 +77,9 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements ILayeredFluid
      */
     @Inject(method = "<init>",at = @At("TAIL"))
     private void 天圆地方$FINITE$init(final @Nonnull Material material,final @Nonnull CallbackInfo ci) {
-        DeferredActions.onInit(() -> this.天圆地方$FINITE$flowingHandler = FiniteFlowingVanilla.getFlowingByMaterial(this.material));
+        this.setTickRandomly(true);
+        DeferredActions.onInited(() -> this.天圆地方$FINITE$flowingHandler = FiniteFlowingVanilla.getFlowingByMaterial(this.material));
+        DeferredActions.onServerAboutToStart(()-> this.天圆地方$FINITE$physical = GeoFluidSetting.isFluidToBePhysical(天圆地方$FINITE$flowingHandler.fluid));
     }
 
 
@@ -101,14 +102,10 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements ILayeredFluid
         if(ServerStatusMonitor.isServerCloselyLagging()) ci.cancel();
     }
 
-    @Inject(method = "<init>",at = @At("RETURN"))
-    private void 天圆地方$onInit(Material materialIn, CallbackInfo ci) {
-        this.setTickRandomly(true);
-    }
     @Inject(method = "updateTick",at = @At("TAIL"))
     public void 天圆地方$updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
         if(worldIn.isRemote) return;
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$FINITE$flowingHandler.fluid)) return;
+        if(!天圆地方$FINITE$physical) return;
         if(!天圆地方$isValidState(worldIn,pos,state)) return;
         if(!天圆地方$FINITE$flowingHandler.canFlow(worldIn, pos, state)){
             // *******
@@ -183,7 +180,7 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements ILayeredFluid
     private void updateLiquid(World worldIn, BlockPos pos, IBlockState state) {}
 
     //*********
-    // 透水方块
+    // 载流方块
     //*********
 
     @Nonnull
