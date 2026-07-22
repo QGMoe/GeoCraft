@@ -29,9 +29,9 @@ package moe.qingu.geocraft.command;
 
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import moe.qingu.geocraft.api.command.node.FluidTaskNode;
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import moe.qingu.nickel.command.builder.execute.CommandExecutor;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import net.minecraft.block.state.IBlockState;

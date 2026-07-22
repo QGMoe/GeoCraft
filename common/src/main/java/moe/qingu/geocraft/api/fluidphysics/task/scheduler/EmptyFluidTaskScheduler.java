@@ -25,23 +25,35 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.finite.update;
+package moe.qingu.geocraft.api.fluidphysics.task.scheduler;
 
-import moe.qingu.geocraft.api.util.ModIDs;
-import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
-import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
-import net.minecraftforge.fml.common.Loader;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author QGMoe
  */
-public final class FiniteFluidTasks {
-    public static void load(){
-        FluidTasks.WATER_TASK = new FiniteFluidVanillaFluidTask(FiniteFlowings.WATER_FLOW);
-        FluidTasks.LAVA_TASK = new FiniteFluidVanillaFluidTask(FiniteFlowings.LAVA_FLOW);
-        FluidTasks.CLASSIC_TASK = new FiniteFluidClassicFluidTask();
-        if(Loader.isModLoaded(ModIDs.IMMERSIVE_ENGINEERING)) FluidTasks.IE_CONCRETE_TASK = new FiniteIEConcreteFluidTask();
+public final class EmptyFluidTaskScheduler extends FluidTaskScheduler {
+    public EmptyFluidTaskScheduler(@Nonnull final World world) {
+        super(world);
     }
 
-    private FiniteFluidTasks(){}
+    @Override
+    public boolean schedule(@Nonnull final BlockPos pos, @Nonnull final IFluidTask task, @Nonnull final Fluid fluid) {
+        return false;
+    }
+
+    @Override
+    public void update() {}
+
+    @Nullable
+    @Override
+    public IFluidTask query(@Nonnull final BlockPos pos) {
+        return null;
+    }
 }

@@ -28,7 +28,7 @@
 package moe.qingu.geocraft.geography.fluidphysics.classic.update;
 
 import moe.qingu.geocraft.api.util.ModIDs;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.vanilla.update.VanillaFluidClassicFluidTask;
 import net.minecraftforge.fml.common.Loader;
 

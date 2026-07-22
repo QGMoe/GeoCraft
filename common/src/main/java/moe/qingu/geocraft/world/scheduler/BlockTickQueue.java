@@ -25,18 +25,17 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.updater;
-
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+package moe.qingu.geocraft.world.scheduler;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
 
 /**
  * @author QGMoe
  */
-public abstract class FluidTaskQueue {
+@SuppressWarnings("OctalInteger")
+abstract class BlockTickQueue {
+    long baseTime;
 
     public boolean isEmpty(){
         return size() == 0;
@@ -44,18 +43,17 @@ public abstract class FluidTaskQueue {
 
     public abstract int size();
 
-    public abstract void queue(final int cx,final int cy,final int cz,final int taskID);
+    public abstract void queue(final int cx,final int cy,final int cz,final int blockID,final long delay,final int priority);
 
-    public void queue(final int task){
-        queue((task>>>4)&0xF,task>>>24,task & 0xF, (short) ((task>>>8)&0xFFFF));
+    public void queue(final long tick){
+        queue((int) ((tick>>>4)&0xF), (int) ((tick>>>20)&0xFF), (int) (tick&0xF), (int) ((tick>>>8)&0_7777),tick>>>32, (int) ((tick>>>28)*0xF));
     }
 
-    @Nullable
-    public abstract IFluidTask query(final int cx,final int cy,final int cz);
+    public abstract boolean contains(final int cx,final int cy,final int cz,final int blockID);
 
-    public abstract boolean contains(final int cx,final int cy,final int cz);
+    public abstract int forNext(final long worldTotalTime,final @Nonnull BlockTickConsumer consumer,final @Nonnull long[] temp);
 
-    public abstract int forNext(final @Nonnull FluidTaskConsumer consumer);
+    public abstract void forEach(final @Nonnull LongConsumer consumer);
 
-    public abstract void forEach(final @Nonnull IntConsumer consumer);
+    public abstract void updateBaseTime(final long newBaseTime);
 }

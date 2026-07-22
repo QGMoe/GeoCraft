@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.handler.event;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;

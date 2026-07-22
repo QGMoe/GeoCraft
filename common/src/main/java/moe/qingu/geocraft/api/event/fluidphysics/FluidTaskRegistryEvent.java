@@ -34,5 +34,7 @@ import net.minecraftforge.fml.common.eventhandler.Event;
  */
 public class FluidTaskRegistryEvent extends Event {
 
+    public static class Register extends FluidTaskRegistryEvent {}
+
     public static class Freeze extends FluidTaskRegistryEvent {}
 }

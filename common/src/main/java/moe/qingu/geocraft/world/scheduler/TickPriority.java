@@ -25,23 +25,28 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.finite.update;
-
-import moe.qingu.geocraft.api.util.ModIDs;
-import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
-import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
-import net.minecraftforge.fml.common.Loader;
+package moe.qingu.geocraft.world.scheduler;
 
 /**
  * @author QGMoe
  */
-public final class FiniteFluidTasks {
-    public static void load(){
-        FluidTasks.WATER_TASK = new FiniteFluidVanillaFluidTask(FiniteFlowings.WATER_FLOW);
-        FluidTasks.LAVA_TASK = new FiniteFluidVanillaFluidTask(FiniteFlowings.LAVA_FLOW);
-        FluidTasks.CLASSIC_TASK = new FiniteFluidClassicFluidTask();
-        if(Loader.isModLoaded(ModIDs.IMMERSIVE_ENGINEERING)) FluidTasks.IE_CONCRETE_TASK = new FiniteIEConcreteFluidTask();
-    }
+public enum TickPriority {
+    FOREMOST,
+    VERY_FIRST,
+    FIRST,
+    EXTREMELY_HIGH,
+    VERY_HIGH,
+    HIGH,
+    SLIGHTLY_HIGH,
+    ABOVE_MIDDLE,
+    BELOW_MIDDLE,
+    SLIGHTLY_LOW,
+    LOW,
+    VERY_LOW,
+    EXTREMELY_LOW,
+    LAST,
+    VERY_LAST,
+    HINDMOST;
 
-    private FiniteFluidTasks(){}
+    public static final TickPriority DEFAULT = ABOVE_MIDDLE;
 }

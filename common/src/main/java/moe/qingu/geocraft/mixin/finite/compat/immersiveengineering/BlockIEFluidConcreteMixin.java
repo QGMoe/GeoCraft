@@ -29,12 +29,12 @@ package moe.qingu.geocraft.mixin.finite.compat.immersiveengineering;
 
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluid;
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluidConcrete;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskCollector;
+import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskCollector;
 import moe.qingu.geocraft.api.util.DeferredActions;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskResponder;
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTaskResponder;
+import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;

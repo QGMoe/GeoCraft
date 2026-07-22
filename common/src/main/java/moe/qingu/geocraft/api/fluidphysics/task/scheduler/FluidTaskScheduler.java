@@ -25,12 +25,13 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.fluidphysics.updater.scheduler;
+package moe.qingu.geocraft.api.fluidphysics.task.scheduler;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import moe.qingu.geocraft.api.GeoCraftAPI;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import net.minecraft.block.state.IBlockState;
@@ -73,7 +74,7 @@ public abstract class FluidTaskScheduler implements ICapabilityProvider {
     /**
      * 计划一个流体任务
      * @param pos 位置
-     * @param task 流体任务，必须已经在 {@link moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry} 中注册
+     * @param task 流体任务，必须已经在 {@link FluidTaskRegistry} 中注册
      * @param fluid 流体，最好是 {@link net.minecraftforge.fluids.FluidRegistry} 中已经注册的实例
      * @return 是否成功计划
      * @apiNote 任务需要根据位置去重

@@ -25,46 +25,37 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.event.fluidphysics;
+package moe.qingu.geocraft.geography.fluidphysics.scheduler;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.eventhandler.Event;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
+import java.util.function.IntConsumer;
 
 /**
  * @author QGMoe
  */
-public class FluidUpdaterManagerEvent extends Event {
-    private final World world;
+public abstract class FluidTaskQueue {
 
-    public FluidUpdaterManagerEvent(final @Nonnull World world) {
-        this.world = world;
+    public boolean isEmpty(){
+        return size() == 0;
     }
 
-    @Nonnull
-    public final World getWorld() {
-        return world;
+    public abstract int size();
+
+    public abstract void queue(final int cx,final int cy,final int cz,final int taskID);
+
+    public void queue(final int task){
+        queue((task>>>4)&0xF,task>>>24,task & 0xF, (short) ((task>>>8)&0xFFFF));
     }
 
-    @HasResult
-    public static class Create extends FluidUpdaterManagerEvent{
-        private Supplier<FluidTaskScheduler> candidate;
+    @Nullable
+    public abstract IFluidTask query(final int cx,final int cy,final int cz);
 
-        public Create(@Nonnull final World world) {
-            super(world);
-        }
+    public abstract boolean contains(final int cx,final int cy,final int cz);
 
-        public final void setCandidate(final Supplier<FluidTaskScheduler> candidate) {
-            this.candidate = candidate;
-        }
+    public abstract int forNext(final @Nonnull FluidTaskConsumer consumer);
 
-        @Nullable
-        public Supplier<FluidTaskScheduler> getCandidate() {
-            return candidate;
-        }
-    }
+    public abstract void forEach(final @Nonnull IntConsumer consumer);
 }

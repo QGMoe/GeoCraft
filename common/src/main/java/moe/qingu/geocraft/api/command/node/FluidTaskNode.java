@@ -27,8 +27,8 @@
 
 package moe.qingu.geocraft.api.command.node;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;

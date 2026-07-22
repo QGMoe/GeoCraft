@@ -27,12 +27,12 @@
 
 package moe.qingu.geocraft.mixin.classic;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskCollector;
+import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskCollector;
 import moe.qingu.geocraft.api.util.DeferredActions;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskResponder;
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTaskResponder;
+import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;

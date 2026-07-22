@@ -29,11 +29,11 @@ package moe.qingu.geocraft.handler.event;
 
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.event.EventFactory;
-import moe.qingu.geocraft.api.event.fluidphysics.FluidUpdaterManagerEvent;
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.EmptyFluidTaskScheduler;
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
-import moe.qingu.geocraft.geography.fluidphysics.updater.ChunkyFluidTaskScheduler;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdater;
+import moe.qingu.geocraft.api.event.fluidphysics.FluidTaskSchedulerEvent;
+import moe.qingu.geocraft.api.fluidphysics.task.scheduler.EmptyFluidTaskScheduler;
+import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.geography.fluidphysics.scheduler.ChunkyFluidTaskScheduler;
+import moe.qingu.geocraft.geography.fluidphysics.scheduler.ChunkyFluidTaskDatum;
 import moe.qingu.geocraft.handler.CapabilityHandler;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -55,7 +55,7 @@ import java.util.function.Supplier;
 public final class FluidPhysicsEventHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void createFluidUpdaterManager(final @Nonnull FluidUpdaterManagerEvent.Create event){
+    public static void createFluidTaskScheduler(final @Nonnull FluidTaskSchedulerEvent.Create event){
         if(event.getCandidate() == null && !event.getWorld().isRemote && event.getResult() != Event.Result.ALLOW){
             final World world = event.getWorld();
             event.setCandidate(() -> new ChunkyFluidTaskScheduler(world));
@@ -66,23 +66,23 @@ public final class FluidPhysicsEventHandler {
     @SubscribeEvent
     public static void onChunkLoad(final @Nonnull ChunkEvent.Load event){
         final Chunk chunk = event.getChunk();
-        final FluidUpdater updater = chunk.getCapability(CapabilityHandler.FLUID_UPDATER,null);
-        if(updater == null || !updater.hasLeft()) return;
-        final ChunkyFluidTaskScheduler manager = ChunkyFluidTaskScheduler.getChunkyScheduler(event.getWorld());
-        if(manager == null || manager.getWorld() != event.getWorld()) return;
+        final ChunkyFluidTaskDatum datum = chunk.getCapability(CapabilityHandler.CHUNKY_FLUID_TASK_DATA,null);
+        if(datum == null || !datum.hasLeft()) return;
+        final ChunkyFluidTaskScheduler scheduler = ChunkyFluidTaskScheduler.getChunkyScheduler(event.getWorld());
+        if(scheduler == null || scheduler.getWorld() != event.getWorld()) return;
         final long pos = ChunkPos.asLong(chunk.x,chunk.z);
-        manager.getUpdaters().put(pos,updater);
-        manager.getSchedules().add(pos);
+        scheduler.getData().put(pos,datum);
+        scheduler.getSchedules().add(pos);
     }
 
     @SubscribeEvent
     public static void onChunkUnload(final @Nonnull ChunkEvent.Unload event){
-        final ChunkyFluidTaskScheduler manager = ChunkyFluidTaskScheduler.getChunkyScheduler(event.getWorld());
-        if(manager == null || manager.getWorld() != event.getWorld()) return;
+        final ChunkyFluidTaskScheduler scheduler = ChunkyFluidTaskScheduler.getChunkyScheduler(event.getWorld());
+        if(scheduler == null || scheduler.getWorld() != event.getWorld()) return;
         final Chunk chunk = event.getChunk();
         final long pos = ChunkPos.asLong(chunk.x,chunk.z);
-        manager.getSchedules().remove(pos);
-        manager.getUpdaters().remove(pos);
+        scheduler.getSchedules().remove(pos);
+        scheduler.getData().remove(pos);
     }
 
     public static void onWorldAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<World> event,final @Nonnull World world){
@@ -91,6 +91,6 @@ public final class FluidPhysicsEventHandler {
     }
 
     public static void onChunkAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<Chunk> event,final @Nonnull World world){
-        if(ChunkyFluidTaskScheduler.getChunkyScheduler(world) != null) event.addCapability(FluidUpdater.ID, new FluidUpdater());
+        if(ChunkyFluidTaskScheduler.getChunkyScheduler(world) != null) event.addCapability(ChunkyFluidTaskDatum.ID, new ChunkyFluidTaskDatum());
     }
 }

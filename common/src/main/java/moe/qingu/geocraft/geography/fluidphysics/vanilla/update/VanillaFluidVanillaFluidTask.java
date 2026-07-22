@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.vanilla.update;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockStaticLiquid;

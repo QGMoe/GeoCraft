@@ -25,34 +25,18 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.fluidphysics.updater.task;
+package moe.qingu.geocraft.api.fluidphysics.task;
 
-import moe.qingu.geocraft.api.util.ModIDs;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
+import moe.qingu.geocraft.api.util.annotation.ThreadType;
+import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
-import java.util.Random;
 
 /**
  * @author QGMoe
  */
-public final class EmptyFluidTask implements IFluidTask{
-    public static final ResourceLocation ID = new ResourceLocation(ModIDs.MC,"empty");
-    public static final EmptyFluidTask INSTANCE = new EmptyFluidTask();
-
-    private EmptyFluidTask(){}
-
-    @Override
-    public void onUpdate(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {}
-
-    @Override
-    public void onFailure(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {}
-
-    @Override
-    public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state) {
-        return false;
-    }
+public abstract class FluidTaskCollector {
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public abstract void schedule(final @Nonnull IFluidTask task, final @Nonnull Fluid fluid);
 }

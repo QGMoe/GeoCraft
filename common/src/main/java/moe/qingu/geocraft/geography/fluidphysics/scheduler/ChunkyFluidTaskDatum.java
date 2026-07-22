@@ -25,73 +25,42 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.updater;
+package moe.qingu.geocraft.geography.fluidphysics.scheduler;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import moe.qingu.geocraft.GeoCraft;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskResponder;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
-import moe.qingu.geocraft.api.util.math.vec.MBlockPos;
 import moe.qingu.geocraft.handler.CapabilityHandler;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.ref.SoftReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author QGMoe
  */
-public final class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
-    public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"fluid_updater");
+public final class ChunkyFluidTaskDatum implements ICapabilitySerializable<NBTTagCompound> {
+    public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"ft_datum");
     public static final int SWITCH_ARRAY_THRESHOLD = 200;
     public static final int SWITCH_LINEAR_THRESHOLD = 60;
     private static final ThreadLocal<IntOpenHashSet> TEMP = ThreadLocal.withInitial(IntOpenHashSet::new);
-    private final ReentrantLock lock = new ReentrantLock();
     private final AtomicBoolean dirty = new AtomicBoolean(false);
-    private final Consumer consumer = new Consumer();
-    private FluidTaskQueue queueHeavy = null;
-    private FluidTaskQueue queueLight = null;
-    private volatile NBTTagCompound save = new NBTTagCompound();
-
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    int update(final @Nonnull MBlockPos container, final @Nonnull Chunk chunk, final @Nonnull ChunkyFluidTaskScheduler.ChunkyCollector collector){
-        lock.lock();
-        try {
-            int count = 0;
-            consumer.chunk = chunk;
-            consumer.posContainer = container;
-            consumer.collector = collector;
-            if(consumer.flip){
-                if(queueLight != null) count += queueLight.forNext(consumer);
-                consumer.flip = false;
-                if(queueHeavy != null) count += queueHeavy.forNext(consumer);
-            }else {
-                if(queueHeavy != null) count += queueHeavy.forNext(consumer);
-                consumer.flip = true;
-                if(queueLight != null) count += queueLight.forNext(consumer);
-            }
-            return count;
-        }finally {
-            consumer.clear();
-            lock.unlock();
-        }
-    }
+    private volatile SoftReference<NBTTagCompound> save = new SoftReference<>(new NBTTagCompound());
+    final ReentrantLock lock = new ReentrantLock();
+    boolean flip = false;
+    FluidTaskQueue queueHeavy = null;
+    FluidTaskQueue queueLight = null;
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public boolean isScheduled(final int chunkX,final int chunkY,final int chunkZ){
@@ -141,22 +110,24 @@ public final class FluidUpdater implements ICapabilitySerializable<NBTTagCompoun
 
     @Override
     @Nonnull
-    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS,ThreadType.FLUID_DAEMON})
+    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS,ThreadType.GEO_MISC_DAEMON})
     public NBTTagCompound serializeNBT() {
-        if(isDirty()){
+        final @Nullable NBTTagCompound cache;
+        if(isDirty() || (cache = this.save.get()) == null){
             lock.lock();
             try {
-                this.save = new NBTTagCompound();
-                save.setInteger("v",1);
-                if(queueHeavy != null) save.setTag("heavy",serialize(queueHeavy));
-                if(queueLight != null) save.setTag("light",serialize(queueLight));
-                return this.save;
+                final NBTTagCompound s = new NBTTagCompound();
+                s.setInteger("v",1);
+                if(queueHeavy != null) s.setTag("heavy",serialize(queueHeavy));
+                if(queueLight != null) s.setTag("light",serialize(queueLight));
+                this.save = new SoftReference<>(s);
+                return s;
             }finally {
                 this.clearDirty();
                 lock.unlock();
             }
         }
-        return this.save;
+        return cache;
     }
 
     @Override
@@ -186,13 +157,13 @@ public final class FluidUpdater implements ICapabilitySerializable<NBTTagCompoun
 
     @Override
     public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.FLUID_UPDATER;
+        return capability == CapabilityHandler.CHUNKY_FLUID_TASK_DATA;
     }
 
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.FLUID_UPDATER? CapabilityHandler.FLUID_UPDATER.cast(this):null;
+        return capability == CapabilityHandler.CHUNKY_FLUID_TASK_DATA ? CapabilityHandler.CHUNKY_FLUID_TASK_DATA.cast(this):null;
     }
 
     /* -------------------------------
@@ -235,72 +206,5 @@ public final class FluidUpdater implements ICapabilitySerializable<NBTTagCompoun
             current.forEach(queue::queue);
             return queue;
         }else return current;
-    }
-
-    private static final class Consumer extends FluidTaskConsumer{
-
-        private Chunk chunk;
-        private MBlockPos posContainer;
-        private ChunkyFluidTaskScheduler.ChunkyCollector collector;
-        private boolean flip = false;
-
-        void clear(){
-            this.chunk = null;
-            this.posContainer = null;
-            this.collector = null;
-        }
-
-        void prepareForResponder(final int x,final int y,final int z){
-            posContainer.setPos((chunk.x << 4) + x, y, (chunk.z << 4) + z);
-            collector.x = x;
-            collector.y = y;
-            collector.z = z;
-        }
-
-        @Override
-        public void consume(final int x, int y, final int z, @Nonnull final IFluidTask task) {
-            if(flip) y = 255-y;
-            final @Nullable ExtendedBlockStorage storage = chunk.getBlockStorageArray()[y>>4];
-            if(storage != Chunk.NULL_BLOCK_STORAGE){
-                final IBlockState state = storage.get(x,y & 0xF,z);
-                final World world = chunk.getWorld();
-                try {
-                    final Block block = state.getBlock();
-                    final IFluidTaskResponder responder = block instanceof IFluidTaskResponder ?(IFluidTaskResponder) block:null;
-                    if (!task.accepts(world, state)){
-                        if(responder != null) {
-                            prepareForResponder(x,y,z);
-                            responder.onStaleTask(world,posContainer,state,task,collector);
-                        }
-                        return;
-                    }
-
-                    if (responder != null && !responder.accepts(world,state,task)){
-                        prepareForResponder(x,y,z);
-                        responder.onRefused(world,posContainer,state,task,collector);
-                        return;
-                    }
-                    posContainer.setPos((chunk.x << 4) + x, y, (chunk.z << 4) + z);
-                }catch (final Throwable t){
-                    final Logger logger = GeoCraft.getLogger();
-                    logger.warn("When preparing update fluid {} at {} in world {},",state,posContainer,world.provider.getDimension());
-                    logger.warn("FluidUpdater caught an error:",t);
-                    return;
-                }
-                try {
-                    task.onUpdate(world,state,posContainer,world.rand);
-                } catch (final Throwable t) {
-                    final Logger logger = GeoCraft.getLogger();
-                    logger.warn("When updating fluid {} at {} in world {},",state,posContainer,world.provider.getDimension());
-                    logger.warn("FluidUpdater caught an error:",t);
-                    try {
-                        task.onFailure(world,state,posContainer,world.rand);
-                    }catch (final Throwable t2){
-                        logger.error("When restoring failure of fluid {} at {} in world {},",state,posContainer,world.provider.getDimension());
-                        logger.error("FluidUpdater caught an error:",t2);
-                    }
-                }
-            }
-        }
     }
 }

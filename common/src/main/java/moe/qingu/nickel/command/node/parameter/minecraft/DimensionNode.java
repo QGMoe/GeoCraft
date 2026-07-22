@@ -84,6 +84,7 @@ public class DimensionNode extends TokenizeParameterNode.Single<World> {
 
     @Override
     public boolean accepts(@Nonnull final String arg, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
+        if("~".equalsIgnoreCase(arg)) return true;
         CommandBase.parseInt(arg);
         return true;
     }

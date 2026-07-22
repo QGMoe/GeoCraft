@@ -25,9 +25,11 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.updater;
+package moe.qingu.geocraft.geography;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.geography.fluidphysics.scheduler.ChunkyFluidTaskDatum;
+import moe.qingu.geocraft.geography.fluidphysics.scheduler.ChunkyFluidTaskScheduler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -38,17 +40,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * @author QGMoe
  */
-public final class FluidDaemon implements Runnable {
-    public static final String THREAD_NAME = "GeoFluidDaemon";
-    private static FluidDaemon daemon;
+public final class GeoMiscDaemon implements Runnable {
+    public static final String THREAD_NAME = "GeoMiscDaemon";
+    private static GeoMiscDaemon daemon;
     private static Thread thread;
     private volatile boolean running;
 
-    private FluidDaemon(){}
+    private GeoMiscDaemon(){}
 
     public static void start(){
         stop();
-        daemon = new FluidDaemon();
+        daemon = new GeoMiscDaemon();
         daemon.running = true;
         thread = new Thread(daemon , THREAD_NAME);
         thread.setDaemon(true);
@@ -99,19 +101,20 @@ public final class FluidDaemon implements Runnable {
             }catch (final IndexOutOfBoundsException e){  //Fastutil的多线程错误
                 continue;
             }
-            final ConcurrentLinkedQueue<FluidUpdater> dirties = scheduler.getDirties();
+            final ConcurrentLinkedQueue<ChunkyFluidTaskDatum> dirties = scheduler.getDirties();
             final int size = dirties.size();
             int cot = 0;
             while (cot++ < size){
                 if(dirties.isEmpty()) break;
-                final FluidUpdater updater = dirties.poll();
-                if(updater.getLock().tryLock()){
+                final ChunkyFluidTaskDatum datum = dirties.poll();
+                if(!datum.isDirty()) continue;
+                if(datum.getLock().tryLock()){
                     try {
-                        updater.serializeNBT();
+                        datum.serializeNBT();
                     }finally {
-                        updater.getLock().unlock();
+                        datum.getLock().unlock();
                     }
-                }else dirties.add(updater);
+                }else dirties.add(datum);
             }
         }
     }

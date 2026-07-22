@@ -28,6 +28,7 @@
 package moe.qingu.geocraft.api.util.annotation;
 
 import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager;
+import moe.qingu.geocraft.geography.GeoMiscDaemon;
 
 /**
  * @since 0.1
@@ -51,9 +52,9 @@ public final class ThreadType {
     public static final int CHUNK_IO_THREADS = 5;
     /**
      * @since 0.3.0-alpha.1
-     * @see moe.qingu.geocraft.geography.fluidphysics.updater.FluidDaemon
+     * @see GeoMiscDaemon
      */
-    public static final int FLUID_DAEMON = 6;
+    public static final int GEO_MISC_DAEMON = 6;
 
     private ThreadType(){}
 }

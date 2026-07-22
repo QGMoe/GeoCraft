@@ -25,18 +25,55 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.fluidphysics.updater.task;
+package moe.qingu.geocraft.world.scheduler;
 
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
-import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author QGMoe
  */
-public abstract class FluidTaskCollector {
+public final class BlockTickDatum {
+    private final AtomicBoolean dirty = new AtomicBoolean(false);
+    final ReentrantLock lock = new ReentrantLock();
+    BlockTickQueue queue = null;
+
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public abstract void schedule(final @Nonnull IFluidTask task, final @Nonnull Fluid fluid);
+    public void schedule(final long worldTotalTime,final int cx, final int cy, final int cz, final int blockID, final long delay, final @Nonnull TickPriority priority){
+        if(queue == null){
+            queue = new HeapBlockTickQueue();
+            queue.baseTime = worldTotalTime;
+        }else if(worldTotalTime - queue.baseTime > 2147483647L) queue.updateBaseTime(worldTotalTime);
+        queue.queue(cx,cy,cz,blockID,worldTotalTime+delay-queue.baseTime,priority.ordinal());
+    }
+
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public boolean isScheduled(final int cx,final int cy,final int cz,final int blockID){
+        return queue != null && queue.contains(cx, cy, cz, blockID);
+    }
+
+    /* -------------------------------
+              Getter And Setter
+       ------------------------------- */
+
+    public boolean isDirty() {
+        return dirty.get();
+    }
+
+    @Nonnull
+    public ReentrantLock getLock() {
+        return lock;
+    }
+
+    public boolean markDirty(){
+        return dirty.compareAndSet(false,true);
+    }
+
+    public void clearDirty(){
+        dirty.set(false);
+    }
 }

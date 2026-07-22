@@ -29,7 +29,7 @@ package moe.qingu.geocraft.api.command;
 
 import moe.qingu.geocraft.api.command.builder.AtmosphereAccessorBuilder;
 import moe.qingu.geocraft.api.command.node.FluidTaskNode;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import moe.qingu.nickel.command.builder.parameter.FastParameterNodeBuilder;
 
 import javax.annotation.Nonnull;

@@ -27,8 +27,8 @@
 
 package moe.qingu.geocraft.api.event;
 
-import moe.qingu.geocraft.api.event.fluidphysics.FluidUpdaterManagerEvent;
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.event.fluidphysics.FluidTaskSchedulerEvent;
+import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityAreaEffectCloud;
 import net.minecraft.entity.player.EntityPlayer;
@@ -164,7 +164,7 @@ public final class EventFactory {
 
     @Nullable
     public static Supplier<FluidTaskScheduler> onFluidUpdaterManagerCreate(@Nonnull final World world){
-        FluidUpdaterManagerEvent.Create event = new FluidUpdaterManagerEvent.Create(world);
+        FluidTaskSchedulerEvent.Create event = new FluidTaskSchedulerEvent.Create(world);
         EVENT_BUS.post(event);
         return event.hasResult() && event.getResult() == Result.ALLOW?event.getCandidate():null;
     }

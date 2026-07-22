@@ -36,7 +36,7 @@ import dev.xhyrom.brigo.shadow.brigadier.builder.ArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.builder.LiteralArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.builder.RequiredArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.tree.LiteralCommandNode;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskRegistry;
 import net.minecraft.command.ICommandManager;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;

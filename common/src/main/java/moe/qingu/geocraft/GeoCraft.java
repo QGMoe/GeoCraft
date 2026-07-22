@@ -28,10 +28,10 @@
 package moe.qingu.geocraft;
 
 import moe.qingu.geocraft.api.util.DeferredActions;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidDaemon;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
-import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskRegistry;
+import moe.qingu.geocraft.geography.GeoMiscDaemon;
+import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
+import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -126,7 +126,7 @@ public class GeoCraft {
         }else{
             FluidPressureSearchManager.syncRun();
         }
-        FluidDaemon.start();
+        GeoMiscDaemon.start();
         GeoCompatLoader.loadCompats(LoaderState.SERVER_STARTING);
         DeferredActions.run(LoaderState.SERVER_STARTING);
     }
@@ -141,7 +141,7 @@ public class GeoCraft {
     public void onServerStopping(final @Nonnull FMLServerStoppingEvent event){
         GeoDataFile.captureCurrentState();
         AtmosphereSystemRunner.onServerStopping(event);
-        FluidDaemon.stop();
+        GeoMiscDaemon.stop();
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncStop();
         }else{

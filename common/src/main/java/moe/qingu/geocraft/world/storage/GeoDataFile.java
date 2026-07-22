@@ -29,7 +29,7 @@ package moe.qingu.geocraft.world.storage;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskRegistry;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;

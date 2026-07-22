@@ -25,12 +25,12 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.updater;
+package moe.qingu.geocraft.geography.fluidphysics;
 
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import moe.qingu.geocraft.api.util.ModIDs;
 import moe.qingu.geocraft.geography.fluidphysics.classic.update.ClassicFluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteFluidTasks;

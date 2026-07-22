@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.fluidphysics.updater.task;
+package moe.qingu.geocraft.api.fluidphysics.task;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -60,6 +60,7 @@ public final class FluidTaskRegistry {
     private FluidTaskRegistry(){}
 
     public static void freeze() {
+        if(!frozen) EventFactory.EVENT_BUS.post(new FluidTaskRegistryEvent.Register());
         final boolean hasFrozen = frozen;
         frozen = true;
         if(!hasFrozen) EventFactory.EVENT_BUS.post(new FluidTaskRegistryEvent.Freeze());

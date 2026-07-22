@@ -25,31 +25,15 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.fluidphysics.updater.task;
+package moe.qingu.geocraft.world.scheduler;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.block.Block;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QGMoe
  */
-public interface IFluidTaskResponder {
-    boolean accepts(final @Nonnull World world, final @Nonnull IBlockState state, final @Nonnull IFluidTask task);
-
-    void onStaleTask(final @Nonnull World world,
-                     final @Nonnull BlockPos pos,
-                     final @Nonnull IBlockState state,
-                     final @Nonnull IFluidTask task,
-                     final @Nonnull FluidTaskCollector collector);
-
-    default void onRefused(final @Nonnull World world,
-                   final @Nonnull BlockPos pos,
-                   final @Nonnull IBlockState state,
-                   final @Nonnull IFluidTask task,
-                   final @Nonnull FluidTaskCollector collector){
-        this.onStaleTask(world, pos, state, task, collector);
-    }
+public abstract class BlockTickConsumer {
+    public abstract void consume(final int x,final int y,final int z,final @Nonnull Block block);
 }

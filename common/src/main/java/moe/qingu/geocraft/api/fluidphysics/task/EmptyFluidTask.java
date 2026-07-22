@@ -25,23 +25,34 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.finite.update;
+package moe.qingu.geocraft.api.fluidphysics.task;
 
 import moe.qingu.geocraft.api.util.ModIDs;
-import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
-import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
-import net.minecraftforge.fml.common.Loader;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+
+import javax.annotation.Nonnull;
+import java.util.Random;
 
 /**
  * @author QGMoe
  */
-public final class FiniteFluidTasks {
-    public static void load(){
-        FluidTasks.WATER_TASK = new FiniteFluidVanillaFluidTask(FiniteFlowings.WATER_FLOW);
-        FluidTasks.LAVA_TASK = new FiniteFluidVanillaFluidTask(FiniteFlowings.LAVA_FLOW);
-        FluidTasks.CLASSIC_TASK = new FiniteFluidClassicFluidTask();
-        if(Loader.isModLoaded(ModIDs.IMMERSIVE_ENGINEERING)) FluidTasks.IE_CONCRETE_TASK = new FiniteIEConcreteFluidTask();
-    }
+public final class EmptyFluidTask implements IFluidTask{
+    public static final ResourceLocation ID = new ResourceLocation(ModIDs.MC,"empty");
+    public static final EmptyFluidTask INSTANCE = new EmptyFluidTask();
 
-    private FiniteFluidTasks(){}
+    private EmptyFluidTask(){}
+
+    @Override
+    public void onUpdate(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {}
+
+    @Override
+    public void onFailure(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {}
+
+    @Override
+    public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state) {
+        return false;
+    }
 }

@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.finite.update;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
