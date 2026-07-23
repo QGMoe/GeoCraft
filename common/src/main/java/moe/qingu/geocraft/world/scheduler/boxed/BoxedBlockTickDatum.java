@@ -170,9 +170,9 @@ public final class BoxedBlockTickDatum extends ChunkyBlockTickDatum {
     public static void deserializeNBTV2Boxed(final @Nonnull Chunk chunk, final @Nonnull PriorityQueue<IScheduledTick> queue, final @Nullable PackedBlockTickQueue raw){
         if(raw == null) return;
         raw.forEach(t ->{
-            final int x = (int)((t >>> 16) & 0xFL);
+            final int x = (int)((t >>> 12) & 0xFL);
             final int y = (int)((t >>> 20) & 0xFFL);
-            final int z = (int)((t >>> 12) & 0xFL);
+            final int z = (int)((t >>> 16) & 0xFL);
             final int blockID = (int)(t & 0_7777L);
             final int priority = (int)((t >>> 28)&0xFL);
             final int delay = (int)(t>>>32);

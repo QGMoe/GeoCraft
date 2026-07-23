@@ -81,9 +81,9 @@ public final class PackedBlockTickDatum extends ChunkyBlockTickDatum {
     public Set<IScheduledTick> query(final int cx,final int cy,final int cz) {
         final ObjectOpenHashSet<IScheduledTick> ticks = new ObjectOpenHashSet<>();
         queue.forEach(t -> {
-            final long x = (t >>> 16) & 0xFL;
+            final long x = (t >>> 12) & 0xFL;
             final long y = (t >>> 20) & 0xFFL;
-            final long z = (t >>> 12) & 0xFL;
+            final long z = (t >>> 16) & 0xFL;
             if(x != cx || y != cy || z != cz) return;
             final long scheduledTime = queue.baseTime + (t >>> 32);
             final @Nonnull Block block = Block.getBlockById((int)(t & 0_7777L));

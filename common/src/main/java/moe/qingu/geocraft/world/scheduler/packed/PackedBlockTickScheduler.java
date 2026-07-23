@@ -106,8 +106,8 @@ public final class PackedBlockTickScheduler extends ChunkyBlockTickScheduler<Pac
         final int baseX = chunkX<<4;
         final int baseZ = chunkZ<<4;
         datum.queue.forEach(t ->{
-            final int tickX = baseX + (int) ((t >>> 16)&0xFL);
-            final int tickZ = baseZ + (int) ((t >>> 12)&0xFL);
+            final int tickX = baseX + (int) ((t >>> 12)&0xFL);
+            final int tickZ = baseZ + (int) ((t >>> 16)&0xFL);
             final long tickY = (t>>>20) & 0xFFL;
             if(!MathUtil.inRangeClose(tickX,minX,maxX) || !MathUtil.inRangeClose(tickZ,minZ,maxZ) || tickY < minY || tickY > maxY) return;
             collector.add(datum.queue.toScheduledTick(t));

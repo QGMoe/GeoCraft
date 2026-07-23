@@ -49,22 +49,15 @@ public interface IScheduledTick extends Comparable<IScheduledTick> {
 
     @Override
     default int compareTo(final @Nonnull IScheduledTick o){
-        if (this.triggeredTick() != o.triggeredTick()) {
-            return Long.compare(this.triggeredTick(),o.triggeredTick());
-        } else if (this.priority() != o.priority()) {
-            return Integer.compare(this.priority().ordinal(),o.priority().ordinal());
-        }
+        if (this.triggeredTick() != o.triggeredTick()) return Long.compare(this.triggeredTick(),o.triggeredTick());
+        else if (this.priority() != o.priority()) return Integer.compare(this.priority().ordinal(),o.priority().ordinal());
         final BlockPos a = this.pos();
         final BlockPos b = o.pos();
-        if(a.getY() != b.getY()){
-            return Integer.compare(a.getY(),b.getY());
-        } else if(this.block() != o.block()){
-            return Integer.compare(Block.getIdFromBlock(this.block()),Block.getIdFromBlock(o.block()));
-        } else if(a.getX() != b.getX()){
-            return Integer.compare(a.getX(),b.getX());
-        } else if(a.getZ() != b.getZ()){
-            return Integer.compare(a.getZ(),b.getZ());
-        } else return 0;
+        if(a.getY() != b.getY()) return Integer.compare(a.getY(),b.getY());
+        else if(a.getZ() != b.getZ()) return Integer.compare(a.getZ(),b.getZ());
+        else if(a.getX() != b.getX()) return Integer.compare(a.getX(),b.getX());
+        else if(this.block() != o.block()) return Integer.compare(Block.getIdFromBlock(this.block()),Block.getIdFromBlock(o.block()));
+        else return 0;
     }
 
     static boolean equals(final @Nonnull IScheduledTick a,final @Nonnull Object obj){

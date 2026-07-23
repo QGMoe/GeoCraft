@@ -51,7 +51,7 @@ public abstract class PackedBlockTickQueue {
     public abstract void queue(final int cx,final int cy,final int cz,final int blockID,final long delay,final int priority);
 
     public void queue(final long tick){
-        queue((int) ((tick>>>16)&0xFL), (int) ((tick>>>20)&0xFFL), (int) ((tick>>>12)&0xFL), (int) (tick&0_7777L),tick>>>32, (int) ((tick>>>28)&0xFL));
+        queue((int) ((tick>>>12)&0xFL), (int) ((tick>>>20)&0xFFL), (int) ((tick>>>16)&0xFL), (int) (tick&0_7777L),tick>>>32, (int) ((tick>>>28)&0xFL));
     }
 
     public abstract boolean contains(final int cx,final int cy,final int cz,final int blockID);
@@ -63,9 +63,9 @@ public abstract class PackedBlockTickQueue {
     public abstract void updateBaseTime(final long newBaseTime);
 
     public final @Nonnull IScheduledTick toScheduledTick(final long t){
-        final long x = (t >>> 16) & 0xFL;
+        final long x = (t >>> 12) & 0xFL;
         final long y = (t >>> 20) & 0xFFL;
-        final long z = (t >>> 12) & 0xFL;
+        final long z = (t >>> 16) & 0xFL;
         final long scheduledTime = this.baseTime + (t >>> 32);
         final @Nonnull Block block = Block.getBlockById((int)(t &0_7777L));
         final @Nonnull TickPriority priority = TickPriority.of((int)((t >>> 28)&0xFL));

@@ -102,9 +102,9 @@ public final class HeapPackedBlockTickQueue extends PackedBlockTickQueue {
         if(maxDelay > 2147483647L) updateBaseTime(worldTotalTime);
         for(int i=0;i<count;i++){
             final long tick = temp[i];
-            final int x = (int) ((tick >>> 16) & 0xFL);
+            final int x = (int) ((tick >>> 12) & 0xFL);
             final int y = (int) ((tick >>> 20) & 0xFFL);
-            final int z = (int) ((tick >>> 12) & 0xFL);
+            final int z = (int) ((tick >>> 16) & 0xFL);
             final int blockID = (int) (tick & 0_7777L);
             final int key = (y<<20) | (blockID<<8) | (x << 4) | z;
             set.remove(key);
