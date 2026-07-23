@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.world.tick.coordinator;
+package moe.qingu.geocraft.api.world.tick.validator;
 
 import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import net.minecraft.block.Block;
@@ -37,13 +37,13 @@ import javax.annotation.Nonnull;
 /**
  * @author QGMoe
  */
-public abstract class BlockTickCoordinator {
-    protected final BlockTickScheduler scheduler;
-
-    protected BlockTickCoordinator(final @Nonnull BlockTickScheduler scheduler) {
-        this.scheduler = scheduler;
+public final class IdentityBlockTickValidator extends BlockTickValidator {
+    public IdentityBlockTickValidator(@Nonnull final BlockTickScheduler scheduler) {
+        super(scheduler);
     }
 
-    public abstract boolean coordinate(@Nonnull final BlockPos pos, @Nonnull final Block scheduledBlock, @Nonnull final IBlockState state);
-
+    @Override
+    public boolean accepts(@Nonnull final BlockPos pos, @Nonnull final Block scheduledBlock, @Nonnull final IBlockState state) {
+        return scheduledBlock == state.getBlock();
+    }
 }

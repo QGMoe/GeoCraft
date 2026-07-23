@@ -37,8 +37,8 @@ import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.configs.GeneralConfig;
 import moe.qingu.geocraft.handler.CapabilityHandler;
 import moe.qingu.geocraft.util.math.MathUtil;
-import moe.qingu.geocraft.api.world.tick.coordinator.BlockTickCoordinator;
-import moe.qingu.geocraft.api.world.tick.coordinator.IdentityBlockTickCoordinator;
+import moe.qingu.geocraft.api.world.tick.validator.BlockTickValidator;
+import moe.qingu.geocraft.api.world.tick.validator.IdentityBlockTickValidator;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -62,7 +62,7 @@ public abstract class ChunkyBlockTickScheduler<T extends ChunkyBlockTickDatum> e
     protected final Long2ObjectOpenHashMap<T> data = new Long2ObjectOpenHashMap<>();
     protected final ConcurrentLinkedQueue<T> dirties = new ConcurrentLinkedQueue<>();
     protected final LongOpenHashSet schedules = new LongOpenHashSet();
-    protected BlockTickCoordinator coordinator = new IdentityBlockTickCoordinator(this);
+    protected BlockTickValidator validator = new IdentityBlockTickValidator(this);
     protected long[] temp = new long[0];
 
     protected ChunkyBlockTickScheduler(@Nonnull final World world) {
@@ -106,14 +106,14 @@ public abstract class ChunkyBlockTickScheduler<T extends ChunkyBlockTickDatum> e
     public abstract void collect(final int chunkX,final int chunkZ,final int minY,final int maxY,final @Nonnull Set<IScheduledTick> collector);
 
     @Override
-    public void setCoordinator(final @Nonnull BlockTickCoordinator coordinator) {
-        this.coordinator = Objects.requireNonNull(coordinator);
+    public void setValidator(final @Nonnull BlockTickValidator validator) {
+        this.validator = Objects.requireNonNull(validator);
     }
 
     @Nonnull
     @Override
-    public final BlockTickCoordinator getCoordinator() {
-        return coordinator;
+    public final BlockTickValidator getValidator() {
+        return validator;
     }
 
     @Nullable

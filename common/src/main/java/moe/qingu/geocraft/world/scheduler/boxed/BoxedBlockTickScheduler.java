@@ -154,7 +154,7 @@ public final class BoxedBlockTickScheduler extends ChunkyBlockTickScheduler<Boxe
         final BlockPos position = tick.pos();
         final @Nonnull IBlockState state = getBlockState(chunk,ebs,position);
 
-        if(!coordinator.coordinate(position,tick.block(),state)) return;
+        if(validator.accepts(position,tick.block(),state)) return;
         try {
             state.getBlock().updateTick(world,position,state,world.rand);
         } catch (final Throwable t) {

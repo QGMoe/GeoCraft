@@ -25,8 +25,10 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.world.tick.coordinator;
+package moe.qingu.geocraft.world.scheduler.validator;
 
+import git.jbredwards.fluidlogged_api.api.util.FluidState;
+import moe.qingu.geocraft.api.world.tick.validator.BlockTickValidator;
 import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -37,13 +39,15 @@ import javax.annotation.Nonnull;
 /**
  * @author QGMoe
  */
-public final class IdentityBlockTickCoordinator extends BlockTickCoordinator{
-    public IdentityBlockTickCoordinator(@Nonnull final BlockTickScheduler scheduler) {
+public final class FluidloggableBlockTickValidator extends BlockTickValidator {
+    public FluidloggableBlockTickValidator(@Nonnull final BlockTickScheduler scheduler) {
         super(scheduler);
     }
 
     @Override
-    public boolean coordinate(@Nonnull final BlockPos pos, @Nonnull final Block scheduledBlock, @Nonnull final IBlockState state) {
-        return scheduledBlock == state.getBlock();
+    public boolean accepts(@Nonnull final BlockPos pos, @Nonnull final Block scheduledBlock, @Nonnull final IBlockState state) {
+        if(scheduledBlock == state.getBlock()) return true;
+        final FluidState fluidBlockState = FluidState.get(scheduler.getWorld(),pos); //检查 FluidState 的方块
+        return fluidBlockState.getBlock() == state.getBlock(); //如果 FluidState 的方块也不满足，就丢弃
     }
 }

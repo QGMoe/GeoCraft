@@ -34,7 +34,7 @@ import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.world.tick.IScheduledTick;
 import moe.qingu.geocraft.api.world.tick.TickPriority;
-import moe.qingu.geocraft.api.world.tick.coordinator.BlockTickCoordinator;
+import moe.qingu.geocraft.api.world.tick.validator.BlockTickValidator;
 import net.minecraft.block.Block;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -80,7 +80,7 @@ public abstract class BlockTickScheduler implements ICapabilityProvider {
             Setter
        ------------------ */
 
-    public abstract void setCoordinator(final @Nonnull BlockTickCoordinator coordinator);
+    public abstract void setValidator(final @Nonnull BlockTickValidator validator);
 
     /* ------------------
             Getter
@@ -92,7 +92,7 @@ public abstract class BlockTickScheduler implements ICapabilityProvider {
     }
 
     @Nonnull
-    public abstract BlockTickCoordinator getCoordinator();
+    public abstract BlockTickValidator getValidator();
 
     /* ------------------
            Capability
