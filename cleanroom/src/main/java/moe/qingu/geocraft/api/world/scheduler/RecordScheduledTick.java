@@ -25,28 +25,39 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.world.scheduler;
+package moe.qingu.geocraft.api.world.scheduler;
+
+import moe.qingu.geocraft.api.world.tick.IScheduledTick;
+import moe.qingu.geocraft.api.world.tick.ScheduledTickFactory;
+import moe.qingu.geocraft.api.world.tick.TickPriority;
+import net.minecraft.block.Block;
+import net.minecraft.util.math.BlockPos;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author QGMoe
  */
-public enum TickPriority {
-    FOREMOST,
-    VERY_FIRST,
-    FIRST,
-    EXTREMELY_HIGH,
-    VERY_HIGH,
-    HIGH,
-    SLIGHTLY_HIGH,
-    ABOVE_MIDDLE,
-    BELOW_MIDDLE,
-    SLIGHTLY_LOW,
-    LOW,
-    VERY_LOW,
-    EXTREMELY_LOW,
-    LAST,
-    VERY_LAST,
-    HINDMOST;
+@SuppressWarnings("unused")
+public record RecordScheduledTick(
+        @Nonnull Block block,
+        @Nonnull BlockPos pos,
+        long triggeredTick,
+        @Nonnull TickPriority priority
+) implements IScheduledTick {
 
-    public static final TickPriority DEFAULT = ABOVE_MIDDLE;
+    @Override
+    @SuppressWarnings("EqualsDoesntCheckParameterClass")
+    public boolean equals(final @Nonnull Object obj) {
+        return IScheduledTick.equals(this,obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return pos.hashCode();
+    }
+
+    public static @Nonnull ScheduledTickFactory.Constructor getFactory(){
+        return RecordScheduledTick::new;
+    }
 }

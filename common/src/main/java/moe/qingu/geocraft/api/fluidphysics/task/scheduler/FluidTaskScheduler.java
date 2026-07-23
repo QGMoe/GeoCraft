@@ -136,11 +136,11 @@ public abstract class FluidTaskScheduler implements ICapabilityProvider {
 
     @Nullable
     public static FluidTaskScheduler getScheduler(final @Nonnull World world){
-        @Nullable FluidTaskScheduler manager = schedulers.get(world.provider.getDimension());
-        if(manager != null) return manager;
+        @Nullable FluidTaskScheduler scheduler = schedulers.get(world.provider.getDimension());
+        if(scheduler != null) return scheduler;
         if(world.hasCapability(FLUID_TASK_SCHEDULER,null)){
-            schedulers.put(world.provider.getDimension(),manager = world.getCapability(FLUID_TASK_SCHEDULER,null));
-            return manager;
+            schedulers.put(world.provider.getDimension(),scheduler = world.getCapability(FLUID_TASK_SCHEDULER,null));
+            return scheduler;
         }else return null;
     }
 

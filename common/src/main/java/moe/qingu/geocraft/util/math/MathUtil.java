@@ -100,11 +100,18 @@ public final class MathUtil {
         return cp[loc-1];
     }
 
-    public static boolean inRange(int a,int b,int c){
+    public static boolean inRangeClose(int a, int b, int c){
         if(b>c){
             b = (c = (b = b ^ c) ^ c) ^ b;
         }
         return a>=b && a <= c;
+    }
+
+    public static boolean inRangeOpen(int a, int b, int c){
+        if(b>c){
+            b = (c = (b = b ^ c) ^ c) ^ b;
+        }
+        return a>b && a < c;
     }
 
     public static byte[] randomizeByteArray(final byte[] arr, final @Nonnull Random rnd){

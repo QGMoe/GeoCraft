@@ -118,10 +118,13 @@ public final class HeapBlockTickQueue extends BlockTickQueue{
         if(maxDelay > 2147483647L) updateBaseTime(worldTotalTime);
         for(int i=0;i<count;i++){
             final long tick = temp[i];
-            final int x = (int) ((tick >>> 4) & 0xF);
-            final int y = (int) ((tick >>> 20) & 0xFF);
-            final int z = (int) (tick & 0xF);
-            final Block block = Block.getBlockById((int) ((tick >>> 8) & 0_7777));
+            final int x = (int) ((tick >>> 4) & 0xFL);
+            final int y = (int) ((tick >>> 20) & 0xFFL);
+            final int z = (int) (tick & 0xFL);
+            final int blockID = (int) ((tick >>> 8) & 0_7777L);
+            final int key = (y<<20) | (blockID<<8) | (x << 4) | z;
+            set.remove(key);
+            final Block block = Block.getBlockById(blockID);
             consumer.consume(x,y,z,block);
         }
         return count;

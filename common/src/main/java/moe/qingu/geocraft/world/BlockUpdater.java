@@ -281,7 +281,7 @@ public class BlockUpdater implements ICapabilityProvider {
                 iterator = collectionToQuery.iterator();
                 while (iterator.hasNext()){
                     final ExtendedNextTickListEntry entry = iterator.next();
-                    if(MathUtil.inRange(entry.position.getX(),x,toX) && MathUtil.inRange(entry.position.getY(),y,toY) && MathUtil.inRange(entry.position.getZ(),z,toZ)){
+                    if(MathUtil.inRangeClose(entry.position.getX(),x,toX) && MathUtil.inRangeClose(entry.position.getY(),y,toY) && MathUtil.inRangeClose(entry.position.getZ(),z,toZ)){
                         if(doRemove) iterator.remove();
                         if(set == null) set = new HashSet<>();
                         set.add(entry);

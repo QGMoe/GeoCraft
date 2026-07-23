@@ -158,7 +158,7 @@ public class TestUtils {
         }
 
         @Test
-        public void inRangeTest(){
+        public void inRangeCloseTest(){
             // {最小值, 检查值, 最大值} -> expected output
             final Object2BooleanArrayMap<int[]> map = createRangeDataMap(
                     new Object[]{1,3,6,true},
@@ -171,7 +171,7 @@ public class TestUtils {
 
             for(final @Nonnull Object2BooleanMap.Entry<int[]> data:map.object2BooleanEntrySet()){
                 天圆地方测试.LOGGER.info("Testing if {} is in [{},{}]",data.getKey()[1],data.getKey()[0],data.getKey()[2]);
-                Assertions.assertEquals(data.getBooleanValue(),MathUtil.inRange(
+                Assertions.assertEquals(data.getBooleanValue(),MathUtil.inRangeClose(
                         data.getKey()[1],
                         data.getKey()[0],
                         data.getKey()[2]

@@ -29,11 +29,16 @@ package moe.qingu.geocraft.world.scheduler;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.util.math.vec.MBlockPos;
+import moe.qingu.geocraft.api.world.tick.IScheduledTick;
+import moe.qingu.geocraft.api.world.tick.TickPriority;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.configs.GeneralConfig;
 import moe.qingu.geocraft.handler.CapabilityHandler;
+import moe.qingu.geocraft.util.math.MathUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.crash.CrashReport;
@@ -47,32 +52,34 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author QGMoe
  */
-public final class BlockTickScheduler {
+public final class ChunkyBlockTickScheduler extends BlockTickScheduler {
     private final int maxUpdateNum;
-    private final Long2ObjectOpenHashMap<BlockTickDatum> data = new Long2ObjectOpenHashMap<>();
-    private final ConcurrentLinkedQueue<BlockTickDatum> dirties = new ConcurrentLinkedQueue<>();
+    private final Long2ObjectOpenHashMap<ChunkyBlockTickDatum> data = new Long2ObjectOpenHashMap<>();
+    private final ConcurrentLinkedQueue<ChunkyBlockTickDatum> dirties = new ConcurrentLinkedQueue<>();
     private final LongOpenHashSet schedules = new LongOpenHashSet();
     private final Consumer consumer = new Consumer();
     private long[] temp = new long[0];
-    private final @Nonnull World world;
 
-    public BlockTickScheduler(final @Nonnull World world) {
-        this.world = world;
+    public ChunkyBlockTickScheduler(final @Nonnull World world) {
+        super(world);
         this.maxUpdateNum = GeneralConfig.BLOCK_UPDATER_MAX_UPDATES_BLOCK.getValue();
     }
 
+    @Override
     @SuppressWarnings("OctalInteger")
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public boolean schedule(final @Nonnull BlockPos pos, final @Nonnull Block block,final int delay,final @Nonnull TickPriority priority){
         if(pos.getY()>255 || pos.getY()<0) return false;
         final int chunkX = pos.getX()>>4;
         final int chunkZ = pos.getZ()>>4;
-        final BlockTickDatum datum = getDatum(chunkX,chunkZ);
+        final ChunkyBlockTickDatum datum = getDatum(chunkX,chunkZ);
         if(datum == null) return false;
         final int blockID = Block.getIdFromBlock(block);
         if(blockID < 0 || blockID > 0_7777) return false;
@@ -89,6 +96,69 @@ public final class BlockTickScheduler {
         return true;
     }
 
+    @Nonnull
+    @Override
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public Set<IScheduledTick> query(@Nonnull final BlockPos pos) {
+        if(pos.getY()>255 || pos.getY()<0) return Collections.emptySet();
+        final int chunkX = pos.getX()>>4;
+        final int chunkZ = pos.getZ()>>4;
+        final ChunkyBlockTickDatum datum = getDatum(chunkX,chunkZ);
+        if(datum == null) return Collections.emptySet();
+        return datum.query(pos.getX() & 0xF,pos.getY(), pos.getZ() & 0xF);
+    }
+
+    @Nonnull
+    @Override
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public Set<IScheduledTick> query(final int x,final int y,final int z,final int dx,final int dy,final int dz) {
+        final int tx = x + dx;
+        final int ty = y + dy;
+        final int tz = z + dz;
+        final int minX = Math.min(x,tx);
+        final int minY = Math.min(y,ty);
+        final int minZ = Math.min(z,tz);
+        final int maxX = Math.max(x,tx);
+        final int maxY = Math.max(y,ty);
+        final int maxZ = Math.max(z,tz);
+        final int minChunkX = minX>>4;
+        final int minChunkZ = minZ>>4;
+        final int maxChunkX = maxX>>4;
+        final int maxChunkZ = maxZ>>4;
+        final ObjectOpenHashSet<IScheduledTick> collector = new ObjectOpenHashSet<>();
+        for(int chunkX = minChunkX;chunkX<=maxChunkX;chunkX++){
+            for(int chunkZ = minChunkZ;chunkZ<=maxChunkZ;chunkZ++){
+                if(MathUtil.inRangeOpen(chunkX,minChunkX,maxChunkX) && MathUtil.inRangeOpen(chunkZ,minChunkZ,maxChunkZ)) collect(chunkX,chunkZ,minY,maxY,collector);
+                else {
+                    final ChunkyBlockTickDatum datum = getDatum(chunkX,chunkZ);
+                    if(datum == null) continue;
+                    final int baseX = chunkX<<4;
+                    final int baseZ = chunkZ<<4;
+                    datum.queue.forEach(t ->{
+                        final int tickX = baseX + (int) ((t >>> 4)&0xFL);
+                        final int tickZ = baseZ + (int) ((t >>> 4)&0xFL);
+                        final long tickY = (t>>>20) & 0xFF;
+                        if(!MathUtil.inRangeClose(tickX,x,tx) || !MathUtil.inRangeClose(tickZ,z,tz) || tickY < minY || tickY > maxY) return;
+                        collector.add(datum.queue.toScheduledTick(t));
+                    });
+                }
+            }
+        }
+        return collector;
+    }
+
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public void collect(final int chunkX,final int chunkZ,final int minY,final int maxY,final @Nonnull Set<IScheduledTick> collector){
+        final ChunkyBlockTickDatum datum = getDatum(chunkX,chunkZ);
+        if(datum == null) return;
+        datum.queue.forEach(t ->{
+            final long y = (t>>>20) & 0xFF;
+            if(y < minY || y > maxY) return;
+            collector.add(datum.queue.toScheduledTick(t));
+        });
+    }
+
+    @Override
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public void update(){
         final long beginTime = System.currentTimeMillis(),maxTime = GeneralConfig.BLOCK_UPDATER_MAX_TIME_USAGE.getValue();
@@ -100,7 +170,7 @@ public final class BlockTickScheduler {
         int i = 0;
         while (count < maxUpdateNum && i < size){
             final long pos = temp[i++];
-            final BlockTickDatum datum = data.get(pos);
+            final ChunkyBlockTickDatum datum = data.get(pos);
             if(datum == null) {
                 schedules.remove(pos);
                 continue;
@@ -112,11 +182,12 @@ public final class BlockTickScheduler {
             consumer.chunk = chunk;
             datum.lock.lock();
             try {
+                int n;
                 do {
-                    int n = datum.queue.forNext(totalWorldTime,consumer,tempArr);
+                    n = datum.queue.forNext(totalWorldTime,consumer,tempArr);
                     cot += n;
                     count += n;
-                } while (!datum.queue.isEmpty() && count < maxUpdateNum);
+                } while (n>0 && count < maxUpdateNum);
             }finally {
                 datum.lock.unlock();
             }
@@ -130,10 +201,9 @@ public final class BlockTickScheduler {
         consumer.chunk = null;
     }
 
-
     @Nullable
-    public BlockTickDatum getDatum(final int cx, final int cz){
-        BlockTickDatum res = data.get(ChunkPos.asLong(cx,cz));
+    public ChunkyBlockTickDatum getDatum(final int cx, final int cz){
+        ChunkyBlockTickDatum res = data.get(ChunkPos.asLong(cx,cz));
         if(res != null) return res;
         final Chunk chunk = world.getChunk(cx,cz);
         if(chunk.hasCapability(CapabilityHandler.BLOCK_TICK_DATUM,null)){
@@ -143,7 +213,7 @@ public final class BlockTickScheduler {
     }
 
     @Nonnull
-    public Long2ObjectOpenHashMap<BlockTickDatum> getData() {
+    public Long2ObjectOpenHashMap<ChunkyBlockTickDatum> getData() {
         return data;
     }
 
@@ -153,13 +223,8 @@ public final class BlockTickScheduler {
     }
 
     @Nonnull
-    public ConcurrentLinkedQueue<BlockTickDatum> getDirties() {
+    public ConcurrentLinkedQueue<ChunkyBlockTickDatum> getDirties() {
         return dirties;
-    }
-
-    @Nonnull
-    public World getWorld() {
-        return world;
     }
 
     private static class Consumer extends BlockTickConsumer{

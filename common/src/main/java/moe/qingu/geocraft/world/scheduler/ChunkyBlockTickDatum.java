@@ -28,30 +28,38 @@
 package moe.qingu.geocraft.world.scheduler;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import moe.qingu.geocraft.GeoCraft;
+import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
+import moe.qingu.geocraft.api.world.tick.IScheduledTick;
+import moe.qingu.geocraft.api.world.tick.TickPriority;
 import moe.qingu.geocraft.handler.CapabilityHandler;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.nbt.NBTUtils;
+import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagLongArray;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.ref.SoftReference;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author QGMoe
  */
-public final class BlockTickDatum implements ICapabilitySerializable<NBTTagCompound> {
+@SuppressWarnings("OctalInteger")
+public final class ChunkyBlockTickDatum implements ICapabilitySerializable<NBTTagCompound> {
     public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"bt_datum");
     private static final ThreadLocal<LongArrayList> TEMP = ThreadLocal.withInitial(LongArrayList::new);
     private final AtomicBoolean dirty = new AtomicBoolean(false);
@@ -61,11 +69,16 @@ public final class BlockTickDatum implements ICapabilitySerializable<NBTTagCompo
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public void schedule(final long worldTotalTime,final int cx, final int cy, final int cz, final int blockID, final long delay, final @Nonnull TickPriority priority){
-        if(queue == null){
-            queue = new HeapBlockTickQueue();
-            queue.baseTime = worldTotalTime;
-        }else if(worldTotalTime - queue.baseTime > 2147483647L) queue.updateBaseTime(worldTotalTime);
-        queue.queue(cx,cy,cz,blockID,worldTotalTime+delay-queue.baseTime,priority.ordinal());
+        lock.lock();
+        try {
+            if(queue == null){
+                queue = new HeapBlockTickQueue();
+                queue.baseTime = worldTotalTime;
+            }else if(worldTotalTime - queue.baseTime > 2147483647L) queue.updateBaseTime(worldTotalTime);
+            queue.queue(cx,cy,cz,blockID,worldTotalTime+delay-queue.baseTime,priority.ordinal());
+        }finally {
+            lock.unlock();
+        }
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
@@ -73,11 +86,29 @@ public final class BlockTickDatum implements ICapabilitySerializable<NBTTagCompo
         return queue != null && queue.contains(cx, cy, cz, blockID);
     }
 
+    @Nonnull
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public Set<IScheduledTick> query(final int cx,final int cy,final int cz) {
+        final ObjectOpenHashSet<IScheduledTick> ticks = new ObjectOpenHashSet<>();
+        queue.forEach(t -> {
+            final long x = (t >>> 4) & 0xFL;
+            final long y = (t >>> 20) & 0xFFL;
+            final long z = t & 0xFL;
+            if(x != cx || y != cy || z != cz) return;
+            final long scheduledTime = queue.baseTime + (t >>> 32);
+            final @Nonnull Block block = Block.getBlockById((int)((t >>> 8)&0_7777L));
+            final @Nonnull TickPriority priority = TickPriority.of((int)((t >>> 28)&0xFL));
+            ticks.add(IScheduledTick.of(block,new BlockPos(x,y,z),scheduledTime,priority));
+        });
+        return ticks;
+    }
+
     /* -------------------------------
          Serialisation Area
        ------------------------------- */
 
     @Override
+    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS,ThreadType.GEO_MISC_DAEMON})
     public NBTTagCompound serializeNBT() {
         final @Nullable NBTTagCompound cache;
         if(isDirty() || (cache = this.save.get()) == null){

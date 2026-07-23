@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,18 +25,40 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.util.annotation;
+package moe.qingu.geocraft.api.world.tick;
 
-import java.lang.annotation.*;
+import javax.annotation.Nonnull;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-@Documented
-@Target({ElementType.METHOD,ElementType.FIELD,ElementType.CONSTRUCTOR,ElementType.LOCAL_VARIABLE,ElementType.TYPE})
-@Retention(RetentionPolicy.CLASS)
-public @interface ThreadOnly {
+public enum TickPriority {
+    FOREMOST(-7),
+    VERY_FIRST(-6),
+    FIRST(-5),
+    EXTREMELY_HIGH(-4),
+    VERY_HIGH(-3),
+    HIGH(-2),
+    SLIGHTLY_HIGH(-1),
+    ABOVE_MIDDLE(0),
+    BELOW_MIDDLE(1),
+    SLIGHTLY_LOW(2),
+    LOW(3),
+    VERY_LOW(4),
+    EXTREMELY_LOW(5),
+    LAST(6),
+    VERY_LAST(7),
+    HINDMOST(8);
 
-    int value();
+    public static final TickPriority DEFAULT = ABOVE_MIDDLE;
+    private static final TickPriority[] PRIORITIES = values();
+    public final int vanillaPriority;
 
+    TickPriority(final int vanillaPriority) {
+        this.vanillaPriority = vanillaPriority;
+    }
+
+    public static @Nonnull TickPriority of(final int priority){
+        return PRIORITIES[priority];
+    }
 }

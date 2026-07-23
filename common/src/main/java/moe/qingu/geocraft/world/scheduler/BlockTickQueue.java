@@ -27,6 +27,11 @@
 
 package moe.qingu.geocraft.world.scheduler;
 
+import moe.qingu.geocraft.api.world.tick.IScheduledTick;
+import moe.qingu.geocraft.api.world.tick.TickPriority;
+import net.minecraft.block.Block;
+import net.minecraft.util.math.BlockPos;
+
 import javax.annotation.Nonnull;
 import java.util.function.LongConsumer;
 
@@ -46,7 +51,7 @@ abstract class BlockTickQueue {
     public abstract void queue(final int cx,final int cy,final int cz,final int blockID,final long delay,final int priority);
 
     public void queue(final long tick){
-        queue((int) ((tick>>>4)&0xF), (int) ((tick>>>20)&0xFF), (int) (tick&0xF), (int) ((tick>>>8)&0_7777),tick>>>32, (int) ((tick>>>28)*0xF));
+        queue((int) ((tick>>>4)&0xFL), (int) ((tick>>>20)&0xFFL), (int) (tick&0xFL), (int) ((tick>>>8)&0_7777L),tick>>>32, (int) ((tick>>>28)&0xFL));
     }
 
     public abstract boolean contains(final int cx,final int cy,final int cz,final int blockID);
@@ -56,4 +61,14 @@ abstract class BlockTickQueue {
     public abstract void forEach(final @Nonnull LongConsumer consumer);
 
     public abstract void updateBaseTime(final long newBaseTime);
+
+    public final @Nonnull IScheduledTick toScheduledTick(final long t){
+        final long x = (t >>> 4) & 0xFL;
+        final long y = (t >>> 20) & 0xFFL;
+        final long z = t & 0xFL;
+        final long scheduledTime = this.baseTime + (t >>> 32);
+        final @Nonnull Block block = Block.getBlockById((int)((t >>> 8)&0_7777L));
+        final @Nonnull TickPriority priority = TickPriority.of((int)((t >>> 28)&0xFL));
+        return IScheduledTick.of(block,new BlockPos((int) x,(int) y,(int) z),scheduledTime,priority);
+    }
 }

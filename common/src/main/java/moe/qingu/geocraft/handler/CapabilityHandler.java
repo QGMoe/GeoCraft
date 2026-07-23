@@ -27,10 +27,11 @@
 
 package moe.qingu.geocraft.handler;
 
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.geography.fluidphysics.scheduler.ChunkyFluidTaskDatum;
 import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
 import moe.qingu.geocraft.world.BlockUpdater;
-import moe.qingu.geocraft.world.scheduler.BlockTickDatum;
+import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickDatum;
 import moe.qingu.geocraft.world.storage.ScheduledTicksData;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -51,16 +52,17 @@ public final class CapabilityHandler {
     public static @CapabilityInject(BlockUpdater.class) Capability<BlockUpdater> BLOCK_UPDATER;
     public static @CapabilityInject(ChunkyFluidTaskDatum.class) Capability<ChunkyFluidTaskDatum> CHUNKY_FLUID_TASK_DATUM;
     public static @CapabilityInject(ScheduledTicksData.class) Capability<ScheduledTicksData> SCHEDULED_TICKS_DATA;
-    public static @CapabilityInject(BlockTickDatum.class) Capability<BlockTickDatum> BLOCK_TICK_DATUM;
+    public static @CapabilityInject(ChunkyBlockTickDatum.class) Capability<ChunkyBlockTickDatum> BLOCK_TICK_DATUM;
 
     private CapabilityHandler(){}
 
     public static void register(){
         CapabilityManager.INSTANCE.register(FluidTaskScheduler.class,new UselessCapabilityStorage<>(),unsupported());
+        CapabilityManager.INSTANCE.register(BlockTickScheduler.class,new UselessCapabilityStorage<>(),unsupported());
         CapabilityManager.INSTANCE.register(BlockUpdater.class,new UselessCapabilityStorage<>(),BlockUpdater::new);
         CapabilityManager.INSTANCE.register(ChunkyFluidTaskDatum.class,new NBTCompoundCapabilityStorage<>(), ChunkyFluidTaskDatum::new);
         CapabilityManager.INSTANCE.register(ScheduledTicksData.class, new NBTCompoundCapabilityStorage<>(),ScheduledTicksData::new);
-        CapabilityManager.INSTANCE.register(BlockTickDatum.class,new NBTCompoundCapabilityStorage<>(),BlockTickDatum::new);
+        CapabilityManager.INSTANCE.register(ChunkyBlockTickDatum.class,new NBTCompoundCapabilityStorage<>(), ChunkyBlockTickDatum::new);
     }
 
     @Nonnull
