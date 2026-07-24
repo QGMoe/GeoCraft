@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.configs;
 
+import moe.qingu.geocraft.api.util.annotation.EarlyLoaded;
 import net.minecraft.block.BlockLiquid;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.fluids.Fluid;
@@ -54,6 +55,7 @@ import moe.qingu.geocraft.api.util.math.Int21;
  * 关于流体物理的配置项目
  * @since 0.1
  */
+@EarlyLoaded
 public final class FluidPhysicsConfig {
     @Config.Comment("流体物理配置项\nFluid physics configurations")
     @GeoConfig.Support(since = "0.1")

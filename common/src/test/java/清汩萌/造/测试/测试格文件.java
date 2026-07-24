@@ -50,6 +50,7 @@ public final class 测试格文件 {
 
     @ParameterizedTest
     @MethodSource("准备尺寸测试数据")
+    @SuppressWarnings("unchecked")
     public void 尺寸测试(final @Nonnull File $原始格文件){
         final 格文件 $格文件 = 格文件.解析($原始格文件);
         final 词块网格 $网格 = $格文件.获取网格();

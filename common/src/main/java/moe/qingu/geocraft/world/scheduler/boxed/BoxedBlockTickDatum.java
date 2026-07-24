@@ -72,6 +72,7 @@ public final class BoxedBlockTickDatum extends ChunkyBlockTickDatum {
         lock.lock();
         try {
             this.queue.add(tick);
+            this.set.add(tick);
         }finally {
             lock.unlock();
         }
@@ -96,7 +97,7 @@ public final class BoxedBlockTickDatum extends ChunkyBlockTickDatum {
 
     @Override
     @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS,ThreadType.GEO_MISC_DAEMON})
-    protected void serialiseNBT(@Nonnull NBTTagCompound compound) {
+    protected void serialiseNBT(@Nonnull final NBTTagCompound compound) {
         compound.setByte(KEY_TYPE,TYPE_BOXED);
         final long totalTime = chunk.getWorld().getTotalWorldTime();
         compound.setLong(KEY_BASE_TIME,totalTime);

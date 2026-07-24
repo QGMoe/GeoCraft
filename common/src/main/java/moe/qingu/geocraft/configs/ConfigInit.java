@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.configs;
 
+import moe.qingu.geocraft.api.util.annotation.EarlyLoaded;
 import net.minecraftforge.common.config.Config;
 import moe.qingu.geocraft.MixinEarlyInit;
 import moe.qingu.geocraft.api.configs.ConfigCategory;
@@ -55,6 +56,7 @@ import java.util.function.BiConsumer;
 import static moe.qingu.geocraft.configs.ConfigurationLoader.registerConfigCategory;
 import static moe.qingu.geocraft.configs.ConfigurationLoader.registerConfigItem;
 
+@EarlyLoaded
 public final class ConfigInit {
     private static boolean hasLoaded = false;
 

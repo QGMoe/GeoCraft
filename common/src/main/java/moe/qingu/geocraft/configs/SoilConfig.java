@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.configs;
 
+import moe.qingu.geocraft.api.util.annotation.EarlyLoaded;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Property;
 import moe.qingu.geocraft.api.configs.ConfigCategory;
@@ -47,6 +48,7 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
+@EarlyLoaded
 @SuppressWarnings("unused")
 public final class SoilConfig {
     @Config.Comment({"土壤系统相关配置","Configs for Soil System"})

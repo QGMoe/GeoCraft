@@ -91,22 +91,21 @@ public final class FiniteFluidVanillaFluidTask implements IFluidTask {
 
     @Override
     public void onUpdate(@Nonnull final World world, @Nonnull IBlockState state,@Nonnull final BlockPos pos, @Nonnull final Random rand) {
+        int updateRate = MiscUtil.modifyTickRateByGravity(world,this.flowing.dynamic.tickRate(world));
         if (!world.isAreaLoaded(pos,1)){
+            BlockTickScheduler.schedule(world,pos,state.getBlock(),updateRate);
             return;
         }
         int liquidMeta = state.getValue(LEVEL);
-        final int updateFlag = ServerStatusMonitor.getRecommendedBlockFlags();
         if(liquidMeta >= 8){
             world.setBlockToAir(pos);
             return;
-        }
-        int liquidQuanta = 8-liquidMeta;
-        int updateRate = MiscUtil.modifyTickRateByGravity(world,this.flowing.dynamic.tickRate(world));
-
-        if(updateRate <= 0){//无重力
+        }else if(updateRate <= 0){//无重力
             flowing.placeStaticBlock(world,pos,state);
             return;
         }
+        int liquidQuanta = 8-liquidMeta;
+        final int updateFlag = ServerStatusMonitor.getRecommendedBlockFlags();
 
         final @Nonnull BlockPos downPos = pos.down();
         final @Nonnull IBlockState stateBelow = world.getBlockState(downPos);
@@ -168,6 +167,7 @@ public final class FiniteFluidVanillaFluidTask implements IFluidTask {
             //  Single Quanta Slope Flow
             // *******************
             if (!world.isAreaLoaded(pos, flowing.getSingleSlopeFindDistance(world))){
+                BlockTickScheduler.schedule(world,pos,state.getBlock(),updateRate);
                 return;
             }
             slopeFlowableDirections.clear();
@@ -251,7 +251,7 @@ public final class FiniteFluidVanillaFluidTask implements IFluidTask {
             //  Multi-Quanta Slope Flow
             // ********************
             if(!world.isAreaLoaded(pos, flowing.getMultiSlopeFindDistance(world))){
-                this.placeStaticBlock(world,pos,state,FlowingMode.NO_MODE);
+                BlockTickScheduler.schedule(world,pos,state.getBlock(),updateRate);
                 return;
             }
             bestFlowDirections.clear();

@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.configs;
 
+import moe.qingu.geocraft.api.util.annotation.EarlyLoaded;
 import net.minecraftforge.common.config.Configuration;
 import moe.qingu.geocraft.api.configs.ConfigCategory;
 import moe.qingu.geocraft.api.configs.item.ConfigItem;
@@ -36,7 +37,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
-
+@EarlyLoaded
 public final class ConfigurationLoader {
     private static boolean initialised = false;
     private static Configuration config;

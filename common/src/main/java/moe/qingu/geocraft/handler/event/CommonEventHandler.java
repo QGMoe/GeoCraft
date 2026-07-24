@@ -68,7 +68,7 @@ public final class CommonEventHandler {
         if(event.getCandidate() == null && !event.getWorld().isRemote && event.getResult() != Event.Result.ALLOW){
             final World world = event.getWorld();
             final GeoBlockTickType tickType = GeneralConfig.BLOCK_TICK_SCHEDULER_TYPE.getValue();
-            event.setCandidate(tickType.provider.apply(world));
+            event.setCandidate(tickType.supplier(world));
             event.setResult(Event.Result.ALLOW);
         }
     }
@@ -92,7 +92,7 @@ public final class CommonEventHandler {
         if(scheduler == null || scheduler.getWorld() != event.getWorld()) return;
         final Chunk chunk = event.getChunk();
         final long pos = ChunkPos.asLong(chunk.x,chunk.z);
-        scheduler.getVolume().data.remove(pos);
+        scheduler.getVolume().schedules.remove(pos);
         scheduler.getVolume().data.remove(pos);
     }
 

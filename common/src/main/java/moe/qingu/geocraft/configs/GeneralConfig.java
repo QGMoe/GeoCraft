@@ -28,6 +28,7 @@
 package moe.qingu.geocraft.configs;
 
 import moe.qingu.geocraft.api.configs.item.base.ConfigEnum;
+import moe.qingu.geocraft.api.util.annotation.EarlyLoaded;
 import moe.qingu.geocraft.world.scheduler.GeoBlockTickType;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Configuration;
@@ -39,6 +40,7 @@ import moe.qingu.geocraft.api.configs.item.collection.list.ConfigIntegerList;
 import moe.qingu.geocraft.api.configs.item.number.ConfigInteger;
 import moe.qingu.geocraft.api.configs.value.collection.ConfigurableList;
 
+@EarlyLoaded
 @SuppressWarnings("unused")
 public final class GeneralConfig {
 

@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.configs;
 
+import moe.qingu.geocraft.api.util.annotation.EarlyLoaded;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Configuration;
 import moe.qingu.geocraft.api.configs.ConfigCategory;
@@ -49,6 +50,7 @@ import moe.qingu.geocraft.geography.atmosphere.system.CloseAtmosphereSystem;
 import javax.annotation.Nonnull;
 import java.util.Map;
 
+@EarlyLoaded
 @SuppressWarnings("unused")
 public final class AtmosphereConfig {
 

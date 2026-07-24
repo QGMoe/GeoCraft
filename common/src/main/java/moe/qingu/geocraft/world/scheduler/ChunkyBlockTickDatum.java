@@ -57,8 +57,8 @@ public abstract class ChunkyBlockTickDatum implements ICapabilitySerializable<NB
     protected static final String KEY_VERSION = "version";
     protected static final String KEY_TYPE = "type";
     protected static final String KEY_BASE_TIME = "baseTime";
-    protected static final byte TYPE_BOXED = (byte) GeoBlockTickType.BOXED.ordinal();
-    protected static final byte TYPE_PACKED = (byte) GeoBlockTickType.PACKED.ordinal();
+    protected static final byte TYPE_BOXED = 0;
+    protected static final byte TYPE_PACKED = 1;
     public final ReentrantLock lock = new ReentrantLock();
     protected final AtomicBoolean dirty = new AtomicBoolean(false);
     protected volatile SoftReference<NBTTagCompound> save = new SoftReference<>(new NBTTagCompound());

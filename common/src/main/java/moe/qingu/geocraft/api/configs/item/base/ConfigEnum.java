@@ -31,14 +31,21 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import moe.qingu.geocraft.api.configs.ConfigCategory;
 import moe.qingu.geocraft.api.configs.item.ConfigItem;
+import moe.qingu.geocraft.api.util.annotation.EarlyLoaded;
 import net.minecraftforge.common.config.Property;
 
 import javax.annotation.Nonnull;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author QGMoe
  */
+@EarlyLoaded
 public class ConfigEnum<T extends Enum<T>> extends ConfigItem<T,ConfigEnum<T>> {
     protected final Class<T> cls;
     protected Int2ObjectOpenHashMap<ObjectArraySet<String>> alias;
@@ -81,7 +88,7 @@ public class ConfigEnum<T extends Enum<T>> extends ConfigItem<T,ConfigEnum<T>> {
 
     @Override
     protected void load(@Nonnull final Property property) {
-        final T[] values = cls.getEnumConstants();
+        final T[] values = getEnumConstants(cls);
         final String s = property.getString();
         for(final T t:values)
             if(ignoredCase && s.equalsIgnoreCase(t.name()) || !ignoredCase && s.equals(t.name())){
@@ -97,5 +104,21 @@ public class ConfigEnum<T extends Enum<T>> extends ConfigItem<T,ConfigEnum<T>> {
                 return;
             }
         }
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    protected static <T extends Enum<T>> T[] getEnumConstants(final @Nonnull Class<T> cls){
+        final List<T> list = new ArrayList<>();
+        for (final Field field: cls.getDeclaredFields()){
+            if(!field.isEnumConstant()) continue;
+            try {
+                list.add((T) field.get(null));
+            } catch (final IllegalAccessException | ClassCastException impossible) {
+                throw new RuntimeException(impossible);
+            }
+        }
+        list.sort(Comparator.comparingInt(Enum::ordinal));
+        return list.toArray((T[]) Array.newInstance(cls,list.size()));
     }
 }

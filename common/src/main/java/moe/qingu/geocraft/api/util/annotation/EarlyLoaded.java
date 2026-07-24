@@ -25,37 +25,15 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.world.scheduler;
+package moe.qingu.geocraft.api.util.annotation;
 
-import moe.qingu.geocraft.api.util.annotation.EarlyLoaded;
-import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
-import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
-import moe.qingu.geocraft.world.scheduler.packed.PackedBlockTickScheduler;
-import net.minecraft.world.World;
-
-import javax.annotation.Nonnull;
-import java.util.function.Supplier;
+import java.lang.annotation.*;
 
 /**
  * @author QGMoe
  */
-@EarlyLoaded
-public enum GeoBlockTickType {
-    BOXED(){
-        @Nonnull
-        @Override
-        public Supplier<BlockTickScheduler> supplier(@Nonnull final World world) {
-            return () -> BoxedBlockTickScheduler.create(world);
-        }
-    },
-    PACKED(){
-        @Nonnull
-        @Override
-        public Supplier<BlockTickScheduler> supplier(@Nonnull final World world) {
-            return () -> PackedBlockTickScheduler.create(world);
-        }
-    };
-
-    @Nonnull
-    public abstract Supplier<BlockTickScheduler> supplier(final @Nonnull World world);
+@Documented
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.CLASS)
+public @interface EarlyLoaded {
 }

@@ -52,7 +52,6 @@ import moe.qingu.nickel.event.NickelCommandEvent;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -104,7 +103,7 @@ public class RunCommandNode implements ICommandNode{
         return branch;
     }
 
-    protected <T extends List<String> & Deque<String>> void runCommand(@Nonnull final ICommand command,@Nonnull final InputReader input,@Nonnull final ExecuteContext context) throws CommandException {
+    protected void runCommand(@Nonnull final ICommand command,@Nonnull final InputReader input,@Nonnull final ExecuteContext context) throws CommandException {
         final @Nonnull ICommandSender sender = modifier == null?context.getSender():modifier.apply(command,context);
 
         if(!command.checkPermission(context.getServer(),sender)){

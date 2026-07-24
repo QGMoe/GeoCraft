@@ -32,9 +32,11 @@ import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.util.math.vec.MBlockPos;
 import moe.qingu.geocraft.api.world.tick.IScheduledTick;
 import moe.qingu.geocraft.api.world.tick.TickPriority;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.configs.GeneralConfig;
 import moe.qingu.geocraft.util.math.MathUtil;
 import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickScheduler;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -56,6 +58,15 @@ public final class PackedBlockTickScheduler extends ChunkyBlockTickScheduler<Pac
 
     public PackedBlockTickScheduler(final @Nonnull World world) {
         super(world);
+    }
+
+    /**
+     * 一个工具方法，返回 {@link BlockTickScheduler}，用于 {@link moe.qingu.geocraft.world.scheduler.GeoBlockTickType}
+     * 避免类过早被加载
+     */
+    @Nonnull
+    public static BlockTickScheduler create(final @Nonnull World world){
+        return new PackedBlockTickScheduler(world);
     }
 
     @Override

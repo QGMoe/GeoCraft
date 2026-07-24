@@ -28,6 +28,7 @@
 package moe.qingu.geocraft;
 
 import com.google.common.collect.Lists;
+import moe.qingu.geocraft.api.util.annotation.EarlyLoaded;
 import net.minecraftforge.common.ForgeVersion;
 import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
@@ -44,6 +45,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
+@EarlyLoaded
 @SuppressWarnings("unused")
 @IFMLLoadingPlugin.Name(GeoCraft.MODID)
 @IFMLLoadingPlugin.MCVersion(ForgeVersion.mcVersion)

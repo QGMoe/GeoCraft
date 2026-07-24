@@ -29,6 +29,7 @@ package moe.qingu.geocraft.world.scheduler.boxed;
 
 import moe.qingu.geocraft.api.world.tick.IScheduledTick;
 import moe.qingu.geocraft.api.world.tick.TickPriority;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.configs.GeneralConfig;
 import moe.qingu.geocraft.util.math.MathUtil;
 import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickScheduler;
@@ -55,6 +56,15 @@ public final class BoxedBlockTickScheduler extends ChunkyBlockTickScheduler<Boxe
 
     public BoxedBlockTickScheduler(final @Nonnull World world){
         super(world);
+    }
+
+    /**
+     * 一个工具方法，返回 {@link BlockTickScheduler}，用于 {@link moe.qingu.geocraft.world.scheduler.GeoBlockTickType}
+     * 避免类过早被加载
+     */
+    @Nonnull
+    public static BlockTickScheduler create(final @Nonnull World world){
+        return new BoxedBlockTickScheduler(world);
     }
 
     @Override
@@ -132,7 +142,7 @@ public final class BoxedBlockTickScheduler extends ChunkyBlockTickScheduler<Boxe
             try {
                 int n = 0;
                 do {
-                    while (!datum.queue.isEmpty() && n < tempArr.length && datum.queue.peek().triggeredTick() <= totalWorldTime) tempArr[n++] = datum.queue.poll();
+                    while (!datum.queue.isEmpty() && n < tempArr.length && datum.queue.peek().triggeredTick() <= totalWorldTime) datum.set.remove(tempArr[n++] = datum.queue.poll());
                     cot += n;
                     count += n;
                     int j = n;
