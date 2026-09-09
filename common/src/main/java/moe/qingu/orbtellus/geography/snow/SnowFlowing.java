@@ -27,6 +27,7 @@
 
 package moe.qingu.orbtellus.geography.snow;
 
+import moe.qingu.orbtellus.api.OTCFluids;
 import moe.qingu.orbtellus.api.atmosphere.accessor.IAtmosphereAccessor;
 import moe.qingu.orbtellus.api.block.BlockProperties;
 import moe.qingu.orbtellus.api.util.AtmosphereUtil;
@@ -36,6 +37,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import moe.qingu.orbtellus.geography.fluidphysics.vanilla.VanillaFlowingVanilla;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import org.apache.commons.lang3.Validate;
 
 import javax.annotation.Nonnull;
@@ -48,6 +51,7 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
  */
 public final class SnowFlowing {
 
+    public static final Fluid[] FILL_ORDER = {FluidRegistry.WATER, OTCFluids.SNOW};
     private static final IBlockState[][] WATER_SNOW_MIX_TABLE_DYNAMIC = new IBlockState[9][9];
     private static final IBlockState[][] WATER_SNOW_MIX_TABLE_STATIC = new IBlockState[9][9];
 

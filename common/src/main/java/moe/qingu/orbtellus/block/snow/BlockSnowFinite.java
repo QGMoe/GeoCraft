@@ -70,7 +70,6 @@ import static moe.qingu.orbtellus.api.block.BlockProperties.MIXTURE;
  * @author QiguaiAAAA
  */
 public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLaminarifer, IOperateLayerLaminarifer, IFlowSource<BlockSnowFinite> {
-    protected static final Fluid[] fillOrder = {FluidRegistry.WATER, OTCFluids.SNOW};
     protected static final MBlockPos mPos = new MBlockPos();
     protected static final FillLaminariferRequest fillRequest = new FillLaminariferRequest();
 
@@ -222,7 +221,7 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLam
                                             @Nonnull IBlockState downState,
                                             long left){
         final long initLeft = left;
-        for(int i = 0; i< fillOrder.length; i++){
+        for(int i = 0; i< SnowFlowing.FILL_ORDER.length; i++){
             final int offset = i<<5;
             final long qb = (left >>> offset) & 0xFFFF_FFFFL;
             if(qb == 0L) continue;
@@ -231,7 +230,7 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLam
             try (final FillLaminariferRequest request = fillRequest){
                 final long filled = request.to(world, downPos, downState)
                         .side(EnumFacing.UP)
-                        .specific(fillOrder[i])
+                        .specific(SnowFlowing.FILL_ORDER[i])
                         .amount(qb)
                         .source(this)
                         .disableFlags(Constants.BlockFlags.NOTIFY_NEIGHBORS)
