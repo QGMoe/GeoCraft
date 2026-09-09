@@ -210,28 +210,28 @@ public class BlockSnowExtended extends BlockSnow {
             if((Boolean)(propertiesIn.get(MIXTURE))){
                 final int amount = (Integer) propertiesIn.get(LAYERS);
                 final int maxAmount = 16 - amount;
-                this.amountData = (maxAmount << 12) | (maxAmount << 8) | (amount << 4) | amount;
+                this.amountData = (maxAmount << 15) | (maxAmount << 10) | (amount << 5) | amount;
                 this.snowEmptyHeight = amount * AHUnit.SIXTEENTH_BLOCK;
             } else{
                 final int waterAmount = 0;
                 final int snowAmount = 2 * (Integer) propertiesIn.get(LAYERS);
                 final int snowMaxAmount = 16;
-                final int waterMaxAmount = 16 - 2 * snowAmount;
+                final int waterMaxAmount = 16 - snowAmount;
 
-                this.amountData = (snowMaxAmount << 12) | (waterMaxAmount << 8) | (snowAmount << 4) | waterAmount;
+                this.amountData = (snowMaxAmount << 15) | (waterMaxAmount << 10) | (snowAmount << 5) | waterAmount;
                 this.snowEmptyHeight = 0L;
             }
         }
 
         public int getAmount(final @Nonnull Fluid fluid){
-            if(fluid == FluidRegistry.WATER) return this.amountData & 0xF;
-            else if (fluid == OTCFluids.SNOW) return (this.amountData >>> 4) & 0xF;
+            if(fluid == FluidRegistry.WATER) return this.amountData & 0b11111;
+            else if (fluid == OTCFluids.SNOW) return (this.amountData >>> 5) & 0b11111;
             return 0;
         }
 
         public int getMaxAmount(final @Nonnull Fluid fluid){
-            if(fluid == FluidRegistry.WATER) return (this.amountData >>> 8) & 0xF;
-            else if (fluid == OTCFluids.SNOW) return (this.amountData >>> 12) & 0xF;
+            if(fluid == FluidRegistry.WATER) return (this.amountData >>> 10) & 0b11111;
+            else if (fluid == OTCFluids.SNOW) return (this.amountData >>> 15) & 0b11111;
             return 0;
         }
 

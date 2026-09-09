@@ -227,9 +227,10 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLam
             if(qb == 0L) continue;
             final Block downBlock = downState.getBlock();
             if(!Laminarifers.isLaminarifer(downBlock)) break;
-            try (final FillLaminariferRequest request = fillRequest){
+            try (final FillLaminariferRequest request = fillRequest.open()){
                 final long filled = request.to(world, downPos, downState)
                         .side(EnumFacing.UP)
+                        .target((ILaminarifer) downBlock)
                         .specific(SnowFlowing.FILL_ORDER[i])
                         .amount(qb)
                         .source(this)
@@ -319,8 +320,10 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLam
             $新水层_存储层 = (int) $总层数_存储层 - $新雪层_存储层;
         }else $新雪层_存储层 = $新水层_存储层 = 0;
 
-        try (final @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)){
-            SnowFlowing.mixSnowWithWater(world, pos, accessor, $新水层_存储层, $新雪层_存储层, flags);
+        if(doOperate){
+            try (final @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)){
+                SnowFlowing.mixSnowWithWater(world, pos, accessor, $新水层_存储层, $新雪层_存储层, flags);
+            }
         }
 
         return $实际变化层数_载流层;

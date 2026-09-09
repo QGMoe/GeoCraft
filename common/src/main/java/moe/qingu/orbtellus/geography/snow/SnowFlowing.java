@@ -133,8 +133,8 @@ public final class SnowFlowing {
 
     /**
      * 获取指定层的水和雪混合后的方块状态
-     * @param snow 水量，单位为层 Quanta
-     * @param water 雪量，单位为层 Quanta
+     * @param snow 雪量，单位为层 Quanta
+     * @param water 水量，单位为层 Quanta
      * @return 混合后的方块状态。水为动态
      * @throws IllegalArgumentException 当 snow + water >8 时
      * @since 0.3.0-alpha.2
@@ -147,8 +147,8 @@ public final class SnowFlowing {
 
     /**
      * 获取指定层的水和雪混合后的方块状态
-     * @param snow 水量，单位为层 Quanta
-     * @param water 雪量，单位为层 Quanta
+     * @param snow 雪量，单位为层 Quanta
+     * @param water 水量，单位为层 Quanta
      * @return 混合后的方块状态。水为静态。
      * @throws IllegalArgumentException 当 snow + water >8 时
      * @since 0.3.0-alpha.2
@@ -161,8 +161,8 @@ public final class SnowFlowing {
 
     /**
      * 获取指定层的水和雪混合后的方块状态
-     * @param snow 水量，单位为层，一层 125 mB
-     * @param water 雪量，单位为层，一层 125mB
+     * @param snow 雪量，单位为层 Quanta
+     * @param water 水量，单位为层 Quanta
      * @param requireStatic 返回水时,是否需要静态水
      * @return 混合后的方块状态。
      * @throws IllegalArgumentException 当 snow + water >8 时

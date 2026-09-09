@@ -161,12 +161,16 @@ public class BlockSoilFarmland extends BlockFarmland implements IBlockSoil, IBlo
     // ILaminarifer
     //***********
 
-
     @Override
-    public long getLayers(@Nonnull IBlockState state, @Nonnull Fluid fluid, @Nullable NBTTagCompound nbt) {
+    public final long getLayers(@Nonnull final IBlockState state, @Nonnull final Fluid fluid, @Nullable final NBTTagCompound nbt) {
         if(fluid != FluidRegistry.WATER) return 0L;
         final int moisture = state.getValue(MOISTURE);
         return (moisture+1)>>1;
+    }
+
+    @Override
+    public final long getHeight(@Nonnull final IBlockState state, @Nonnull final Fluid fluid, @Nullable final NBTTagCompound nbt) {
+        return getLayers(state, fluid, nbt) * getHeightPerLayer(state,fluid,nbt);
     }
 
     @Override
@@ -185,7 +189,7 @@ public class BlockSoilFarmland extends BlockFarmland implements IBlockSoil, IBlo
     }
 
     @Override
-    public IBlockState getLayerState(@Nonnull final IBlockState state,
+    public final IBlockState getLayerState(@Nonnull final IBlockState state,
                                      @Nonnull final Fluid fluid,
                                      @Nullable final NBTTagCompound nbt,
                                      final long layer) {

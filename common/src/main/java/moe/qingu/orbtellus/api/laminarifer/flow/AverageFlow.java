@@ -188,6 +188,10 @@ public class AverageFlow implements AutoCloseable, Iterator<FlowChoice> {
         this.blockFlagModifier = BlockFlagModifiers.KEEP;
         this.choicesCot = 0;
         this.iteratorIndex = 0;
+
+        this.minLayers = 0L;
+        this.finalLayers = 0L;
+        this.extraAmountInQB = 0L;
     }
 
     // 迭代器 Iterator

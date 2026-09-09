@@ -113,7 +113,7 @@ public final class BlockSoils { //unfinished todo
     static int 壤中流重力流动(@Nonnull final IBlockSoil $土壤, @Nonnull final World worldIn, @Nonnull final BlockPos pos){
         final IBlockState downState = worldIn.getBlockState(mutablePos.setPos(pos).downM());
         for(final @Nonnull 壤中流重力流动情况 $情况: 壤中流重力流动情况._所有情况_)
-            switch ($情况.尝试渗出(worldIn,pos,downState,$土壤)){
+            switch ($情况.尝试渗出(worldIn,mutablePos,downState,$土壤)){
                 case FAIL:return 0;
                 case SUCCESS:return -1;
                 case PASS:

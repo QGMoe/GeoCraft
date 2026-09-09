@@ -137,7 +137,7 @@ public class OrbTellusPostPopulatingGenerator implements IWorldGenerator {
             long maxQuanta = permeable.getMaxLayers(world,pos,state,FluidRegistry.WATER,null);
             if(waterFlag){
                 permeable.addLayer(world,pos,state,FluidRegistry.WATER,null, maxQuanta, true, 0L, null,
-                        BlockFlagModifier.build(Constants.BlockFlags.DEFAULT_AND_RERENDER, Constants.BlockFlags.NO_OBSERVERS | Constants.BlockFlags.NO_RERENDER));
+                        BlockFlagModifier.build(Constants.BlockFlags.NO_OBSERVERS | Constants.BlockFlags.NO_RERENDER,Constants.BlockFlags.DEFAULT_AND_RERENDER));
                 shouldContinue = true;
                 return null;
             }
