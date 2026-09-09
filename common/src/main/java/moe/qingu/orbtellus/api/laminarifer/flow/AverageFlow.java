@@ -172,7 +172,7 @@ public class AverageFlow implements AutoCloseable, Iterator<FlowChoice> {
 
     @Nonnull
     public final FlowChoice removeLastChoice(){
-        return choices[choicesCot--];
+        return choices[--choicesCot];
     }
 
     // ------- AutoClosable 重置状态 -------
