@@ -90,6 +90,7 @@ public class 载流方块测试 extends 天圆地方测试 {
         final @Nonnull IBlockState defaultState = $有限流体模型.getDefaultState();
         try (final FillLaminariferRequest request = new FillLaminariferRequest().open()){
             final long filled = request.to(null,BlockPos.ORIGIN,defaultState.withProperty(LAYERS,layers))
+                    .target(laminarifer)
                     .specific(流体原料.SNOW)
                     .amount(amount)
                     .side(EnumFacing.UP)
@@ -112,7 +113,7 @@ public class 载流方块测试 extends 天圆地方测试 {
             try (final AverageFlow flow = averageFlow){
                 LOGGER.trace("Test {} begin!",T+1);
 
-                flow.at(null,null).fluid(流体原料.SNOW).centralModel.currentLayers = random.nextInt(8)+1;
+                flow.at(null,BlockPos.ORIGIN).fluid(流体原料.SNOW).centralModel.currentLayers = random.nextInt(8)+1;
                 final long centralAmount = flow.centralModel.getAmountInQB();
                 LOGGER.debug("Central is {} QB", centralAmount);
 
