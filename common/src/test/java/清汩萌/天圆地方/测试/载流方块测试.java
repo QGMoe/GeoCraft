@@ -33,6 +33,7 @@ import moe.qingu.orbtellus.api.laminarifer.request.FillLaminariferRequest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +42,8 @@ import moe.qingu.orbtellus.api.fluid.unit.QBUnit;
 import moe.qingu.orbtellus.api.laminarifer.flow.FlowChoice;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import 清汩萌.天圆地方.世界.模拟沙盒世界;
+import 清汩萌.天圆地方.世界.配置.模拟世界配置;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.天圆地方.原料.流体原料;
 
@@ -84,12 +87,13 @@ public class 载流方块测试 extends 天圆地方测试 {
         }).map(c -> new TestQBCase(Math.toIntExact(c[0]),c[1],c[2]));
     }
 
-    @SuppressWarnings({"unused", "DataFlowIssue"})
+    @SuppressWarnings({"unused"})
     public static void testQB_Inner(final int layers,final long amount,final long expected){
         final @Nonnull ILaminarifer laminarifer = $有限流体模型;
         final @Nonnull IBlockState defaultState = $有限流体模型.getDefaultState();
+        final World world = 模拟沙盒世界.构建(模拟世界配置.create(b -> {}),false);
         try (final FillLaminariferRequest request = new FillLaminariferRequest().open()){
-            final long filled = request.to(null,BlockPos.ORIGIN,defaultState.withProperty(LAYERS,layers))
+            final long filled = request.to(world,BlockPos.ORIGIN,defaultState.withProperty(LAYERS,layers))
                     .target(laminarifer)
                     .specific(流体原料.SNOW)
                     .amount(amount)
