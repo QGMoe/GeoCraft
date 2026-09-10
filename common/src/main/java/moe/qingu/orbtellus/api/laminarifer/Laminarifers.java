@@ -27,6 +27,7 @@
 
 package moe.qingu.orbtellus.api.laminarifer;
 
+import moe.qingu.orbtellus.api.fluid.unit.FluidUnit;
 import moe.qingu.orbtellus.api.laminarifer.flow.drainer.IFlowDrainer;
 import moe.qingu.orbtellus.api.fluid.QBFluidStack;
 import moe.qingu.orbtellus.api.laminarifer.flow.source.IFlowSource;
@@ -186,12 +187,10 @@ public final class Laminarifers {
                                      final long blockFlagsModifier){
         if(amount <= 0L) return 0L;
         final long amountPerLayer = laminarifer.getAmountInQBPerLayer(world, pos, state, fluid, nbt);
-        amount -= (amount%amountPerLayer);
-        if(amount <= 0L) return 0L;
         final long curAmount = getAmountInQB(laminarifer, world, pos, state, fluid, nbt);
         final long amountInFact = Math.min(amount, laminarifer.getMaxAmountInQB(world, pos, state, fluid, nbt)-curAmount);
         if(amountInFact <= 0L) return 0L;
-        return laminarifer.addLayer(world,pos,state,fluid,nbt,amount/amountPerLayer,doOperate,pulse,source,blockFlagsModifier)*amountPerLayer;
+        return laminarifer.addLayer(world,pos,state,fluid,nbt, FluidUnit.sample(world.rand, amountInFact, amountPerLayer),doOperate,pulse,source,blockFlagsModifier)*amountPerLayer;
     }
 
 
@@ -388,11 +387,10 @@ public final class Laminarifers {
                                          final long blockFlagsModifier){
         if(amount <= 0L) return 0L;
         final long amountPerLayer = laminarifer.getAmountInQBPerLayer(world, pos, state, fluid, nbt);
-        amount += (amountPerLayer-(amount%amountPerLayer));
         final long curAmount = getAmountInQB(laminarifer, world, pos, state, fluid, nbt);
         final long drainedInFact = Math.min(amount,curAmount);
         if(drainedInFact <= 0) return 0;
-        return laminarifer.drainLayer(world,pos,state,fluid,nbt,amount/amountPerLayer,doOperate,pulse,drainer,blockFlagsModifier)*amountPerLayer;
+        return laminarifer.drainLayer(world,pos,state,fluid,nbt,FluidUnit.sample(world.rand, drainedInFact, amountPerLayer),doOperate,pulse,drainer,blockFlagsModifier)*amountPerLayer;
     }
 
     /**
