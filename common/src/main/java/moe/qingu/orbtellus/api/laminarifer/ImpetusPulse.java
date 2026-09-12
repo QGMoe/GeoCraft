@@ -28,11 +28,10 @@
 package moe.qingu.orbtellus.api.laminarifer;
 
 /**
- * 流势（Impetus），压强和时间的乘积，属于向量，方向为流体流动的趋向。
- * 对于抽取的流势，称为去势。对于填充的流势，称为来势。
- * 压强和时间组成的二元组叫做一个流势脉冲（Impetus Pulse）
- * 流势的标准单位是 布里丹（Buridan），缩写 布（Bd）。1 布 = 1 kPa×simh = 1 kPa×kgt。
- * 流势的符号为 Π
+ * 流强（Impetus），压强和时间的乘积，属于向量，方向为流体流动的趋向。
+ * 压强和时间组成的二元组叫做一个流强脉冲（Impetus Pulse）
+ * 流强的标准单位是 布里丹（Buridan），缩写 布（Bd）。1 布 = 1 kPa×simh = 1 kPa×kgt。
+ * 流强的符号为 Π
  * @author QGMoe
  */
 public final class ImpetusPulse {
@@ -40,7 +39,7 @@ public final class ImpetusPulse {
     private ImpetusPulse(){}
 
     /**
-     * 将压强和时长信息打包成一个流势脉冲
+     * 将压强和时长信息打包成一个流强脉冲
      * @param pressure 压强，单位 kPa
      * @param time 时长，单位 模拟时 simh 或 千游戏刻 kgt
      * @return 打包的 long，高 32 位为压强，低 32 位为时间

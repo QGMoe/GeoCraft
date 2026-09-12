@@ -157,21 +157,24 @@ public interface ILaminariferFiniteLiquid extends IBlockStateLaminarifer, IOpera
             final int quantaWater = (int) getLayers(state,FluidRegistry.WATER,null);
             final int actualLayer = (int) APIMathUtil.clamp(layer,0L,8L - quantaWater);
             if(actualLayer == 0L) return 0L;
-            try(@Nullable final IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)) {
-                final int flags = BlockFlagModifier.modify(Constants.BlockFlags.DEFAULT,blockFlagsModifier);
-                SnowFlowing.mixSnowWithWater(world,pos,accessor,quantaWater,actualLayer,flags);
-            }
+            if(doOperate)
+                try(@Nullable final IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)) {
+                    final int flags = BlockFlagModifier.modify(Constants.BlockFlags.DEFAULT,blockFlagsModifier);
+                    SnowFlowing.mixSnowWithWater(world,pos,accessor,quantaWater,actualLayer,flags);
+                }
             return actualLayer;
         }
         if(fluid != current) return 0L;
         final int currentQuanta = (int) getLayers(state,current,null);
         final int actualLayer = (int) APIMathUtil.clamp(layer,-currentQuanta,8L-currentQuanta);
         if(actualLayer == 0L) return 0L;
-        final int flags = BlockFlagModifier.modify(Constants.BlockFlags.DEFAULT,blockFlagsModifier);
-        final int newQuanta = currentQuanta + actualLayer;
-        assert Blocks.AIR != null;
-        if(newQuanta == 0L) world.setBlockState(pos, Blocks.AIR.getDefaultState(), flags);
-        else world.setBlockState(pos, FiniteFlowingVanilla.getFlowingByMaterial(state.getMaterial()).dynamic.getDefaultState().withProperty(LEVEL,8 - newQuanta), flags);
+        if(doOperate){
+            final int flags = BlockFlagModifier.modify(Constants.BlockFlags.DEFAULT,blockFlagsModifier);
+            final int newQuanta = currentQuanta + actualLayer;
+            assert Blocks.AIR != null;
+            if(newQuanta == 0L) world.setBlockState(pos, Blocks.AIR.getDefaultState(), flags);
+            else world.setBlockState(pos, FiniteFlowingVanilla.getFlowingByMaterial(state.getMaterial()).dynamic.getDefaultState().withProperty(LEVEL,8 - newQuanta), flags);
+        }
         return actualLayer;
     }
 

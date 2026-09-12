@@ -293,7 +293,7 @@ public interface ILaminarifer{
      * @param nbt                添加的流体的 NBT 复合标签
      * @param layer              层数
      * @param doOperate          进行操作
-     * @param pulse              来势脉冲
+     * @param pulse              流强脉冲
      * @param source             流体来源
      * @param blockFlagsModifier 方块更新操作的修改器，用一个 long 表示，可通过 {@link BlockFlagModifier} 构建
      * @return 在给定条件下，实际添加的层数
@@ -332,7 +332,7 @@ public interface ILaminarifer{
      * @param nbt                要抽取流体的附加 NBT 复合标签
      * @param layer              层数
      * @param doOperate          进行操作
-     * @param pulse              去势脉冲
+     * @param pulse              流强脉冲
      * @param drainer            抽取者
      * @param blockFlagsModifier 方块更新操作的修改器，用一个 long 表示，可通过 {@link BlockFlagModifier} 构建
      * @return 在给定条件下，实际抽取的流体层数
@@ -410,7 +410,7 @@ public interface ILaminarifer{
      * @param fluid              要抽取的流体类型，可以为 null，表示不限定流体类型
      * @param amount             流体量，单位为 QB
      * @param doOperate          进行操作
-     * @param pulse              去势脉冲
+     * @param pulse              流强脉冲
      * @param drainer            抽取者
      * @param blockFlagsModifier 方块更新操作的修改器，用一个 long 表示，可通过 {@link BlockFlagModifier} 构建
      * @return 在给定条件下，实际添加的流体量，单位为 QB
