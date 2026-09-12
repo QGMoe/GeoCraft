@@ -153,7 +153,7 @@ public class FlowChoice {
                                  @Nullable final IFlowSource<?> source) {
         if(laminarifer != null){
             assert state != null;
-            return laminarifer.canFill(world,pos,state,direction,fluid,nbt,source);
+            return laminarifer.canFill(world,pos,state,direction.getOpposite(),fluid,nbt,source);
         }else return true;
     }
 

@@ -32,7 +32,7 @@ import moe.qingu.orbtellus.api.fluid.unit.FluidUnit;
 import moe.qingu.orbtellus.api.fluid.unit.QuantaUnit;
 import moe.qingu.orbtellus.api.laminarifer.*;
 import moe.qingu.orbtellus.api.laminarifer.flow.drainer.IFlowDrainer;
-import moe.qingu.orbtellus.api.laminarifer.flow.source.IFlowSource;
+import moe.qingu.orbtellus.api.laminarifer.flow.source.FlowSources;
 import moe.qingu.orbtellus.api.laminarifer.request.FillLaminariferRequest;
 import moe.qingu.orbtellus.api.util.APIMathUtil;
 import moe.qingu.orbtellus.api.util.math.vec.MBlockPos;
@@ -69,7 +69,7 @@ import static moe.qingu.orbtellus.api.block.BlockProperties.MIXTURE;
  * @since 0.2.0-beta.2
  * @author QiguaiAAAA
  */
-public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLaminarifer, IOperateLayerLaminarifer, IFlowSource<BlockSnowFinite> {
+public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLaminarifer, IOperateLayerLaminarifer {
     protected static final MBlockPos mPos = new MBlockPos();
     protected static final FillLaminariferRequest fillRequest = new FillLaminariferRequest();
 
@@ -233,7 +233,7 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLam
                         .target((ILaminarifer) downBlock)
                         .specific(SnowFlowing.FILL_ORDER[i])
                         .amount(qb)
-                        .source(this)
+                        .source(FlowSources.RUNOFF)
                         .disableFlags(Constants.BlockFlags.NOTIFY_NEIGHBORS)
                         .enableFlags(Constants.BlockFlags.NO_OBSERVERS)
                         .fill(true);

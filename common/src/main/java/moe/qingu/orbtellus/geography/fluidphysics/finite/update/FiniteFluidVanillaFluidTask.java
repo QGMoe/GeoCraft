@@ -202,7 +202,7 @@ public final class FiniteFluidVanillaFluidTask extends AbstractFluidTask {
         try (final AverageFlow flow = averageFlow){
             flow.at(world,pos)
                     .fluid(FluidRegistry.WATER)
-                    .source(null)
+                    .source(FlowSources.RUNOFF)
                     .centralModel.currentLayers = liquidQuanta;
             final @Nullable Set<EnumFacing> slopeModeFlowDirections = FluidPhysicsConfig.slopeModeForVanillaWhenOnLiquidsAndQuantaAbove1.getValue()?
                     slopeFlowableDirections:null;//多层坡度模式可用方向

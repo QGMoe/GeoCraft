@@ -29,6 +29,7 @@ package moe.qingu.orbtellus.geography.fluidphysics.finite.flow;
 
 import moe.qingu.orbtellus.api.laminarifer.LaminariferModelBuffer;
 import moe.qingu.orbtellus.api.laminarifer.flow.AverageFlow;
+import moe.qingu.orbtellus.api.laminarifer.flow.source.FlowSources;
 import moe.qingu.orbtellus.api.world.tick.scheduler.BlockTickScheduler;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
@@ -153,7 +154,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
         try (final AverageFlow flow = averageFlow){
             flow.at(worldIn,pos)
                     .fluid(FluidRegistry.WATER)
-                    .source(null)
+                    .source(FlowSources.RUNOFF)
                     .centralModel.currentLayers = liquidQuanta;
             final @Nullable Set<EnumFacing> slopeModeFlowDirections = FluidPhysicsConfig.slopeModeForVanillaWhenOnLiquidsAndQuantaAbove1.getValue()?
                     slopeFlowableDirections :null;//非Q=1坡度模式可用方向

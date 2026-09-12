@@ -83,7 +83,7 @@ public abstract class EntityPotionMixin extends EntityThrowable {
         for(int i=0;i<4;i++){
             final EnumFacing side = EnumFacing.HORIZONTALS[directions[i]];
             final BlockPos pos = mutable.setPos(curPos).offsetM(side);
-            left -= 天圆地方$applyOnLayeredFluidHostSide(side,pos,天圆地方$randomizeAmount(left),3);
+            left -= 天圆地方$applyOnLayeredFluidHostSide(side.getOpposite(),pos,天圆地方$randomizeAmount(left),3);
             if(left <= 0L) break;
         }
         if(left >0){
@@ -94,7 +94,7 @@ public abstract class EntityPotionMixin extends EntityThrowable {
                         curPos.getX()+MathUtil.OUTER_DIRECTIONS[dir2[i]][0],
                         curPos.getY(),
                         curPos.getZ()+MathUtil.OUTER_DIRECTIONS[dir2[i]][1]);
-                left -= 天圆地方$applyOnLayeredFluidHostSide(side,pos,天圆地方$randomizeAmount(left),2);
+                left -= 天圆地方$applyOnLayeredFluidHostSide(side.getOpposite(),pos,天圆地方$randomizeAmount(left),2);
                 if(left <= 0L) break;
             }
         }
