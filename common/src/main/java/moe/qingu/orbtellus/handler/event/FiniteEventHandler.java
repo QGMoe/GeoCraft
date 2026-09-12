@@ -296,6 +296,7 @@ public final class FiniteEventHandler {
                         break;
                     case FALLING_BLOCK:
                         if(sourceEntity == null) break;
+                        if(!(laminarifer instanceof IBlockStateLaminarifer)) break;
                         IBlockState quantaState = ((IBlockStateLaminarifer)laminarifer).getLayerState(replacedState,fluid,null,curLayer+canFillLayer);
                         if(quantaState == null) break;
                         ((EntityFallingBlockAccessor)sourceEntity).setFallTile(quantaState);
