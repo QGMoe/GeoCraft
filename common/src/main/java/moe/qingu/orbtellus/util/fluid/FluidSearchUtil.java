@@ -104,9 +104,9 @@ public final class FluidSearchUtil {
                                                 int maxIterations,
                                                 int sameQuantaIterationLimit){
         if(fluid == FluidRegistry.WATER){
-            findSource(world,startPos,Material.WATER,ignoreSameY,ignoreLevel,maxIterations,sameQuantaIterationLimit);
+            return findSource(world,startPos,Material.WATER,ignoreSameY,ignoreLevel,maxIterations,sameQuantaIterationLimit);
         }else if(fluid == FluidRegistry.LAVA){
-            findSource(world,startPos,Material.LAVA,ignoreSameY,ignoreLevel,maxIterations,sameQuantaIterationLimit);
+            return findSource(world,startPos,Material.LAVA,ignoreSameY,ignoreLevel,maxIterations,sameQuantaIterationLimit);
         }
         try{
             return findSourceIterate(world,startPos,fluid,ignoreSameY,ignoreLevel,

@@ -40,7 +40,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
 import moe.qingu.orbtellus.api.laminarifer.ILaminarifer;
 import moe.qingu.orbtellus.api.util.FluidUtil;
@@ -153,7 +152,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
         //平均流动 & 多层坡度流动
         try (final AverageFlow flow = averageFlow){
             flow.at(worldIn,pos)
-                    .fluid(FluidRegistry.WATER)
+                    .fluid(this.fluid)
                     .source(FlowSources.RUNOFF)
                     .centralModel.currentLayers = liquidQuanta;
             final @Nullable Set<EnumFacing> slopeModeFlowDirections = FluidPhysicsConfig.slopeModeForVanillaWhenOnLiquidsAndQuantaAbove1.getValue()?

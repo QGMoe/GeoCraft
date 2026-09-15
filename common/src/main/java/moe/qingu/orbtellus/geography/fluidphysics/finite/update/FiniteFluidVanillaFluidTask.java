@@ -60,7 +60,6 @@ import moe.qingu.orbtellus.handler.ServerStatusMonitor;
 import moe.qingu.orbtellus.util.MiscUtil;
 import moe.qingu.orbtellus.util.fluid.FluidOperationUtil;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -139,7 +138,7 @@ public final class FiniteFluidVanillaFluidTask extends AbstractFluidTask {
                     final long qbToFill = QuantaUnit.toQB(liquidQuanta);
                     final long qbFilled = request.to(world,downPos,stateBelow).side(EnumFacing.UP)
                             .target((ILaminarifer) blockBelow)
-                            .specific(FluidRegistry.WATER).amount(qbToFill)
+                            .specific(this.fluid).amount(qbToFill)
                             .source(FlowSources.RUNOFF)
                             .fill(true);
                     newLiquidQuanta = QBUnit.sampleQuantaAsInt(rand,APIMathUtil.clamp(qbToFill - qbFilled,0L,qbToFill));
@@ -201,7 +200,7 @@ public final class FiniteFluidVanillaFluidTask extends AbstractFluidTask {
         //可流动方向检查
         try (final AverageFlow flow = averageFlow){
             flow.at(world,pos)
-                    .fluid(FluidRegistry.WATER)
+                    .fluid(this.fluid)
                     .source(FlowSources.RUNOFF)
                     .centralModel.currentLayers = liquidQuanta;
             final @Nullable Set<EnumFacing> slopeModeFlowDirections = FluidPhysicsConfig.slopeModeForVanillaWhenOnLiquidsAndQuantaAbove1.getValue()?
@@ -241,10 +240,10 @@ public final class FiniteFluidVanillaFluidTask extends AbstractFluidTask {
 
                 final int newLiquidQuanta = (int)(flow.finalLayers + QBUnit.sampleQuanta(rand, left));
 
-                liquidMeta = 8 - newLiquidQuanta;
+                final int newLiquidMeta = 8 - newLiquidQuanta;
                 if (newLiquidQuanta<=0) world.setBlockState(pos,AIR_DEFAULT_STATE,updateFlag); //先更新自身状态
                 else {
-                    state = state.withProperty(LEVEL,liquidMeta);
+                    state = state.withProperty(LEVEL,newLiquidMeta);
                     world.setBlockState(pos, state, Constants.BlockFlags.SEND_TO_CLIENTS);
                     BlockTickScheduler.schedule(world,pos,flowing.dynamic, updateRate);
                     if(FluidPhysicsConfig.PRESSURE_SYSTEM_FOR_REALITY.getValue() && !FluidPressureSearchManager.isTaskRunning(world,pos)){

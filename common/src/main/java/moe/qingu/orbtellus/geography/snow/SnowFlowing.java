@@ -81,8 +81,8 @@ public final class SnowFlowing {
                                     .withProperty(BlockSnow.LAYERS,sum);
                     WATER_SNOW_MIX_DELTA_HEAT[water][snow]= (snow-water)/2d * AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA;
                 }else if(water>=snow){ //旧规则，可以发现这里直接包含了 costWater 最低或与 costMixture 相等的情况，另外这里肯定取不到等号
-                    WATER_SNOW_MIX_TABLE_DYNAMIC[water][snow]=Blocks.FLOWING_WATER.getDefaultState().withProperty(LEVEL,sum);
-                    WATER_SNOW_MIX_TABLE_STATIC[water][snow]=Blocks.WATER.getDefaultState().withProperty(LEVEL,sum);
+                    WATER_SNOW_MIX_TABLE_DYNAMIC[water][snow]=Blocks.FLOWING_WATER.getDefaultState().withProperty(LEVEL,8-sum);
+                    WATER_SNOW_MIX_TABLE_STATIC[water][snow]=Blocks.WATER.getDefaultState().withProperty(LEVEL,8-sum);
                     WATER_SNOW_MIX_DELTA_HEAT[water][snow]=snow*AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA;
                 }else { //同理，包含 costSnow 最低或与 costMixture 相等的情况
                     WATER_SNOW_MIX_TABLE_DYNAMIC[water][snow]=WATER_SNOW_MIX_TABLE_STATIC[water][snow]=
