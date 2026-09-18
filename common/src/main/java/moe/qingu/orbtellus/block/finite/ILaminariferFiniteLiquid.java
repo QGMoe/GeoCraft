@@ -189,7 +189,7 @@ public interface ILaminariferFiniteLiquid extends IBlockStateLaminarifer, IOpera
             if(layer < 0L || layer + quantaWater > 8L) return null;
             return SnowFlowing.getSnowWaterMixState((int) layer,(int) quantaWater,state.getBlock() instanceof BlockStaticLiquid);
         }
-        if(fluid != current) return null;
+        if(fluid != current) return layer == 0L? state: null;
         if(layer< 0L || layer > 8L) return null;
         assert Blocks.AIR != null;
         if(layer == 0L) return Blocks.AIR.getDefaultState();

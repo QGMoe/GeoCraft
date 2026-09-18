@@ -30,6 +30,7 @@ package moe.qingu.orbtellus.handler;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import moe.qingu.orbtellus.block.atmosphere.BlockCauldronLaminarifer;
 import moe.qingu.orbtellus.block.soil.*;
 import moe.qingu.orbtellus.geography.property.*;
 import moe.qingu.orbtellus.handler.event.*;
@@ -83,6 +84,7 @@ public final class RegistryHandler {
     private static void registerVanillaBlockOverrides(){
         registerVanillaBlockOverride("snow_layer",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.FINITE ?new BlockSnowFinite():new BlockSnowExtended())
                 .setHardness(0.1F).setTranslationKey("snow").setLightOpacity(0));
+        registerVanillaBlockOverride("cauldron",new BlockCauldronLaminarifer().setHardness(2.0F).setTranslationKey("cauldron"));
         final Block grass;
         final Block dirt;
         final Block sand;

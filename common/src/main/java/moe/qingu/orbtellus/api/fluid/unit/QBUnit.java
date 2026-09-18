@@ -40,6 +40,7 @@ import java.util.Random;
  */
 public final class QBUnit {
     public static final long BUCKET_VOLUME = 72072000L;
+    public static final long BOTTLE_VOLUME = BUCKET_VOLUME / 3;
     public static final long QUANTA_VOLUME = BUCKET_VOLUME >> 3;
     public static final long HALF_QUANTA_VOLUME = BUCKET_VOLUME >> 4;
     public static final long MILLIBUCKET_VOLUME = BUCKET_VOLUME / MillibucketUnit.BUCKET_VOLUME;

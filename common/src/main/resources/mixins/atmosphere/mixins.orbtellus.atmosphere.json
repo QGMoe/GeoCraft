@@ -5,8 +5,7 @@
   "refmap": "mixins.geocraft.refmap.json",
   "mixins": [
     "block.BlockIceMixin",
-    "WorldServerMixin",
-    "block.BlockCauldronMixin"
+    "WorldServerMixin"
   ],
   "client": [
   ]

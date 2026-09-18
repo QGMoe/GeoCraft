@@ -334,7 +334,7 @@ public class BlockSnowFinite extends BlockSnowExtended implements IBlockStateLam
                                      @Nonnull final Fluid fluid,
                                      @Nullable final NBTTagCompound nbt,
                                      final long $新层数_载流层) {
-        if(!isAcceptedFluid(state,fluid,nbt)) return null;
+        if(!isAcceptedFluid(state,fluid,nbt)) return $新层数_载流层 == 0L? state: null;
         if($新层数_载流层 < 0L || $新层数_载流层 > 16L) return null;
         if(getLayers(state,fluid,nbt) == $新层数_载流层) return state;
         final long $当前水层_载流层 = fluid == FluidRegistry.WATER? $新层数_载流层 : getLayers(state,FluidRegistry.WATER,null);

@@ -119,6 +119,7 @@ public final class FiniteFluidVanillaFluidTask extends AbstractFluidTask {
             final int newLiquidQuanta;
             final int newLiquidMeta;
             if(flowing.isEqualFluid(stateBelow)){
+                if(stateBelow.getValue(LEVEL) == 0) break verticalFlow;
                 flowing.flowDown(world,pos,stateBelow,liquidQuanta,updateRate);
             }else if(blockBelow == Blocks.WATER || blockBelow == Blocks.FLOWING_WATER){ // 岩浆碰到水,消耗岩浆
                 newLiquidQuanta = liquidQuanta - 1;

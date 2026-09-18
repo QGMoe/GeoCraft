@@ -121,7 +121,8 @@ public class BlockSoilFarmland extends BlockFarmland implements IBlockSoil, IBlo
     /**
      * @see BlockFarmland#hasWater(World, BlockPos)
      */
-    protected boolean 天圆地方$hasWater(final @Nonnull World worldIn,final @Nonnull BlockPos pos) {
+    @SuppressWarnings("JavadocReference")
+    protected boolean 天圆地方$hasWater(final @Nonnull World worldIn, final @Nonnull BlockPos pos) {
         for (BlockPos.MutableBlockPos poses : BlockPos.getAllInBoxMutable(pos.add(-4, 0, -4), pos.add(4, 1, 4))) {
             if (worldIn.getBlockState(poses).getMaterial() == Material.WATER) {
                 return true;
@@ -133,7 +134,8 @@ public class BlockSoilFarmland extends BlockFarmland implements IBlockSoil, IBlo
     /**
      * @see BlockFarmland#hasCrops(World, BlockPos)
      */
-    protected boolean 天圆地方$hasCrops(final @Nonnull World worldIn,final @Nonnull BlockPos pos) {
+    @SuppressWarnings("JavadocReference")
+    protected boolean 天圆地方$hasCrops(final @Nonnull World worldIn, final @Nonnull BlockPos pos) {
         final Block block = worldIn.getBlockState(pos.up()).getBlock();
         return block instanceof IPlantable && canSustainPlant(worldIn.getBlockState(pos), worldIn, pos, EnumFacing.UP, (IPlantable)block);
     }
@@ -193,7 +195,7 @@ public class BlockSoilFarmland extends BlockFarmland implements IBlockSoil, IBlo
                                      @Nonnull final Fluid fluid,
                                      @Nullable final NBTTagCompound nbt,
                                      final long layer) {
-        if(fluid != FluidRegistry.WATER) return null;
+        if(fluid != FluidRegistry.WATER) return layer == 0L? state : null;
         if(layer <0L || layer > 4L) return null;
         final int moisture = (int) (layer == 0L?0L: (layer<<1)-1L);
         return state.withProperty(MOISTURE,moisture);

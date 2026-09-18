@@ -179,7 +179,7 @@ public interface IBlockSoil extends IBlockStateLaminarifer, IFlowInitiator<IBloc
 
     @Override
     default IBlockState getLayerState(@Nonnull final IBlockState state, @Nonnull final Fluid fluid, @Nullable final NBTTagCompound nbt, final long layer){
-        if(fluid != FluidRegistry.WATER) return null;
+        if(fluid != FluidRegistry.WATER) return layer == 0L? state: null;
         if(layer < 0L || layer> 4L) return null;
         return state.withProperty(HUMIDITY, (int) layer);
     }
