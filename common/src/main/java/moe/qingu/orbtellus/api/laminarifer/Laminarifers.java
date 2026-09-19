@@ -190,7 +190,9 @@ public final class Laminarifers {
         final long curAmount = getAmountInQB(laminarifer, world, pos, state, fluid, nbt);
         final long amountInFact = Math.min(amount, laminarifer.getMaxAmountInQB(world, pos, state, fluid, nbt)-curAmount);
         if(amountInFact <= 0L) return 0L;
-        return laminarifer.addLayer(world,pos,state,fluid,nbt, FluidUnit.sample(world.rand, amountInFact, amountPerLayer),doOperate,pulse,source,blockFlagsModifier)*amountPerLayer;
+        final long sampledLayer = FluidUnit.sample(world.rand, amountInFact, amountPerLayer);
+        final long filledLayer = laminarifer.addLayer(world,pos,state,fluid,nbt, sampledLayer,doOperate,pulse,source,blockFlagsModifier);
+        return filledLayer<sampledLayer? filledLayer*amountPerLayer:amountInFact;
     }
 
 
@@ -390,7 +392,9 @@ public final class Laminarifers {
         final long curAmount = getAmountInQB(laminarifer, world, pos, state, fluid, nbt);
         final long drainedInFact = Math.min(amount,curAmount);
         if(drainedInFact <= 0) return 0;
-        return laminarifer.drainLayer(world,pos,state,fluid,nbt,FluidUnit.sample(world.rand, drainedInFact, amountPerLayer),doOperate,pulse,drainer,blockFlagsModifier)*amountPerLayer;
+        final long sampledLayer = FluidUnit.sample(world.rand, drainedInFact, amountPerLayer);
+        final long extractedLayer =  laminarifer.drainLayer(world,pos,state,fluid,nbt,sampledLayer,doOperate,pulse,drainer,blockFlagsModifier);
+        return extractedLayer < sampledLayer? extractedLayer * amountPerLayer: drainedInFact;
     }
 
     /**

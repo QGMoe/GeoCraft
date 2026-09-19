@@ -158,7 +158,7 @@ public final class BlockSoils { //unfinished todo
                                     .specific(FluidRegistry.WATER)
                                     .amount(QBUnit.QUANTA_VOLUME)
                                     .source($土壤)
-                                    .fill(true)>0L;
+                                    .fillAs(true, QBUnit.QUANTA_VOLUME) >0L;
 
                         }
                     }
@@ -265,12 +265,12 @@ public final class BlockSoils { //unfinished todo
         final IBlockState upState = world.getBlockState(mutablePos);
         if(upState.getBlock() instanceof ILaminarifer){
             try (final ExtractLaminariferRequest request = getExtractRequest().open()){
-                return QBUnit.sampleQuanta(world.rand,request.target((ILaminarifer) upState.getBlock())
+                return request.target((ILaminarifer) upState.getBlock())
                         .to(world,mutablePos,upState).side(EnumFacing.DOWN)
                         .specific(FluidRegistry.WATER)
                         .amount(QBUnit.QUANTA_VOLUME)
                         .drainer($土壤)
-                        .extract(true)) > 0L? 1: 0;
+                        .extractAs(true,QBUnit.QUANTA_VOLUME) > 0L? 1: 0;
             }
         }
         return 0;

@@ -27,6 +27,7 @@
 
 package moe.qingu.orbtellus.api.laminarifer.request;
 
+import moe.qingu.orbtellus.api.fluid.unit.FluidUnit;
 import moe.qingu.orbtellus.api.laminarifer.Laminarifers;
 import moe.qingu.orbtellus.api.laminarifer.flow.source.IFlowSource;
 
@@ -80,6 +81,10 @@ public final class FillLaminariferRequest extends SpecificLaminariferRequest<Fil
             case STATUS_REFUSED:
             default:return 0L;
         }
+    }
+
+    public long fillAs(final boolean doOperate, final long granularity){
+        return FluidUnit.sample(world.rand, fill(doOperate), granularity);
     }
 
     @Override
