@@ -63,10 +63,7 @@ import moe.qingu.orbtellus.util.fluid.FluidOperationUtil;
 import moe.qingu.orbtellus.util.fluid.FluidSearchUtil;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static moe.qingu.orbtellus.configs.FluidPhysicsConfig.*;
 
@@ -87,10 +84,12 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements IFluidTaskRe
     /**
      * @author QGMoe
      */
+    @SuppressWarnings("ConstantValue")
     @Inject(method = "<init>",at = @At("TAIL"))
     private void 天圆地方$CLASSIC$init(final @Nonnull Material material,final @Nonnull CallbackInfo ci) {
         DeferredActions.onInit(() -> {
             this.天圆地方$CLASSIC$thisFluid = material == Material.LAVA? FluidRegistry.LAVA:FluidRegistry.WATER;
+            if((Object) this != Blocks.FLOWING_LAVA && (Object) this != Blocks.FLOWING_WATER) return; //避免第三方模组创建实例导致任务重复创建崩溃
             final Block dynamic = material == Material.LAVA? Blocks.FLOWING_LAVA:Blocks.FLOWING_WATER;
             final Block static_ = material == Material.LAVA? Blocks.LAVA:Blocks.WATER;
             this.天圆地方$CLASSIC$task = new AbstractFluidTask() {

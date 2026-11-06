@@ -110,7 +110,7 @@ public final class FluidTaskRegistry {
     }
 
     public static int getID(final @Nonnull IFluidTask task){
-        return IDLookup.get(task);
+        return IDLookup.getInt(task);
     }
 
     public static ResourceLocation getName(final @Nonnull IFluidTask task){
