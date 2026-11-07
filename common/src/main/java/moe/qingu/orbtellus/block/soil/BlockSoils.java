@@ -366,7 +366,7 @@ public final class BlockSoils { //unfinished todo
             }
 
             worldIn.playSound(null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            $土壤.addLayer(worldIn,pos,state,FluidRegistry.WATER,null,2L,true,0L,$土壤,BlockFlagModifiers.KEEP);
+            Laminarifers.addAmountInQB($土壤,worldIn,pos,state,FluidRegistry.WATER,null,QBUnit.BOTTLE_VOLUME,true,0L,$土壤,BlockFlagModifiers.KEEP);
             return true;
         }
         return false;

@@ -4,13 +4,13 @@
 # 格式与规则见本目录 README.md。
 
 - 中文: "分层流体承载方块"
-  英文: "Layered Fluid Host Block"
+  英文: "Laminarifer"
   别称:
     - ["载流方块"]
     - []
   旧称:
     - ["透水方块"]
-    - []
+    - ["Layered Fluid Host Block"]
   定义: "一种能够以竖直方向的层状结构储存一种或多种流体的方块。"
   出处:
     - 链: "https://www.mcmod.cn/item/895381.html"
@@ -52,7 +52,7 @@
   出处: "https://www.mcmod.cn/item/919288.html"
 
 - 中文: "平均流动算法"
-  英文: null
+  英文: "Average Flow Algorithm"
   定义: "计算平均流动分配结果的算法。"
   出处: "https://www.mcmod.cn/item/919288.html"
 
@@ -78,7 +78,7 @@
     - 类: moe.qingu.orbtellus.fluid.FluidSnow
 
 - 中文: "雪水混合物"
-  英文: "snow-water mixture"
+  英文: "Snow-water Mixture"
   别称:
     - ["混雪"]
     - []

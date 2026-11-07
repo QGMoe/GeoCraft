@@ -29,6 +29,7 @@ package moe.qingu.orbtellus.geography.atmosphere.system;
 
 import moe.qingu.orbtellus.api.atmosphere.AtmosphereFlowSource;
 import moe.qingu.orbtellus.api.fluid.unit.MillibucketUnit;
+import moe.qingu.orbtellus.api.fluid.unit.QBUnit;
 import moe.qingu.orbtellus.api.laminarifer.request.FillLaminariferRequest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -181,13 +182,16 @@ public abstract class QGAtmosphereSystem extends BaseAtmosphereSystem{
                         .test()){
                     final int drained = atmosphere.drainWater(MillibucketUnit.QUANTA_VOLUME_INT,pos,false); //mB
                     if(drained>= MillibucketUnit.QUANTA_VOLUME_INT){
-                        filled = request.amount(MillibucketUnit.toQB(atmosphere.drainWater(MillibucketUnit.QUANTA_VOLUME_INT,pos,true)))
+                        final int actualDrained;
+                        filled = request.amount(MillibucketUnit.toQB(actualDrained = atmosphere.drainWater(MillibucketUnit.QUANTA_VOLUME_INT,pos,true)))
                                 .fill(true);
+                        atmosphere.addWater(Math.max(0, actualDrained - QBUnit.sampleMillibucketAsInt(world.rand, actualDrained)), pos, true);
                     }
                 }
 
                 if(filled>0){
-                    if(request.getFluid() == OTCFluids.SNOW) accessor.putHeatToAtmosphere(WATER_MELT_LATENT_HEAT_PER_QUANTA);
+                    if(request.getFluid() == OTCFluids.SNOW)
+                        accessor.putHeatToAtmosphere(WATER_MELT_LATENT_HEAT_PER_QUANTA* (filled / MillibucketUnit.QUANTA_VOLUME_DOUBLE));
                     return;
                 }
             }

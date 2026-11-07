@@ -91,7 +91,7 @@ public final class SoilConfig {
 
     @GeoConfig.Support(since = "0.1")
     @Config.Comment("开启土壤相关的世界生成机制。\n" +
-            "若禁用，自然生成的土壤和其他透水方块将默认不会有湿度，该配置块内的其他功能同样不会生效。\n" +
+            "若禁用，自然生成的土壤和其他载流方块将默认不会有湿度，该配置块内的其他功能同样不会生效。\n" +
             "Enable soil-related world generation features.\n" +
             "If disabled, naturally generated soil and other permeable blocks will have no moisture by default, and other functions within this configuration block will also be disabled.")
     public static final ConfigBoolean ENABLE_GENERATION = new ConfigBoolean(CATEGORY_SOIL_GENERATION, "enable",true);

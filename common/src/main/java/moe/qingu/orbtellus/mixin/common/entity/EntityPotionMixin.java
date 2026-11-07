@@ -76,14 +76,14 @@ public abstract class EntityPotionMixin extends EntityThrowable {
         final BlockPos hitPos = res.getBlockPos();
         final BlockPos curPos = hitPos.offset(res.sideHit);
         long left = QBUnit.VOLUMES_1_TO_16.getLong(3);
-        left -= 天圆地方$applyOnLayeredFluidHost(res.sideHit,curPos,天圆地方$randomizeAmount(left));
-        left -= 天圆地方$applyOnLayeredFluidHostSide(res.sideHit,hitPos,天圆地方$randomizeAmount(left),4);
+        left -= 天圆地方$applyOnLaminarifer(res.sideHit,curPos,天圆地方$randomizeAmount(left));
+        left -= 天圆地方$applyOnLaminariferSide(res.sideHit,hitPos,天圆地方$randomizeAmount(left),4);
         final byte[] directions = MathUtil.randomizeByteArray(new byte[]{0,1,2,3},world.rand);
         final MBlockPos mutable = new MBlockPos();
         for(int i=0;i<4;i++){
             final EnumFacing side = EnumFacing.HORIZONTALS[directions[i]];
             final BlockPos pos = mutable.setPos(curPos).offsetM(side);
-            left -= 天圆地方$applyOnLayeredFluidHostSide(side.getOpposite(),pos,天圆地方$randomizeAmount(left),3);
+            left -= 天圆地方$applyOnLaminariferSide(side.getOpposite(),pos,天圆地方$randomizeAmount(left),3);
             if(left <= 0L) break;
         }
         if(left >0){
@@ -94,11 +94,11 @@ public abstract class EntityPotionMixin extends EntityThrowable {
                         curPos.getX()+MathUtil.OUTER_DIRECTIONS[dir2[i]][0],
                         curPos.getY(),
                         curPos.getZ()+MathUtil.OUTER_DIRECTIONS[dir2[i]][1]);
-                left -= 天圆地方$applyOnLayeredFluidHostSide(side.getOpposite(),pos,天圆地方$randomizeAmount(left),2);
+                left -= 天圆地方$applyOnLaminariferSide(side.getOpposite(),pos,天圆地方$randomizeAmount(left),2);
                 if(left <= 0L) break;
             }
         }
-        final int quantaLeft = QBUnit.toQuantaAsInt(left);
+        final int quantaLeft = QBUnit.sampleQuantaAsInt(world.rand, left);
         if(quantaLeft >0 && FluidPhysicsSystem.isFluidToBePhysical(FluidRegistry.WATER) && FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.FINITE){
             final FiniteBlockLiquidWrapper wrapper = new FiniteBlockLiquidWrapper(FiniteFlowings.WATER_FLOW,world,curPos);
             wrapper.fill(new FluidStack(FluidRegistry.WATER,quantaLeft* MillibucketUnit.QUANTA_VOLUME_INT),true);
@@ -111,25 +111,25 @@ public abstract class EntityPotionMixin extends EntityThrowable {
     }
 
     @Unique
-    private long 天圆地方$applyOnLayeredFluidHostSide(final @Nonnull EnumFacing side, final @Nonnull BlockPos pos, final long left ,final int iter){
+    private long 天圆地方$applyOnLaminariferSide(final @Nonnull EnumFacing side, final @Nonnull BlockPos pos, final long left , final int iter){
         final IBlockState state = world.getBlockState(pos);
         final Block block = state.getBlock();
         if(block instanceof ILaminarifer){
-            return 天圆地方$applyOnLayeredFluidHost(side,pos,state,left);
+            return 天圆地方$applyOnLaminarifer(side,pos,state,left);
         }else if(iter > 0 && block.isPassable(world,pos)){
-            return 天圆地方$applyOnLayeredFluidHostSide(EnumFacing.UP,pos.down(),left,iter - 1);
+            return 天圆地方$applyOnLaminariferSide(EnumFacing.UP,pos.down(),left,iter - 1);
         }
         return 0L;
     }
 
     @Unique
-    private long 天圆地方$applyOnLayeredFluidHost(final @Nonnull EnumFacing side, final @Nonnull BlockPos pos, final long left){
+    private long 天圆地方$applyOnLaminarifer(final @Nonnull EnumFacing side, final @Nonnull BlockPos pos, final long left){
         final IBlockState state = world.getBlockState(pos);
-        return 天圆地方$applyOnLayeredFluidHost(side,pos,state,left);
+        return 天圆地方$applyOnLaminarifer(side,pos,state,left);
     }
 
     @Unique
-    private long 天圆地方$applyOnLayeredFluidHost(final @Nonnull EnumFacing side, final @Nonnull BlockPos pos,final @Nonnull IBlockState state, final long left){
+    private long 天圆地方$applyOnLaminarifer(final @Nonnull EnumFacing side, final @Nonnull BlockPos pos, final @Nonnull IBlockState state, final long left){
         final Block block = state.getBlock();
         if(block instanceof ILaminarifer){
             try (final FillLaminariferRequest request = 天圆地方$fillRequest.open()){

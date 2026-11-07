@@ -133,10 +133,10 @@ public class OrbTellusPostPopulatingGenerator implements IWorldGenerator {
                     (int)MathHelper.clamp(4f*biome.getRainfall()+1,0f,soil.getMaxStableHumidity(state)));
         }
         if(block instanceof ILaminarifer){ //之前已经处理过本身为流体的可能性，这里一定不会是流体
-            ILaminarifer permeable = (ILaminarifer) block;
-            long maxQuanta = permeable.getMaxLayers(world,pos,state,FluidRegistry.WATER,null);
+            ILaminarifer laminarifer = (ILaminarifer) block;
+            long maxQuanta = laminarifer.getMaxLayers(world,pos,state,FluidRegistry.WATER,null);
             if(waterFlag){
-                permeable.addLayer(world,pos,state,FluidRegistry.WATER,null, maxQuanta, true, 0L, null,
+                laminarifer.addLayer(world,pos,state,FluidRegistry.WATER,null, maxQuanta, true, 0L, null,
                         BlockFlagModifier.build(Constants.BlockFlags.NO_OBSERVERS | Constants.BlockFlags.NO_RERENDER,Constants.BlockFlags.DEFAULT_AND_RERENDER));
                 shouldContinue = true;
                 return null;
