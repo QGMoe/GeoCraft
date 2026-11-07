@@ -185,13 +185,13 @@ public abstract class QGAtmosphereSystem extends BaseAtmosphereSystem{
                         final int actualDrained;
                         filled = request.amount(MillibucketUnit.toQB(actualDrained = atmosphere.drainWater(MillibucketUnit.QUANTA_VOLUME_INT,pos,true)))
                                 .fill(true);
-                        atmosphere.addWater(Math.max(0, actualDrained - QBUnit.sampleMillibucketAsInt(world.rand, actualDrained)), pos, true);
+                        atmosphere.addWater(Math.max(0, actualDrained - QBUnit.sampleMillibucketAsInt(world.rand, filled)), pos, true);
                     }
                 }
 
                 if(filled>0){
                     if(request.getFluid() == OTCFluids.SNOW)
-                        accessor.putHeatToAtmosphere(WATER_MELT_LATENT_HEAT_PER_QUANTA* (filled / MillibucketUnit.QUANTA_VOLUME_DOUBLE));
+                        accessor.putHeatToAtmosphere(WATER_MELT_LATENT_HEAT_PER_QUANTA* (filled / QBUnit.QUANTA_VOLUME_DOUBLE));
                     return;
                 }
             }
