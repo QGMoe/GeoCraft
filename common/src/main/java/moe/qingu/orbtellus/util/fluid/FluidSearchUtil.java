@@ -178,7 +178,7 @@ public final class FluidSearchUtil {
             EnumFacing opposite = current.direction.getOpposite();
             boolean falling = state.getValue(BlockLiquid.LEVEL) >= 8;
 
-            for (EnumFacing dir : EnumFacing.Plane.HORIZONTAL) {
+            for (EnumFacing dir : EnumFacing.HORIZONTALS) {
                 if (dir == opposite) continue;
 
                 BlockPos nextPos = current.pos.offset(dir);
@@ -272,7 +272,7 @@ public final class FluidSearchUtil {
             EnumFacing opposite = current.direction.getOpposite();
             boolean falling = (world.getBlockState(current.pos.down(densityDir)).getBlock() == state.getBlock());
 
-            for (EnumFacing dir : EnumFacing.Plane.HORIZONTAL) {
+            for (EnumFacing dir : EnumFacing.HORIZONTALS) {
                 if (dir == opposite) continue;
 
                 BlockPos nextPos = current.pos.offset(dir);
@@ -458,7 +458,7 @@ public final class FluidSearchUtil {
             // 水平方向搜索
             EnumFacing opposite = current.direction.getOpposite();
 
-            for (EnumFacing dir : EnumFacing.Plane.HORIZONTAL) {
+            for (EnumFacing dir : EnumFacing.HORIZONTALS) {
                 if (dir == opposite) continue;
                 BlockPos nextPos = current.pos.offset(dir);
                 if (visited.contains(nextPos)) continue;

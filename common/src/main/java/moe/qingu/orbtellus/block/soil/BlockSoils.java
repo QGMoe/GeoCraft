@@ -234,7 +234,7 @@ public final class BlockSoils { //unfinished todo
             $平均流动.at(world, pos).fluid(FluidRegistry.WATER).source($土壤);
             $平均流动.centralModel.currentLayers = $土壤.getLayers(state,FluidRegistry.WATER,null);
             $平均流动.centralModel.heightPerLayer = $土壤.getHeightPerLayer(state,FluidRegistry.WATER,null);
-            for(final @Nonnull EnumFacing facing:EnumFacing.Plane.HORIZONTAL){
+            for(final @Nonnull EnumFacing facing:EnumFacing.HORIZONTALS){
                 mutablePos.setPos(pos).offsetM(facing);
                 final IBlockState facingState = world.getBlockState(mutablePos);
                 if(facingState.getMaterial() == Material.AIR) $平均流动.addAirChoice(facing);

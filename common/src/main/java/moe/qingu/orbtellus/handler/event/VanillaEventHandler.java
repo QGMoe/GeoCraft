@@ -28,8 +28,10 @@
 package moe.qingu.orbtellus.handler.event;
 
 import moe.qingu.orbtellus.api.fluid.unit.MillibucketUnit;
+import moe.qingu.orbtellus.api.fluid.unit.QuantaUnit;
 import moe.qingu.orbtellus.api.laminarifer.Laminarifers;
-import moe.qingu.orbtellus.api.util.modifier.BlockFlagModifiers;
+import moe.qingu.orbtellus.api.laminarifer.flow.source.FlowSources;
+import moe.qingu.orbtellus.api.util.modifier.BlockFlagModifier;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
@@ -39,8 +41,10 @@ import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fluids.BlockFluidBase;
+import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.eventhandler.Event;
@@ -48,7 +52,6 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import moe.qingu.orbtellus.api.atmosphere.Atmosphere;
 import moe.qingu.orbtellus.api.laminarifer.IBlockStateLaminarifer;
-import moe.qingu.orbtellus.api.laminarifer.ILaminarifer;
 import moe.qingu.orbtellus.api.event.atmosphere.AtmosphereUpdateEvent;
 import moe.qingu.orbtellus.api.event.block.StaticLiquidUpdateEvent;
 import moe.qingu.orbtellus.api.util.FluidUtil;
@@ -87,116 +90,77 @@ public final class VanillaEventHandler {
     }
 
     @SubscribeEvent
-    public void onPlayerPlacedBlock(BlockEvent.PlaceEvent event){
-        if(!onBlockReplaced(event.getWorld(), event.getPos(),event.getBlockSnapshot().getReplacedBlock(),event.getBlockSnapshot().getCurrentBlock(), FiniteEventHandler.PlaceSource.PLAYER,event.getEntity())){
-            event.setCanceled(true);
+    @SuppressWarnings("deprecation")
+    public void onEntityPlacedBlock(final BlockEvent.EntityPlaceEvent event){
+        if(event instanceof BlockEvent.PlaceEvent){
+            implace(event.getWorld(), event.getPos(),event.getBlockSnapshot().getReplacedBlock(),event.getBlockSnapshot().getCurrentBlock(), FiniteEventHandler.PlaceSource.PLAYER,event.getEntity());
+            return;
         }
-    }
-
-    @SubscribeEvent
-    public void onEntityPlacedBlock(BlockEvent.EntityPlaceEvent event){
-        if(event instanceof BlockEvent.PlaceEvent) return;
         FiniteEventHandler.PlaceSource source = FiniteEventHandler.PlaceSource.OTHERS;
         Entity entity = event.getEntity();
         if(entity instanceof EntityFallingBlock) source = FiniteEventHandler.PlaceSource.FALLING_BLOCK;
         else if(entity instanceof EntityEnderman) source = FiniteEventHandler.PlaceSource.ENDER_MAN;
-        if(!onBlockReplaced(event.getWorld(),event.getPos(),event.getBlockSnapshot().getCurrentBlock(),event.getBlockSnapshot().getReplacedBlock(),source,entity)){
-            event.setCanceled(true);
-        }
+        implace(event.getWorld(),event.getPos(),event.getBlockSnapshot().getCurrentBlock(),event.getBlockSnapshot().getReplacedBlock(),source,entity);
     }
 
-    // todo: 实现很粗糙
-    public static boolean onBlockReplaced(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState currentState, @Nonnull IBlockState replacedState, @Nonnull FiniteEventHandler.PlaceSource source, @Nullable Entity sourceEntity){
+    /**
+     * 纳流（无排流）
+     * @param currentState 旧方块
+     * @param replacedState 新方块
+     * @param source 放置来源
+     * @param sourceEntity 放置来源实体
+     */
+    @SuppressWarnings("DefaultNotLastCaseInSwitch")
+    public static void implace(@Nonnull final World world,
+                               @Nonnull final BlockPos pos,
+                               @Nonnull final IBlockState currentState,
+                               @Nonnull final IBlockState replacedState,
+                               @Nonnull final FiniteEventHandler.PlaceSource source,
+                               @Nullable final Entity sourceEntity){
         final Fluid fluid = FluidUtil.getFluid(currentState);
-        if(fluid == null) return true;
+        if(fluid == null) return;
         final Block block = currentState.getBlock();
+        final long amount;
         if(block instanceof BlockLiquid){
-            int quanta = FluidUtil.getFluidQuanta(world, pos,currentState);
-            long curQuanta,canFillQuanta;
-            Block placeBlock = replacedState.getBlock();
-            ILaminarifer permeable;
-
-            permeable:{
-                switch (source){
-                    case OTHERS:
-                    case ENDER_MAN:
-                    default: break permeable;
-                    case PLAYER:
-                    case FALLING_BLOCK:
-                }
-
-                if(placeBlock instanceof ILaminarifer){
-                    permeable = (ILaminarifer) placeBlock;
-                }else break permeable;
-
-                curQuanta = permeable.getLayers(world,pos,replacedState,fluid,null);
-                canFillQuanta = permeable.addLayer(world,pos,replacedState,fluid,null,quanta,false,0L,null, BlockFlagModifiers.KEEP);
-                if(canFillQuanta <=0) {
-                    break permeable;
-                }
-                IBlockState quantaState = null;
-                if(source == FiniteEventHandler.PlaceSource.FALLING_BLOCK){
-                    if(!(permeable instanceof IBlockStateLaminarifer)){
-                        break permeable;
-                    }
-                    if(!(sourceEntity instanceof EntityFallingBlock)){
-                        break permeable;
-                    }
-                    quantaState = ((IBlockStateLaminarifer)permeable).getLayerState(replacedState,fluid,null,curQuanta+canFillQuanta);
-                    if(quantaState == null){
-                        break permeable;
-                    }
-                }
-
-                switch (source) {
-                    case PLAYER:
-                        permeable.addLayer(world,pos,replacedState,fluid,null,quanta,true,0L,null,BlockFlagModifiers.KEEP);
-                        break;
-                    case FALLING_BLOCK:
-                        ((EntityFallingBlockAccessor)sourceEntity).setFallTile(quantaState);
-                        break;
-                    default: {
-                        break permeable;
-                    }
-                }
-                return true;
-            }
+            final int quanta = FluidUtil.getFluidQuanta(world, pos,currentState);
+            if(quanta != 8) return; //非源块
+            amount = QuantaUnit.toQB(quanta);
         }else if(block instanceof BlockFluidBase){
-            long amount = FluidMixinUtil.getQBForBlockFluidBase(currentState);
-            long canFillAmount;
-            Block placeBlock = replacedState.getBlock();
-            ILaminarifer laminarifer;
+            if(block instanceof BlockFluidClassic && currentState.getValue(BlockFluidBase.LEVEL) != 0) return; //非源块
+            amount = FluidMixinUtil.getQBForBlockFluidBase(currentState);
+        }else return;
+        final Block placeBlock = replacedState.getBlock();
+        final IBlockStateLaminarifer laminarifer; //保险起见，只适配 BlockState 版本的载流方块
 
-            permeable:{
-                switch (source){
-                    case OTHERS:
-                    case ENDER_MAN:
-                    case FALLING_BLOCK:
-                    default: break permeable;
-                    case PLAYER:
+        switch (source){
+            case OTHERS:
+            case ENDER_MAN:
+            default: return;
+            case FALLING_BLOCK:
+            case PLAYER:
 
-                }
-
-                if(placeBlock instanceof ILaminarifer){
-                    laminarifer = (ILaminarifer) placeBlock;
-                }else break permeable;
-
-                canFillAmount = Laminarifers.addAmountInQB(laminarifer,world,pos,replacedState,fluid,amount,false,0L);
-                if(canFillAmount <=0) {
-                    break permeable;
-                }
-
-                switch (source) {
-                    case PLAYER:
-                        Laminarifers.addAmountInQB(laminarifer,world,pos,replacedState,fluid,amount,true,0L);
-                        break;
-                    default: {
-                        break permeable;
-                    }
-                }
-                return true;
-            }
         }
-        return true;
+
+        if(placeBlock instanceof IBlockStateLaminarifer){
+            laminarifer = (IBlockStateLaminarifer) placeBlock;
+        }else return;
+
+        final long currentAmount = Laminarifers.getAmountInQB(laminarifer, replacedState, fluid);
+
+        switch (source) {
+            case PLAYER:
+                Laminarifers.addAmountInQB(laminarifer, world, pos, replacedState,
+                        fluid, null, amount, true, 0L, FlowSources.PLAYER,
+                        BlockFlagModifier.build(Constants.BlockFlags.NO_OBSERVERS, Constants.BlockFlags.NOTIFY_NEIGHBORS));
+                break;
+            case FALLING_BLOCK:
+                if(!(sourceEntity instanceof EntityFallingBlock)){
+                    return;
+                }
+                final @Nullable IBlockState quantaState = Laminarifers.getAmountState(laminarifer, replacedState, fluid, null,currentAmount+ amount);
+                if(quantaState == null || quantaState == replacedState) return;
+                ((EntityFallingBlockAccessor)sourceEntity).setFallTile(quantaState);
+                break;
+        }
     }
 }

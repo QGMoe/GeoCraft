@@ -31,6 +31,7 @@ import moe.qingu.orbtellus.api.fluid.unit.FluidUnit;
 import moe.qingu.orbtellus.api.laminarifer.flow.drainer.IFlowDrainer;
 import moe.qingu.orbtellus.api.fluid.QBFluidStack;
 import moe.qingu.orbtellus.api.laminarifer.flow.source.IFlowSource;
+import moe.qingu.orbtellus.api.util.APIMathUtil;
 import moe.qingu.orbtellus.api.util.modifier.BlockFlagModifier;
 import moe.qingu.orbtellus.api.util.modifier.BlockFlagModifiers;
 import net.minecraft.block.Block;
@@ -42,6 +43,7 @@ import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author QGMoe
@@ -155,6 +157,38 @@ public final class Laminarifers {
                                      @Nonnull final IBlockState state,
                                      @Nonnull final Fluid fluid) {
         return laminarifer.getLayers(world, pos, state, fluid, null) * laminarifer.getAmountInQBPerLayer(world, pos, state, fluid, null);
+    }
+
+    /**
+     * @see #getAmountInQB(ILaminarifer, World, BlockPos, IBlockState, Fluid, NBTTagCompound)
+     */
+    public static long getAmountInQB(@Nonnull final IBlockStateLaminarifer laminarifer,
+                                     @Nonnull final IBlockState state,
+                                     @Nonnull final Fluid fluid,
+                                     @Nullable final NBTTagCompound nbt) {
+        return laminarifer.getLayers(state, fluid, nbt) * laminarifer.getAmountInQBPerLayer(state, fluid, nbt);
+    }
+
+
+    /**
+     * @see #getAmountInQB(ILaminarifer, World, BlockPos, IBlockState, Fluid, NBTTagCompound)
+     */
+    public static long getAmountInQB(@Nonnull final IBlockStateLaminarifer laminarifer,
+                                     @Nonnull final IBlockState state,
+                                     @Nonnull final Fluid fluid) {
+        return laminarifer.getLayers(state, fluid, null) * laminarifer.getAmountInQBPerLayer(state, fluid, null);
+    }
+
+    public static IBlockState getAmountState(@Nonnull final IBlockStateLaminarifer laminarifer,
+                                             @Nonnull final IBlockState state,
+                                             @Nonnull final Fluid fluid,
+                                             @Nullable final NBTTagCompound nbt,
+                                             final long amount) {
+        final long amountPerLayer = laminarifer.getAmountInQBPerLayer(state, fluid, nbt);
+        final long maxLayer = laminarifer.getMaxLayers(state, fluid, nbt);
+        final long actualAmount = APIMathUtil.clamp(amount, 0L, maxLayer * amountPerLayer);
+        final long layer = FluidUnit.sample(ThreadLocalRandom.current(), actualAmount, amountPerLayer);
+        return laminarifer.getLayerState(state, fluid, nbt, layer);
     }
 
     /**

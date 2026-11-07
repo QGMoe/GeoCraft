@@ -144,7 +144,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
             int adjacentSourceBlocks = 0;
 
             if (ForgeEventFactory.canCreateFluidSource(world, pos, state, canCreateSources))
-                for (EnumFacing side : EnumFacing.Plane.HORIZONTAL)
+                for (EnumFacing side : EnumFacing.HORIZONTALS)
                     if (isSourceBlock(world, pos.offset(side))) adjacentSourceBlocks++;
 
             // 无限液体
@@ -154,7 +154,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                 newQuanta = quantaPerBlock - 1;
             } else { //水平流动
                 int maxQuanta = -100;
-                for (EnumFacing side : EnumFacing.Plane.HORIZONTAL) {
+                for (EnumFacing side : EnumFacing.HORIZONTALS) {
                     maxQuanta = getLargerQuanta(world, pos.offset(side), maxQuanta);
                 }
                 newQuanta = maxQuanta - 1;

@@ -99,7 +99,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
         final BlockPos pos = averageFlow.getPosition();
         final boolean isSlopeEnabled = slopeModeFlowDirections != null;
         final int centralQuanta = (int) averageFlow.centralModel.currentLayers;
-        for(final @Nonnull EnumFacing facing:EnumFacing.Plane.HORIZONTAL){
+        for(final @Nonnull EnumFacing facing:EnumFacing.HORIZONTALS){
             final IBlockState facingState = world.getBlockState(mutablePos.setPos(pos.getX()+facing.getXOffset(),pos.getY(),pos.getZ()+facing.getZOffset()));
             final Block facingBlock = facingState.getBlock();
 
@@ -237,7 +237,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
                                      @Nonnull final Set<EnumFacing> collectorOfPossibleDirections){
         int difficulty = 1000;
 
-        for (@Nonnull final EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
+        for (@Nonnull final EnumFacing enumfacing : EnumFacing.HORIZONTALS) {
             facingPos$最外层$mut.setPos(pos).offsetM(enumfacing,1);
             final @Nonnull IBlockState state = worldIn.getBlockState(facingPos$最外层$mut);
 
@@ -277,7 +277,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
                                       @Nonnull final EnumFacing from) {
         int difficulty = 1000;
 
-        for (final @Nonnull EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
+        for (final @Nonnull EnumFacing enumfacing : EnumFacing.HORIZONTALS) {
             if (enumfacing == from) continue;
             facingPos$迭代用$mut.setPos(x+enumfacing.getXOffset(),y,z+enumfacing.getZOffset());
             final @Nonnull IBlockState state = worldIn.getBlockState(facingPos$迭代用$mut);
@@ -369,7 +369,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
                                  final @Nonnull EnumFacing from) {
         double difficulty = 10000d;
 
-        for (@Nonnull final EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
+        for (@Nonnull final EnumFacing enumfacing : EnumFacing.HORIZONTALS) {
             if (enumfacing == from) continue;
             facingPos$迭代用$mut.setPos(x+enumfacing.getXOffset(),y,z+enumfacing.getZOffset());
             final @Nonnull IBlockState state = worldIn.getBlockState(facingPos$迭代用$mut);

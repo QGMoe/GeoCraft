@@ -53,7 +53,7 @@ import moe.qingu.orbtellus.util.BaseUtil;
 import moe.qingu.orbtellus.util.WaterUtil;
 
 import static moe.qingu.orbtellus.configs.FluidPhysicsConfig.fluidsNotToSimulateInVanillaLike;
-import static moe.qingu.orbtellus.handler.event.VanillaEventHandler.onBlockReplaced;
+import static moe.qingu.orbtellus.handler.event.VanillaEventHandler.implace;
 
 public final class ClassicEventHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
@@ -89,25 +89,20 @@ public final class ClassicEventHandler {
     }
 
     @SubscribeEvent
-    public void onPlayerPlacedBlock(BlockEvent.PlaceEvent event){
-        if(!onBlockReplaced(event.getWorld(), event.getPos(),event.getBlockSnapshot().getReplacedBlock(),event.getBlockSnapshot().getCurrentBlock(), FiniteEventHandler.PlaceSource.PLAYER,event.getEntity())){
-            event.setCanceled(true);
+    @SuppressWarnings("deprecation")
+    public void onEntityPlacedBlock(final BlockEvent.EntityPlaceEvent event){
+        if(event instanceof BlockEvent.PlaceEvent){
+            implace(event.getWorld(), event.getPos(),event.getBlockSnapshot().getReplacedBlock(),event.getBlockSnapshot().getCurrentBlock(), FiniteEventHandler.PlaceSource.PLAYER,event.getEntity());
+            return;
         }
-    }
-
-    @SubscribeEvent
-    public void onEntityPlacedBlock(BlockEvent.EntityPlaceEvent event){
-        if(event instanceof BlockEvent.PlaceEvent) return;
         FiniteEventHandler.PlaceSource source = FiniteEventHandler.PlaceSource.OTHERS;
         Entity entity = event.getEntity();
         if(entity instanceof EntityFallingBlock) source = FiniteEventHandler.PlaceSource.FALLING_BLOCK;
         else if(entity instanceof EntityEnderman) source = FiniteEventHandler.PlaceSource.ENDER_MAN;
-        if(!onBlockReplaced(event.getWorld(),event.getPos(),event.getBlockSnapshot().getCurrentBlock(),event.getBlockSnapshot().getReplacedBlock(),source,entity)){
-            event.setCanceled(true);
-        }
+        implace(event.getWorld(),event.getPos(),event.getBlockSnapshot().getCurrentBlock(),event.getBlockSnapshot().getReplacedBlock(),source,entity);
     }
 
-    public static void onPostInit(FMLPostInitializationEvent event){
+    public static void onPostInit(final FMLPostInitializationEvent event){
         for(ConfigurableFluid fluid:fluidsNotToSimulateInVanillaLike){
             if(fluid == null) continue;
             FluidPhysicsSystem.setFluidToBePhysical(fluid.toString(),false);

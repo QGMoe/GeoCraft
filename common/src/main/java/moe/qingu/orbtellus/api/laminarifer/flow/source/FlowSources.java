@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 public final class FlowSources {
 
     public static final @Beta IFlowSource<?> RUNOFF = new FlowSource();
+    public static final @Beta IFlowSource<?> PLAYER = new FlowSource();
 
     private FlowSources(){}
 

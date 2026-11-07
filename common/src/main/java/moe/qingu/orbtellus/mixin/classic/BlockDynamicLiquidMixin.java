@@ -202,7 +202,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements IFluidTaskRe
             int 相邻方块最高等级 = -100;
             this.adjacentSourceBlocks = 0;
 
-            for (EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL)
+            for (EnumFacing enumfacing : EnumFacing.HORIZONTALS)
                 相邻方块最高等级 = this.checkAdjacentBlock(world, pos.offset(enumfacing), 相邻方块最高等级);
 
             int newLiquidMeta = 相邻方块最高等级 + spreadLevel;

@@ -105,7 +105,7 @@ public final class FiniteFlowingClassic {
                                   @Nonnull final List<OldFlowChoice> averageFlowChoicesCollector,
                                   @Nullable final Set<EnumFacing> slopeFlowableDirectionsCollector,
                                   final int currentQuanta){
-        for(final @Nonnull EnumFacing facing:EnumFacing.Plane.HORIZONTAL){
+        for(final @Nonnull EnumFacing facing:EnumFacing.HORIZONTALS){
             facingPos$最外层$mut.setPos(pos.getX()+facing.getXOffset(),pos.getY(),pos.getZ()+facing.getZOffset());
             final @Nonnull IBlockState facingState = world.getBlockState(facingPos$最外层$mut);
             if(!this.canDisplaceEvenIsFluid(world,facingPos$最外层$mut)) continue;
@@ -127,7 +127,7 @@ public final class FiniteFlowingClassic {
                                      @Nonnull final Set<EnumFacing> collectorOfPossibleDirections) {
         int difficulty = 1000;
 
-        for (@Nonnull final EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
+        for (@Nonnull final EnumFacing enumfacing : EnumFacing.HORIZONTALS) {
             facingPos$最外层$mut.setPos(pos).offsetM(enumfacing,1);
             final @Nonnull IBlockState state = worldIn.getBlockState(facingPos$最外层$mut);
             if (!block.canDisplace(worldIn, facingPos$最外层$mut) || FluidUtil.isFluid(state)) {
@@ -165,7 +165,7 @@ public final class FiniteFlowingClassic {
                                @Nonnull final EnumFacing from) {
         int difficulty = 1000;
 
-        for (final @Nonnull EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
+        for (final @Nonnull EnumFacing enumfacing : EnumFacing.HORIZONTALS) {
             if (enumfacing == from) continue;
             facingPos$迭代用$mut.setPos(x+enumfacing.getXOffset(),y,z+enumfacing.getZOffset());
             final @Nonnull IBlockState state = worldIn.getBlockState(facingPos$迭代用$mut);
@@ -245,7 +245,7 @@ public final class FiniteFlowingClassic {
                                  final @Nonnull EnumFacing from) {
         double difficulty = 10000d;
 
-        for (@Nonnull final EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
+        for (@Nonnull final EnumFacing enumfacing : EnumFacing.HORIZONTALS) {
             if (enumfacing == from) continue;
             facingPos$迭代用$mut.setPos(x+enumfacing.getXOffset(),y,z+enumfacing.getZOffset());
             final @Nonnull IBlockState state = worldIn.getBlockState(facingPos$迭代用$mut);
