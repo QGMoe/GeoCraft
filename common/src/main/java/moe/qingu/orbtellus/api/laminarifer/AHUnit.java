@@ -37,7 +37,7 @@ import it.unimi.dsi.fastutil.longs.LongLists;
  * @author QGMoe
  */
 public final class AHUnit {
-    public static final long ONE_BLOCK        = 5_3137_2441_6000L;
+    public static final long ONE_BLOCK        = 5_3150_2171_2000L;
     public static final long HALF_BLOCK       = ONE_BLOCK  /  2;
     public static final long THIRD_BLOCK      = ONE_BLOCK  /  3;
     public static final long FOURTH_BLOCK     = ONE_BLOCK  /  4;
@@ -53,35 +53,36 @@ public final class AHUnit {
     public static final long FOURTEENTH_BLOCK = ONE_BLOCK  / 14;
     public static final long FIFTEENTH_BLOCK  = ONE_BLOCK  / 15;
     public static final long SIXTEENTH_BLOCK  = ONE_BLOCK  / 16;
+    public static final long SEVENTEENTH_BLOCK  = ONE_BLOCK  / 17;
 
-    public static final long FULL_FLUID       = 4_7233_1059_2000L;
-    public static final long HALF_FLUID       = FULL_FLUID /  2;
-    public static final long THIRD_FLUID      = FULL_FLUID /  3;
-    public static final long FOURTH_FLUID     = FULL_FLUID /  4;
-    public static final long FIFTH_FLUID      = FULL_FLUID /  5;
-    public static final long SIXTH_FLUID      = FULL_FLUID /  6;
-    public static final long SEVENTH_FLUID    = FULL_FLUID /  7;
-    public static final long EIGHTH_FLUID     = FULL_FLUID /  8;
-    public static final long NINTH_FLUID      = FULL_FLUID /  9;
-    public static final long TENTH_FLUID      = FULL_FLUID / 10;
-    public static final long ELEVENTH_FLUID   = FULL_FLUID / 11;
-    public static final long TWELFTH_FLUID    = FULL_FLUID / 12;
-    public static final long THIRTEENTH_FLUID = FULL_FLUID / 13;
-    public static final long FOURTEENTH_FLUID = FULL_FLUID / 14;
-    public static final long FIFTEENTH_FLUID  = FULL_FLUID / 15;
-    public static final long SIXTEENTH_FLUID  = FULL_FLUID / 16;
+    public static final long DEFAULT_FULL_FLUID = 4_7244_6374_4000L;
+    public static final long HALF_FLUID       = DEFAULT_FULL_FLUID /  2;
+    public static final long THIRD_FLUID      = DEFAULT_FULL_FLUID /  3;
+    public static final long FOURTH_FLUID     = DEFAULT_FULL_FLUID /  4;
+    public static final long FIFTH_FLUID      = DEFAULT_FULL_FLUID /  5;
+    public static final long SIXTH_FLUID      = DEFAULT_FULL_FLUID /  6;
+    public static final long SEVENTH_FLUID    = DEFAULT_FULL_FLUID /  7;
+    public static final long EIGHTH_FLUID     = DEFAULT_FULL_FLUID /  8;
+    public static final long NINTH_FLUID      = DEFAULT_FULL_FLUID /  9;
+    public static final long TENTH_FLUID      = DEFAULT_FULL_FLUID / 10;
+    public static final long ELEVENTH_FLUID   = DEFAULT_FULL_FLUID / 11;
+    public static final long TWELFTH_FLUID    = DEFAULT_FULL_FLUID / 12;
+    public static final long THIRTEENTH_FLUID = DEFAULT_FULL_FLUID / 13;
+    public static final long FOURTEENTH_FLUID = DEFAULT_FULL_FLUID / 14;
+    public static final long FIFTEENTH_FLUID  = DEFAULT_FULL_FLUID / 15;
+    public static final long SIXTEENTH_FLUID  = DEFAULT_FULL_FLUID / 16;
 
     public static final LongList BLOCK_HEIGHTS;
     public static final LongList FLUID_HEIGHTS;
 
     static {
-        final long[] block_heights = new long[17];
+        final long[] block_heights = new long[18];
         block_heights[0] = block_heights[1] = ONE_BLOCK;
-        for(int i=2;i<=16;i++) block_heights[i] = ONE_BLOCK/i;
+        for(int i=2;i<=17;i++) block_heights[i] = ONE_BLOCK/i;
         BLOCK_HEIGHTS = LongLists.unmodifiable(new LongArrayList(block_heights));
         final long[] fluid_heights = new long[17];
-        fluid_heights[0] = fluid_heights[1] = FULL_FLUID;
-        for(int i=2;i<=16;i++) fluid_heights[i] = FULL_FLUID/i;
+        fluid_heights[0] = fluid_heights[1] = DEFAULT_FULL_FLUID;
+        for(int i=2;i<=16;i++) fluid_heights[i] = DEFAULT_FULL_FLUID /i;
         FLUID_HEIGHTS = LongLists.unmodifiable(new LongArrayList(fluid_heights));
     }
 

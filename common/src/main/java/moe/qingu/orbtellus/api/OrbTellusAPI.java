@@ -35,8 +35,8 @@ import moe.qingu.orbtellus.api.util.APIUtil;
  * @author QiguaiAAAA
  */
 public final class OrbTellusAPI {
-    public final static long API_VERSION = 7;
-    public final static String API_VERSION_NAME = "0.3.5";
+    public final static long API_VERSION = 8;
+    public final static String API_VERSION_NAME = "0.3.6";
     public final static String MODID = "geocraft";
     public final static String PROVIDERS = "OrbTellusAPI";
     public final static Logger LOGGER = APIUtil.LOGGER;

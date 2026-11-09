@@ -144,7 +144,7 @@ public interface IFluidloggableLaminarifer extends IFluidloggable, ILaminarifer 
                                    @Nullable final NBTTagCompound nbt){
         final Block block = fluid.getBlock();
         if(block instanceof PluginBlockFluidBase.Accessor){
-            return AHUnit.FLUID_HEIGHTS.get(((PluginBlockFluidBase.Accessor) block).getQuantaPerBlock_Public());
+            return AHUnit.BLOCK_HEIGHTS.get(((PluginBlockFluidBase.Accessor) block).getQuantaPerBlock_Public()+1);
         }else return AHUnit.EIGHTH_FLUID;
     }
 
