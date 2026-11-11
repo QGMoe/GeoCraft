@@ -37,6 +37,7 @@ import java.util.Random;
 /**
  * @since 0.2.0
  * @author QiguaiAAAA
+ *  层—毫桶统一流体单位（Quanta-Millibucket Unified Fluid Unit 或 Q-mB Unified Unit），符号为 QB，中文简称 纤桶。
  */
 public final class QBUnit {
     public static final long BUCKET_VOLUME = 72072000L;

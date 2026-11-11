@@ -30,27 +30,54 @@ package moe.qingu.orbtellus.geography.soil;
 import moe.qingu.orbtellus.block.soil.IBlockSoil;
 
 /**
+ * 暂时用中文写比较直观
  * @author QGMoe
  */
 public abstract class Soil { //unfinished
-
+    protected static final double 毛细吸力系数 = 145.6d; //kPa*微米
+    protected static final double 干端吸力上限 = 1e6; //kPa
     protected IBlockSoil block;
 
-    protected float entryThreshold; //主动渗入阈值，单位 kPa
+    //非常优雅的三个参数
+    protected double 孔隙大小; //微米
+    protected double 孔隙分布; //无量纲
+    protected double 孔隙连通度; //无量纲 0-1
 
-    protected float matricSuction; //基质吸力，单位 kPa，用于被动渗出的阈值和主动渗入的吸力。
+    // 派生量，基于湿度
+    public abstract double 导水率函数(final int humidity); //QB/Bd 纤桶每布里丹，这单位太美妙了
 
-    protected int stableHumidity;
-
-    public float getEntryThreshold() {
-        return entryThreshold;
+    /**
+     * 计算基质吸力
+     * 基质吸力=中位吸力*e^{孔隙分布*正态分布右尾概率反过来查的玩意*(湿度/4)}
+     * @param humidity 湿度，0-4
+     * @return kPa，也是进气阈值
+     */
+    public final double 基质吸力函数(final int humidity){
+        final double Q;
+        switch (humidity){
+            case 4: return 0d;
+            case 3:
+                Q = -0.67449d;
+                break;
+            case 2:
+                Q = 0;
+                break;
+            case 1:
+                Q = 0.67449d;
+                break;
+            default: return 干端吸力上限;
+        }
+        return 毛细吸力系数/孔隙大小*Math.exp(孔隙分布*Q);
     }
 
-    public float getMatricSuction() {
-        return matricSuction;
+    public final double 进水阈值函数(final int humidity){ //kPa
+        return 基质吸力函数(humidity)*0.5f;//暂定
     }
 
-    public abstract double getActiveInfiltrationRatio(final float impetus); //主动渗入比率函数
+    // 土壤被推入或被吸走水的交互量，基于派生量和流强
+    public abstract double 主动渗入比率函数(final int humidity, final float impetus);
+    public abstract double 被动渗出比率函数(final int humidity, final float impetus);
 
-    public abstract double getPassiveExfiltrationRatio(final float impetus); //被动渗出比率函数
+    // 土壤主动吸入或排出水，返回打包的压强（float）和期望抽取量，带正负
+    public abstract long 土壤交互参数函数(final int humidity);
 }
