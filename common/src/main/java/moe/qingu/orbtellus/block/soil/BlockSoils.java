@@ -217,8 +217,8 @@ public final class BlockSoils { //unfinished todo
         final IBlockState facingState = world.getBlockState(mutablePos);
 
         final float pressure = Float.intBitsToFloat((int)(para>>>32));
-        final int amount = (int)(para & 0xFFFF_FFFFL)*6;
-        final long pulse = ImpetusPulse.of(pressure, (float) Soil._抽签刻期望间隔_*6); //每次只尝试一个方向，所以乘6
+        final int amount = (int)(para & 0xFFFF_FFFFL);
+        final long pulse = ImpetusPulse.of(pressure, (float) Soil._抽签刻期望间隔_); //每次只尝试一个方向，所以乘6
 
         for(final @Nonnull 壤中流情况 $情况: 壤中流情况._所有情况_) {
             final int res;

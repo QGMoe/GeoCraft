@@ -40,7 +40,7 @@ import javax.annotation.Nonnull;
  * @author QGMoe
  */
 public class Soil implements IFlowInitiator<Soil> {
-    public static final double _抽签刻期望间隔_ = 4096d / 3d / 1000d; //simh 模拟时 ，抽签刻设计好后要迁移过去
+    public static final double _抽签刻期望间隔_ = 4096d / 3d / 1000d * 6; //simh 模拟时 ，抽签刻设计好后要迁移过去，暂时乘以6
     protected static final double _导水系数_ = 46.5; // QB/(Bd×μm^2)
     protected static final double _毛细吸力系数_ = 145.6d; //kPa×μm
     protected static final double _毛细滞后比_ = 0.5d;
