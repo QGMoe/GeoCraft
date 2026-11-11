@@ -139,7 +139,7 @@ public class Soil implements IFlowInitiator<Soil> {
      *  土壤主动吸入或排出水，
      * @param humidity 当前湿度 0-4
      * @param facing 吸入或排出面
-     * @return 打包的压强（float） kPa （正为吸入，负数为排出）和期望抽取量 QB，带正负表示方向
+     * @return 打包的压强（float） kPa 和期望抽取量 QB（正为吸入，负数为排出），带正负表示方向
      */
     public final long 土壤交互参数函数(final int humidity, final @Nonnull EnumFacing facing){
         final int yVec = facing.getDirectionVec().getY();
