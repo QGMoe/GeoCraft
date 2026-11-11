@@ -54,4 +54,20 @@ public final class APIMathUtil {
                     sample = rand.nextLong() >>> 1); // sample 无法作为样本，重新采样
         return res;
     }
+
+    /**
+     * 标准正态分布的右尾概率 Q(x) = P(Z > x)，Z ~ N(0,1)。
+     * 使用 Abramowitz-Stegun 的算法近似。
+     * @since API-0.3.6
+     */
+    public static double normalTailProbability(final double x){
+        if(x < 0) return 1d - normalTailProbability(-x);
+        final double t = 1d / (1d + 0.2316419d * x);
+        final double poly = t * (0.319381530d
+                + t * (-0.356563782d
+                + t * (1.781477937d
+                + t * (-1.821255978d
+                + t * 1.330274429d))));
+        return Math.exp(-x * x / 2d) / Math.sqrt(2d * Math.PI) * poly;
+    }
 }

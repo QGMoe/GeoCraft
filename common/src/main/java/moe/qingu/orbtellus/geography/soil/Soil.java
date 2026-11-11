@@ -27,6 +27,7 @@
 
 package moe.qingu.orbtellus.geography.soil;
 
+import moe.qingu.orbtellus.api.util.APIMathUtil;
 import moe.qingu.orbtellus.block.soil.IBlockSoil;
 
 /**
@@ -34,7 +35,9 @@ import moe.qingu.orbtellus.block.soil.IBlockSoil;
  * @author QGMoe
  */
 public abstract class Soil { //unfinished
-    protected static final double 毛细吸力系数 = 145.6d; //kPa*微米
+    protected static final double 导水系数 = 46.5; // QB/(Bd×μm^2)
+    protected static final double 毛细吸力系数 = 145.6d; //kPa×μm
+    protected static final double 毛细滞后比 = 0.5d;
     protected static final double 干端吸力上限 = 1e6; //kPa
     protected IBlockSoil block;
 
@@ -44,11 +47,39 @@ public abstract class Soil { //unfinished
     protected double 孔隙连通度; //无量纲 0-1
 
     // 派生量，基于湿度
-    public abstract double 导水率函数(final int humidity); //QB/Bd 纤桶每布里丹，这单位太美妙了
+
+    /**
+     * 计算绝对导水率
+     * 计划之后做Q缓存
+     * @param humidity 湿度，0-4
+     * @return QB/Bd 纤桶每布里丹，这单位太美妙了，返回导水率
+     */
+    public final double 导水率函数(final int humidity){
+        final double Q;
+        switch (humidity){
+            case 4:
+                Q = 1d;
+                break;
+            case 3:
+                Q = APIMathUtil.normalTailProbability(-0.67449d + 孔隙分布);
+                break;
+            case 2:
+                Q = APIMathUtil.normalTailProbability(孔隙分布);
+                break;
+            case 1:
+                Q = APIMathUtil.normalTailProbability(0.67449d + 孔隙分布);
+                break;
+            case 0:
+                Q = 0d;
+                break;
+            default: throw new IllegalArgumentException("h="+humidity);
+        }
+        return 导水系数*孔隙连通度*孔隙大小*孔隙大小*Math.exp(孔隙分布*孔隙分布)*Math.sqrt(humidity/4d)*Q*Q;
+    }
 
     /**
      * 计算基质吸力
-     * 基质吸力=中位吸力*e^{孔隙分布*正态分布右尾概率反过来查的玩意*(湿度/4)}
+     * 基质吸力=中位吸力*e^{孔隙分布*正态分布右尾概率反过来查的函数(湿度/4)}
      * @param humidity 湿度，0-4
      * @return kPa，也是进气阈值
      */
@@ -71,7 +102,7 @@ public abstract class Soil { //unfinished
     }
 
     public final double 进水阈值函数(final int humidity){ //kPa
-        return 基质吸力函数(humidity)*0.5f;//暂定
+        return 基质吸力函数(humidity)*毛细滞后比;
     }
 
     // 土壤被推入或被吸走水的交互量，基于派生量和流强
