@@ -42,6 +42,6 @@ public class OTCSoil extends Soil{ //todo
     }
 
     public final boolean isStable(final int humidity){
-        return 稳定度函数(humidity) < 0.3d; //暂定
+        return 稳定度函数(humidity) >= 0.3d; //暂定
     }
 }

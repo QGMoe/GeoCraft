@@ -143,7 +143,7 @@ public class Soil implements IFlowInitiator<Soil> {
      */
     public final long 土壤交互参数函数(final int humidity, final @Nonnull EnumFacing facing){
         final int yVec = facing.getDirectionVec().getY();
-        final double gravity = yVec == 0? _重力压强_ / 2d: yVec * _重力压强_;
+        final double gravity = yVec == 0? -_重力压强_ / 2d: yVec * _重力压强_;
 
         final double $吸入压 = 进水阈值函数(humidity) + gravity;
         if($吸入压 > 0d){
@@ -155,7 +155,7 @@ public class Soil implements IFlowInitiator<Soil> {
         final double $排出压 = 基质吸力函数(humidity) + gravity;
         if($排出压 < 0d){
             final double cur = humidity * QBUnit.QUANTA_VOLUME_DOUBLE;
-            final double amount = Math.min(cur, 导水率函数(humidity) * $排出压 * _抽签刻期望间隔_);
+            final double amount = Math.min(cur, 导水率函数(humidity) * -$排出压 * _抽签刻期望间隔_);
             return pack(-$排出压, -(int) amount);
         }
 

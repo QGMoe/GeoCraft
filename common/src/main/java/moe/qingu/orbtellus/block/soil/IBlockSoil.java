@@ -172,6 +172,7 @@ public interface IBlockSoil extends IBlockStateLaminarifer {
         final long addedAmountMax = QuantaUnit.toQB(addedLayerMax);
         final Soil soil = getSoil(state);
         final float pressure = (float) (Math.abs(ImpetusPulse.pressure(pulse)) - soil.进水阈值函数(curLayer));
+        if(pressure <= 0f) return 0L;
         final float impetus = pressure * Math.abs(ImpetusPulse.time(pulse));
         final long addedAmountAllowed = soil.主动渗入水量函数(curLayer, impetus);
         final long addedLayerFact = QBUnit.sampleQuanta(world.rand, Math.min(addedAmountAllowed,addedAmountMax));
@@ -202,6 +203,7 @@ public interface IBlockSoil extends IBlockStateLaminarifer {
         final long drainedAmountMax = QuantaUnit.toQB(drainedLayerMax);
         final Soil soil = getSoil(state);
         final float pressure = (float) (Math.abs(ImpetusPulse.pressure(pulse)) - soil.基质吸力函数(curLayer));
+        if(pressure <= 0f) return 0L;
         final float impetus = pressure * Math.abs(ImpetusPulse.time(pulse));
         final long drainedAmountAllowed = soil.被动渗出水量函数(curLayer, impetus);
         final long drainedLayerFact = QBUnit.sampleQuanta(world.rand, Math.min(drainedAmountAllowed,drainedAmountMax));
