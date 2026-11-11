@@ -309,10 +309,10 @@ public interface ILaminarifer{
                          final long pulse,
                          @Nullable final IFlowSource<?> source,
                          final long blockFlagsModifier) {
-        if (layer <= 0) return 0;
+        if (layer <= 0L) return 0L;
         final long curLayer = getLayers(world, pos, state, fluid, nbt);
         final long addedInFact = Math.min(layer, getMaxLayers(world, pos, state, fluid, nbt) - curLayer);
-        if (addedInFact <= 0) return 0;
+        if (addedInFact <= 0L) return 0L;
         if (doOperate) {
             final long newLayer = curLayer + addedInFact;
             this.setLayer(world, pos, state, fluid, nbt, newLayer, blockFlagsModifier);
@@ -347,10 +347,10 @@ public interface ILaminarifer{
                            final long pulse,
                            @Nullable final IFlowDrainer<?> drainer,
                            final long blockFlagsModifier){
-        if(layer <= 0) return 0;
+        if(layer <= 0L) return 0L;
         final long curLayer = getLayers(world,pos,state,fluid,nbt);
         final long drainedInFact = Math.min(layer, curLayer);
-        if(drainedInFact <= 0) return 0;
+        if(drainedInFact <= 0L) return 0L;
         if(doOperate){
             final long newLayer = curLayer - drainedInFact;
             this.setLayer(world,pos,state,fluid,nbt,newLayer,blockFlagsModifier);

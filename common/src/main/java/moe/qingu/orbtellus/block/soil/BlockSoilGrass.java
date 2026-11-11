@@ -27,6 +27,7 @@
 
 package moe.qingu.orbtellus.block.soil;
 
+import moe.qingu.orbtellus.geography.soil.OTCSoil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.state.IBlockState;
@@ -51,12 +52,13 @@ import static moe.qingu.orbtellus.api.block.BlockProperties.HUMIDITY;
  */
 public class BlockSoilGrass extends BlockSoilExtends.Grass implements IBlockSoil, IBlockFalling {
     private final ThreadLocal<Boolean> isRandomTick = ThreadLocal.withInitial(()-> Boolean.FALSE);
+    private final OTCSoil grass = new OTCSoil(BlockSoilType.GRASS);
 
     @Override
     public void updateTick(@Nonnull final World worldIn, @Nonnull final BlockPos pos, @Nonnull final IBlockState state, @Nonnull final Random rand) {
         if(worldIn.isRemote) return;
         if(!isRandomTick.get()){
-            if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+            if(grass.isStable(state.getValue(HUMIDITY))) return;
             checkAndFall(worldIn, pos);
             return;
         }
@@ -108,7 +110,7 @@ public class BlockSoilGrass extends BlockSoilExtends.Grass implements IBlockSoil
     @Override
     @SuppressWarnings("deprecation")
     public void neighborChanged(IBlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull Block blockIn, @Nonnull BlockPos fromPos) {
-        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+        if(grass.isStable(state.getValue(HUMIDITY))) return;
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
     }
 
@@ -119,7 +121,7 @@ public class BlockSoilGrass extends BlockSoilExtends.Grass implements IBlockSoil
 
     @Override
     public void onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, IBlockState state) {
-        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+        if(grass.isStable(state.getValue(HUMIDITY))) return;
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
     }
 
@@ -134,7 +136,7 @@ public class BlockSoilGrass extends BlockSoilExtends.Grass implements IBlockSoil
 
     @Nonnull
     @Override
-    public BlockSoilType getType(@Nonnull IBlockState state) {
-        return BlockSoilType.GRASS;
+    public OTCSoil getSoil(@Nonnull final IBlockState state) {
+        return grass;
     }
 }

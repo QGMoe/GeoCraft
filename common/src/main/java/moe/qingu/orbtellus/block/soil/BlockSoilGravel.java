@@ -27,6 +27,7 @@
 
 package moe.qingu.orbtellus.block.soil;
 
+import moe.qingu.orbtellus.geography.soil.OTCSoil;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
@@ -45,6 +46,8 @@ import static moe.qingu.orbtellus.api.block.BlockProperties.HUMIDITY;
  * @author QiguaiAAAA
  */
 public class BlockSoilGravel extends BlockSoilExtends.Gravel implements IBlockSoil {
+
+    protected final OTCSoil gravel = new OTCSoil(BlockSoilType.GRAVEL);
 
     public BlockSoilGravel(){
         this.setTickRandomly(true);
@@ -84,8 +87,8 @@ public class BlockSoilGravel extends BlockSoilExtends.Gravel implements IBlockSo
 
     @Nonnull
     @Override
-    public BlockSoilType getType(@Nonnull final IBlockState state) {
-        return BlockSoilType.GRAVEL;
+    public OTCSoil getSoil(@Nonnull final IBlockState state) {
+        return gravel;
     }
 
 

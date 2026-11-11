@@ -28,6 +28,7 @@
 package moe.qingu.orbtellus.block.soil;
 
 import moe.qingu.orbtellus.api.util.modifier.BlockFlagModifier;
+import moe.qingu.orbtellus.geography.soil.OTCSoil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFarmland;
 import net.minecraft.block.SoundType;
@@ -57,6 +58,7 @@ import java.util.Random;
 public class BlockSoilFarmland extends BlockFarmland implements IBlockSoil, IBlockFalling {
 
     protected final ThreadLocal<Boolean> isRandomTick = ThreadLocal.withInitial(()->Boolean.FALSE);
+    protected final OTCSoil farmland = new OTCSoil(BlockSoilType.FARMLAND);
 
     public BlockSoilFarmland(){
         this.setSoundType(SoundType.GROUND);
@@ -80,23 +82,30 @@ public class BlockSoilFarmland extends BlockFarmland implements IBlockSoil, IBlo
     }
 
     @Override
-    public void updateTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand) {
+    public void updateTick(@Nonnull final World worldIn,
+                           @Nonnull final BlockPos pos,
+                           @Nonnull final IBlockState state,
+                           @Nonnull final Random rand) {
         if(isRandomTick.get()){
             updateTickOnRandom(worldIn, pos, state, rand);
             return;
         }
-        if(getLayers(state,FluidRegistry.WATER,null) <= getMaxStableHumidity(state)) return;
+        if(farmland.isStable((int)getLayers(state,FluidRegistry.WATER,null))) return;
         if (!worldIn.isRemote) {
             this.checkAndFall(worldIn, pos);
         }
     }
 
     @Override
-    public void neighborChanged(@Nonnull IBlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull Block blockIn, @Nonnull BlockPos fromPos) {
+    public void neighborChanged(@Nonnull IBlockState state,
+                                @Nonnull final World worldIn,
+                                @Nonnull final BlockPos pos,
+                                @Nonnull final Block blockIn,
+                                @Nonnull final BlockPos fromPos) {
         super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
         state = worldIn.getBlockState(pos);
         if(state.getBlock() != this) return;
-        if(getLayers(state, FluidRegistry.WATER, null) <= getMaxStableHumidity(state)) return;
+        if(farmland.isStable((int)getLayers(state,FluidRegistry.WATER,null))) return;
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
     }
 
@@ -146,8 +155,8 @@ public class BlockSoilFarmland extends BlockFarmland implements IBlockSoil, IBlo
 
     @Nonnull
     @Override
-    public BlockSoilType getType(@Nonnull final IBlockState state) {
-        return BlockSoilType.FARMLAND;
+    public OTCSoil getSoil(@Nonnull final IBlockState state) {
+        return farmland;
     }
 
     //********************

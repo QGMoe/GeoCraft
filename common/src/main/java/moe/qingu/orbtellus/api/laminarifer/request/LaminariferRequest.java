@@ -104,6 +104,13 @@ public abstract class LaminariferRequest<S extends LaminariferRequest<S>> implem
 
     @Nonnull
     @SuppressWarnings("unchecked")
+    public final S pulse(final long pulse){
+        this.pulse = pulse;
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
     public final S disableFlags(final int disabledFlags){
         this.modifier = BlockFlagModifier.disableFor(this.modifier,disabledFlags);
         return (S) this;

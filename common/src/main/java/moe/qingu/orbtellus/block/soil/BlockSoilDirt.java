@@ -27,6 +27,7 @@
 
 package moe.qingu.orbtellus.block.soil;
 
+import moe.qingu.orbtellus.geography.soil.OTCSoil;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -48,6 +49,10 @@ import static moe.qingu.orbtellus.api.block.BlockProperties.HUMIDITY;
  */
 public class BlockSoilDirt extends BlockSoilExtends.Dirt implements IBlockSoil, IBlockFalling {
 
+    protected final OTCSoil dirt = new OTCSoil(BlockSoilType.DIRT);
+    protected final OTCSoil coarseDirt = new OTCSoil(BlockSoilType.COARSE_DIRT);
+    protected final OTCSoil podzol = new OTCSoil(BlockSoilType.PODZOL);
+
     public BlockSoilDirt(){
         this.setTickRandomly(true);
     }
@@ -66,8 +71,11 @@ public class BlockSoilDirt extends BlockSoilExtends.Dirt implements IBlockSoil, 
     }
 
     @Override
-    public void updateTick(@Nonnull final World worldIn, @Nonnull final BlockPos pos,final IBlockState state, @Nonnull final Random rand) {
-        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+    public void updateTick(@Nonnull final World worldIn,
+                           @Nonnull final BlockPos pos,
+                           @Nonnull final IBlockState state,
+                           @Nonnull final Random rand) {
+        if(getSoil(state).isStable(state.getValue(HUMIDITY))) return;
         IBlockFalling.super.updateTick(worldIn, pos, state, rand);
     }
 
@@ -78,12 +86,12 @@ public class BlockSoilDirt extends BlockSoilExtends.Dirt implements IBlockSoil, 
 
     @Override
     @SuppressWarnings("deprecation")
-    public void neighborChanged(final IBlockState state,
+    public void neighborChanged(final @Nonnull IBlockState state,
                                 final @Nonnull World worldIn,
                                 final @Nonnull BlockPos pos,
                                 final @Nonnull Block blockIn,
                                 final @Nonnull BlockPos fromPos) {
-        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+        if(getSoil(state).isStable(state.getValue(HUMIDITY))) return;
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
     }
 
@@ -94,7 +102,7 @@ public class BlockSoilDirt extends BlockSoilExtends.Dirt implements IBlockSoil, 
 
     @Override
     public void onBlockAdded(@Nonnull final World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state) {
-        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+        if(getSoil(state).isStable(state.getValue(HUMIDITY))) return;
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
     }
 
@@ -122,15 +130,12 @@ public class BlockSoilDirt extends BlockSoilExtends.Dirt implements IBlockSoil, 
 
     @Nonnull
     @Override
-    public BlockSoilType getType(@Nonnull final IBlockState state) {
+    public OTCSoil getSoil(@Nonnull final IBlockState state) {
         switch (state.getValue(VARIANT)) {
-            case PODZOL:
-                return BlockSoilType.PODZOL;
-            case COARSE_DIRT:
-                return BlockSoilType.COARSE_DIRT;
+            case PODZOL: return podzol;
+            case COARSE_DIRT: return coarseDirt;
             case DIRT:
-            default:
-                return BlockSoilType.DIRT;
+            default: return dirt;
         }
     }
 }

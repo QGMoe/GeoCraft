@@ -27,6 +27,7 @@
 
 package moe.qingu.orbtellus.block.soil;
 
+import moe.qingu.orbtellus.geography.soil.OTCSoil;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -47,6 +48,8 @@ import static moe.qingu.orbtellus.api.block.BlockProperties.HUMIDITY;
  */
 public class BlockSoilGrassPath extends BlockSoilExtends.GrassPath implements IBlockSoil, IBlockFalling {
 
+    protected final OTCSoil grassPath = new OTCSoil(BlockSoilType.GRASS_PATH);
+
     public BlockSoilGrassPath(){
         this.setTickRandomly(true);
     }
@@ -60,7 +63,7 @@ public class BlockSoilGrassPath extends BlockSoilExtends.GrassPath implements IB
         super.neighborChanged(state, worldIn, pos, blockIn, fromPos);
         state = worldIn.getBlockState(pos);
         if(state.getBlock() != this) return;
-        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+        if(grassPath.isStable(state.getValue(HUMIDITY))) return;
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
     }
 
@@ -97,7 +100,7 @@ public class BlockSoilGrassPath extends BlockSoilExtends.GrassPath implements IB
 
     @Override
     public void updateTick(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final IBlockState state,final @Nonnull Random rand) {
-        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+        if(grassPath.isStable(state.getValue(HUMIDITY))) return;
         IBlockFalling.super.updateTick(worldIn, pos, state, rand);
     }
 
@@ -112,8 +115,8 @@ public class BlockSoilGrassPath extends BlockSoilExtends.GrassPath implements IB
 
     @Nonnull
     @Override
-    public BlockSoilType getType(final @Nonnull IBlockState state) {
-        return BlockSoilType.GRASS_PATH;
+    public OTCSoil getSoil(final @Nonnull IBlockState state) {
+        return grassPath;
     }
 
 

@@ -124,6 +124,16 @@ public final class Laminarifers {
         return laminarifer.getLayers(world, pos, state, fluid, nbt) <= 0L;
     }
 
+    /**
+     * @see #isEmpty(ILaminarifer, World, BlockPos, IBlockState, Fluid, NBTTagCompound)
+     */
+    public static boolean isEmpty(@Nonnull final IBlockStateLaminarifer laminarifer,
+                                  @Nonnull final IBlockState state,
+                                  @Nonnull final Fluid fluid,
+                                  @Nullable final NBTTagCompound nbt) {
+        return laminarifer.getLayers(state, fluid, nbt) <= 0L;
+    }
+
     /* =========================================
                       流体储存语义
        ========================================= */

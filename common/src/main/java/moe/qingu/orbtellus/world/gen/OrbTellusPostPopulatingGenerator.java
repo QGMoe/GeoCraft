@@ -130,7 +130,7 @@ public class OrbTellusPostPopulatingGenerator implements IWorldGenerator {
             if(waterFlag) return soil.getLayerState(state,FluidRegistry.WATER,null,4L);
             if(!biome.canRain()) return null;
             return soil.getLayerState(state,FluidRegistry.WATER,null,
-                    (int)MathHelper.clamp(4f*biome.getRainfall()+1,0f,soil.getMaxStableHumidity(state)));
+                    (int)MathHelper.clamp(4f*biome.getRainfall()+1,0f,2)); //todo
         }
         if(block instanceof ILaminarifer){ //之前已经处理过本身为流体的可能性，这里一定不会是流体
             ILaminarifer laminarifer = (ILaminarifer) block;

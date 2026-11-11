@@ -27,6 +27,7 @@
 
 package moe.qingu.orbtellus.block.soil;
 
+import moe.qingu.orbtellus.geography.soil.OTCSoil;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
@@ -44,6 +45,8 @@ import static moe.qingu.orbtellus.api.block.BlockProperties.HUMIDITY;
  * @author QiguaiAAAA
  */
 public class BlockSoilSand extends BlockSoilExtends.Sand implements IBlockSoil {
+
+    protected final OTCSoil sand = new OTCSoil(BlockSoilType.SAND);
 
     public BlockSoilSand(){
         this.setTickRandomly(true);
@@ -64,7 +67,7 @@ public class BlockSoilSand extends BlockSoilExtends.Sand implements IBlockSoil {
 
     @Override
     public void updateTick(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state,final @Nonnull Random rand) {
-        if(state.getValue(HUMIDITY) == getMaxStableHumidity(state)) return;
+        if(sand.isStable(state.getValue(HUMIDITY))) return;
         super.updateTick(worldIn, pos, state, rand);
     }
 
@@ -92,7 +95,7 @@ public class BlockSoilSand extends BlockSoilExtends.Sand implements IBlockSoil {
 
     @Nonnull
     @Override
-    public BlockSoilType getType(@Nonnull IBlockState state) {
-        return BlockSoilType.SAND;
+    public OTCSoil getSoil(@Nonnull IBlockState state) {
+        return sand;
     }
 }

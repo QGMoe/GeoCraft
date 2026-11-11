@@ -27,19 +27,14 @@
 
 package moe.qingu.orbtellus.block.soil;
 
-import moe.qingu.orbtellus.api.laminarifer.AHUnit;
-import moe.qingu.orbtellus.api.laminarifer.IBlockStateLaminarifer;
-import moe.qingu.orbtellus.api.laminarifer.LaminariferModelBuffer;
-import moe.qingu.orbtellus.api.laminarifer.Laminarifers;
-import moe.qingu.orbtellus.api.laminarifer.flow.IFlowInitiator;
+import moe.qingu.orbtellus.api.fluid.unit.QuantaUnit;
+import moe.qingu.orbtellus.api.laminarifer.*;
 import moe.qingu.orbtellus.api.laminarifer.flow.drainer.IFlowDrainer;
 import moe.qingu.orbtellus.api.fluid.QBFluidStack;
 import moe.qingu.orbtellus.api.fluid.unit.QBUnit;
-import moe.qingu.orbtellus.api.laminarifer.flow.source.FlowSources;
 import moe.qingu.orbtellus.api.laminarifer.flow.source.IFlowSource;
 import moe.qingu.orbtellus.api.util.modifier.BlockFlagModifier;
-import moe.qingu.orbtellus.geography.soil.BlockSoilType;
-import moe.qingu.orbtellus.util.BaseUtil;
+import moe.qingu.orbtellus.geography.soil.Soil;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -54,22 +49,10 @@ import javax.annotation.Nullable;
 
 import static moe.qingu.orbtellus.api.block.BlockProperties.HUMIDITY;
 
-public interface IBlockSoil extends IBlockStateLaminarifer, IFlowInitiator<IBlockSoil> {
+public interface IBlockSoil extends IBlockStateLaminarifer {
 
     @Nonnull
-    BlockSoilType getType(@Nonnull final IBlockState state);
-
-    default int getMaxStableHumidity(@Nonnull final IBlockState state){
-        return getType(state).getMaxStableHumidity();
-    }
-
-    default double getFlowInPossibility(@Nonnull final IBlockState state){
-        return getType(state).getFlowInPossibility();
-    }
-
-    default double getRainInPossibility(@Nonnull final IBlockState state){
-        return getType(state).getRainInPossibility();
-    }
+    Soil getSoil(@Nonnull final IBlockState state);
 
     //******************
     // ILaminarifer
@@ -90,13 +73,7 @@ public interface IBlockSoil extends IBlockStateLaminarifer, IFlowInitiator<IBloc
                             @Nullable final NBTTagCompound nbt,
                             @Nullable final IFlowSource<?> source) {
         if(fluid != FluidRegistry.WATER) return false;
-        if(Laminarifers.isFull(this,state,fluid,nbt)) return false;
-        if(FlowSources.isAtmosphere(source)){
-            return BaseUtil.getRandomResult(world.rand,getRainInPossibility(state));
-        }else if (FlowSources.isRunoff(source)){
-            return BaseUtil.getRandomResult(world.rand, getFlowInPossibility(state));
-        }
-        return true;
+        return !Laminarifers.isFull(this, state, fluid, nbt);
     }
 
     @Override
@@ -107,8 +84,7 @@ public interface IBlockSoil extends IBlockStateLaminarifer, IFlowInitiator<IBloc
                              @Nonnull final Fluid fluid,
                              @Nullable final NBTTagCompound nbt,
                              @Nullable final IFlowDrainer<?> drainer) {
-        if(fluid != FluidRegistry.WATER) return false;
-        return getLayers(state,fluid,nbt)>getMaxStableHumidity(state);
+        return fluid == FluidRegistry.WATER && !Laminarifers.isEmpty(this, state, fluid, nbt);
     }
 
     @Override
@@ -175,6 +151,66 @@ public interface IBlockSoil extends IBlockStateLaminarifer, IFlowInitiator<IBloc
         if(newLayer < 0L || newLayer > 4L) return false;
         world.setBlockState(pos,state.withProperty(HUMIDITY, (int) newLayer), BlockFlagModifier.modify(Constants.BlockFlags.SEND_TO_CLIENTS,blockFlagsModifier));
         return true;
+    }
+
+    @Override
+    default long addLayer(@Nonnull final World world,
+                          @Nonnull final BlockPos pos,
+                          @Nonnull final IBlockState state,
+                          @Nonnull final Fluid fluid,
+                          @Nullable final NBTTagCompound nbt,
+                          final long layer,
+                          final boolean doOperate,
+                          final long pulse,
+                          @Nullable final IFlowSource<?> source,
+                          final long blockFlagsModifier) {
+        if (layer <= 0L) return 0L;
+        final int curLayer = (int) this.getLayers(world, pos, state, fluid, nbt);
+        final long addedLayerMax = Math.min(layer, getMaxLayers(world, pos, state, fluid, nbt) - curLayer);
+        if (addedLayerMax <= 0L) return 0L;
+
+        final long addedAmountMax = QuantaUnit.toQB(addedLayerMax);
+        final Soil soil = getSoil(state);
+        final float pressure = (float) (Math.abs(ImpetusPulse.pressure(pulse)) - soil.进水阈值函数(curLayer));
+        final float impetus = pressure * Math.abs(ImpetusPulse.time(pulse));
+        final long addedAmountAllowed = soil.主动渗入水量函数(curLayer, impetus);
+        final long addedLayerFact = QBUnit.sampleQuanta(world.rand, Math.min(addedAmountAllowed,addedAmountMax));
+
+        if (doOperate) {
+            final long newLayer = curLayer + addedLayerFact;
+            this.setLayer(world, pos, state, fluid, nbt, newLayer, blockFlagsModifier);
+        }
+        return addedLayerFact;
+    }
+
+    @Override
+    default long drainLayer(@Nonnull final World world,
+                            @Nonnull final BlockPos pos,
+                            @Nonnull final IBlockState state,
+                            @Nonnull final Fluid fluid,
+                            @Nullable final NBTTagCompound nbt,
+                            final long layer,
+                            final boolean doOperate,
+                            final long pulse,
+                            @Nullable final IFlowDrainer<?> drainer,
+                            final long blockFlagsModifier) {
+        if(layer <= 0L) return 0L;
+        final int curLayer = (int) getLayers(world,pos,state,fluid,nbt);
+        final long drainedLayerMax = Math.min(layer, curLayer);
+        if(drainedLayerMax <= 0L) return 0L;
+
+        final long drainedAmountMax = QuantaUnit.toQB(drainedLayerMax);
+        final Soil soil = getSoil(state);
+        final float pressure = (float) (Math.abs(ImpetusPulse.pressure(pulse)) - soil.基质吸力函数(curLayer));
+        final float impetus = pressure * Math.abs(ImpetusPulse.time(pulse));
+        final long drainedAmountAllowed = soil.被动渗出水量函数(curLayer, impetus);
+        final long drainedLayerFact = QBUnit.sampleQuanta(world.rand, Math.min(drainedAmountAllowed,drainedAmountMax));
+
+        if(doOperate){
+            final long newLayer = curLayer - drainedLayerFact;
+            this.setLayer(world,pos,state,fluid,nbt,newLayer,blockFlagsModifier);
+        }
+        return drainedLayerFact;
     }
 
     @Override

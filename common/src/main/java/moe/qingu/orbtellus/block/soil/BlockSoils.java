@@ -33,18 +33,18 @@ import moe.qingu.orbtellus.api.fluid.StateOfMatter;
 import moe.qingu.orbtellus.api.fluid.unit.MillibucketUnit;
 import moe.qingu.orbtellus.api.fluidphysics.FluidPhysicsDesign;
 import moe.qingu.orbtellus.api.laminarifer.ILaminarifer;
+import moe.qingu.orbtellus.api.laminarifer.ImpetusPulse;
 import moe.qingu.orbtellus.api.laminarifer.Laminarifers;
-import moe.qingu.orbtellus.api.laminarifer.flow.AverageFlow;
 import moe.qingu.orbtellus.api.fluid.unit.QBUnit;
 import moe.qingu.orbtellus.api.laminarifer.request.ExtractLaminariferRequest;
 import moe.qingu.orbtellus.api.util.AtmosphereUtil;
 import moe.qingu.orbtellus.api.util.annotation.MultiThread;
 import moe.qingu.orbtellus.api.util.annotation.ThreadOnly;
 import moe.qingu.orbtellus.api.util.annotation.ThreadType;
-import moe.qingu.orbtellus.api.laminarifer.flow.FlowChoice;
 import moe.qingu.orbtellus.api.util.math.vec.MBlockPos;
 import moe.qingu.orbtellus.api.util.modifier.BlockFlagModifiers;
-import moe.qingu.orbtellus.geography.fluidphysics.finite.flow.FiniteFlowings;
+import moe.qingu.orbtellus.geography.fluidphysics.vanilla.VanillaFlowingVanilla;
+import moe.qingu.orbtellus.geography.soil.Soil;
 import moe.qingu.orbtellus.util.BaseUtil;
 import moe.qingu.orbtellus.util.ChunkUtil;
 import moe.qingu.orbtellus.util.WaterUtil;
@@ -84,13 +84,6 @@ public final class BlockSoils { //unfinished todo
     @ThreadOnly(ThreadType.MINECRAFT_SERVER) private static final MBlockPos mutablePos = new MBlockPos();
     @ThreadOnly(ThreadType.MINECRAFT_SERVER) private static final FillLaminariferRequest fillRequest = new FillLaminariferRequest();
     @ThreadOnly(ThreadType.MINECRAFT_SERVER) private static final ExtractLaminariferRequest extractRequest = new ExtractLaminariferRequest();
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER) private static final AverageFlow _平均流动_ = new AverageFlow();
-
-    static {
-        _平均流动_.centralModel.maxLayers = 4L;
-        _平均流动_.centralModel.emptyHeight = 0L;
-        _平均流动_.centralModel.amountInQBPerLayer = QBUnit.QUANTA_VOLUME;
-    }
 
     private BlockSoils(){}
 
@@ -106,184 +99,140 @@ public final class BlockSoils { //unfinished todo
         else return extractRequest;
     }
 
-    /**
-     * 土壤将自身水掉下去的能力
-     * @return 湿度变化
-     */
-    static int 壤中流重力流动(@Nonnull final IBlockSoil $土壤, @Nonnull final World worldIn, @Nonnull final BlockPos pos){
-        final IBlockState downState = worldIn.getBlockState(mutablePos.setPos(pos).downM());
-        for(final @Nonnull 壤中流重力流动情况 $情况: 壤中流重力流动情况._所有情况_)
-            switch ($情况.尝试渗出(worldIn,mutablePos,downState,$土壤)){
-                case FAIL:return 0;
-                case SUCCESS:return -1;
-                case PASS:
-                default:
-            }
-        return 0;
-    }
+    private static abstract class 壤中流情况 {
 
-    private static abstract class 壤中流重力流动情况 {
-
-        private static final 壤中流重力流动情况[] _所有情况_ = new 壤中流重力流动情况[]{
-                new 壤中流重力流动情况() {
+        private static final 壤中流情况[] _所有情况_ = new 壤中流情况[]{
+                new 壤中流情况() {
                     @Override
-                    protected boolean 满足条件(@Nonnull final IBlockState $土壤下方方块状态) {
-                        return $土壤下方方块状态.getMaterial() == Material.AIR;
+                    protected boolean 满足条件(@Nonnull final EnumFacing facing, @Nonnull final IBlockState $土壤面对方块状态) {
+                        return $土壤面对方块状态.getMaterial() == Material.AIR;
                     }
 
                     @Override
-                    protected boolean 进行渗出(@Nonnull final World world,
-                                               @Nonnull final BlockPos $土壤下方位置,
-                                               @Nonnull final IBlockState $土壤下方方块状态,
-                                               @Nonnull final IBlockSoil $土壤) {
+                    protected int 进行流动(@Nonnull final World world,
+                                           @Nonnull final EnumFacing facing,
+                                           @Nonnull final BlockPos $土壤面对位置,
+                                           @Nonnull final IBlockState $土壤面对方块状态,
+                                           @Nonnull final Soil $土壤,
+                                           final long pulse,
+                                           final long amount) {
+                        if(amount>=0L) return 0;
+                        final int layer = QBUnit.sampleQuantaAsInt(world.rand, amount);
+                        if(layer >= 0) return 0;
                         if(getCurrentMode().design == FluidPhysicsDesign.FINITE)
-                            world.setBlockState($土壤下方位置, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,7), Constants.BlockFlags.DEFAULT);
-                        return true;
+                            world.setBlockState($土壤面对位置, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, 8+layer), Constants.BlockFlags.DEFAULT);
+                        return layer;
                     }
                 },
-                new 壤中流重力流动情况() {
+                new 壤中流情况() {
                     @Override
-                    protected boolean 满足条件(@Nonnull final IBlockState $土壤下方方块状态) {
-                        return Laminarifers.isLaminarifer($土壤下方方块状态);
+                    protected boolean 满足条件(@Nonnull final EnumFacing facing, @Nonnull final IBlockState $土壤面对方块状态) {
+                        return Laminarifers.isLaminarifer($土壤面对方块状态);
                     }
 
                     @Override
-                    protected boolean 进行渗出(@Nonnull final World world,
-                                               @Nonnull final BlockPos $土壤下方位置,
-                                               @Nonnull final IBlockState $土壤下方方块状态,
-                                               @Nonnull final IBlockSoil $土壤) {
-                        try (final FillLaminariferRequest request = getFillRequest().open()){
-                            return request.target((ILaminarifer) $土壤下方方块状态.getBlock())
-                                    .to(world,$土壤下方位置,$土壤下方方块状态).side(EnumFacing.UP)
-                                    .specific(FluidRegistry.WATER)
-                                    .amount(QBUnit.QUANTA_VOLUME)
-                                    .source($土壤)
-                                    .fillAs(true, QBUnit.QUANTA_VOLUME) >0L;
+                    protected int 进行流动(@Nonnull final World world,
+                                           @Nonnull final EnumFacing facing,
+                                           @Nonnull final BlockPos $土壤面对位置,
+                                           @Nonnull final IBlockState $土壤面对方块状态,
+                                           @Nonnull final Soil $土壤,
+                                           final long pulse,
+                                           final long amount) {
+                        if(amount > 0L){
+                            try (final ExtractLaminariferRequest request = getExtractRequest().open()){
+                                return (int) request.target((ILaminarifer) $土壤面对方块状态)
+                                        .to(world,$土壤面对位置,$土壤面对方块状态).side(facing.getOpposite())
+                                        .specific(FluidRegistry.WATER)
+                                        .amount(amount)
+                                        .pulse(pulse)
+                                        .drainer($土壤)
+                                        .extractAs(true,QBUnit.QUANTA_VOLUME);
+                            }
+                        }else if(amount < 0L){
+                            try (final FillLaminariferRequest request = getFillRequest().open()){
+                                return (int) -request.target((ILaminarifer) $土壤面对方块状态)
+                                        .to(world,$土壤面对位置,$土壤面对方块状态).side(facing.getOpposite())
+                                        .specific(FluidRegistry.WATER)
+                                        .amount(-amount)
+                                        .source($土壤)
+                                        .fillAs(true, QBUnit.QUANTA_VOLUME);
 
+                            }
+                        }else return 0;
+                    }
+                },
+                new 壤中流情况() {
+                    @Override
+                    protected boolean 满足条件(@Nonnull final EnumFacing facing,@Nonnull final IBlockState $土壤面对方块状态) {
+                        return !VanillaFlowingVanilla.isBlocked($土壤面对方块状态);
+                    }
+
+                    @Override
+                    protected int 进行流动(@Nonnull final World world,
+                                           @Nonnull final EnumFacing facing,
+                                           @Nonnull final BlockPos $土壤面对位置,
+                                           @Nonnull final IBlockState $土壤面对方块状态,
+                                           @Nonnull final Soil $土壤,
+                                           final long pulse,
+                                           final long amount) {
+                        if(amount >= 0L) return 0;
+                        final int actual = QBUnit.sampleQuantaAsInt(world.rand, amount);
+                        if(actual < 0 && getCurrentMode().design == FluidPhysicsDesign.FINITE) {
+                            FluidOperationUtil.triggerDestroyBlockEffectByFluid(world, $土壤面对位置, $土壤面对方块状态,FluidRegistry.WATER);
+                            world.setBlockState($土壤面对位置, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8 + actual), Constants.BlockFlags.DEFAULT);
                         }
+                        return actual;
                     }
                 },
-                new 壤中流重力流动情况() {
-                    @Override
-                    protected boolean 满足条件(@Nonnull final IBlockState $土壤下方方块状态) {
-                        return FiniteFlowings.WATER_FLOW.canFlowDownTo($土壤下方方块状态);
-                    }
-
-                    @Override
-                    protected boolean 进行渗出(@Nonnull final World world,
-                                               @Nonnull final BlockPos $土壤下方位置,
-                                               @Nonnull final IBlockState $土壤下方方块状态,
-                                               @Nonnull final IBlockSoil $土壤) {
-                        if(getCurrentMode().design == FluidPhysicsDesign.FINITE) {
-                            FluidOperationUtil.triggerDestroyBlockEffectByFluid(world,$土壤下方位置,$土壤下方方块状态,FluidRegistry.WATER);
-                            world.setBlockState($土壤下方位置, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,7), Constants.BlockFlags.DEFAULT);
-                        }
-                        return true;
-                    }
-                },
-                new 壤中流重力流动情况() {
-                    @Override
-                    protected boolean 满足条件(@Nonnull final IBlockState $土壤下方方块状态) {
-                        return $土壤下方方块状态.getBlock() == Blocks.CAULDRON && getCurrentMode().design == FluidPhysicsDesign.CLASSIC;
-                    }
-
-                    @Override
-                    protected boolean 进行渗出(@Nonnull final World world,
-                                               @Nonnull final BlockPos $土壤下方位置,
-                                               @Nonnull final IBlockState $土壤下方方块状态,
-                                               @Nonnull final IBlockSoil $土壤) {
-                        if(!BaseUtil.getRandomResult(world.rand,0.3)) return false;
-                        if($土壤下方方块状态.getValue(BlockCauldron.LEVEL) < 3){
-                            world.setBlockState($土壤下方位置, $土壤下方方块状态.cycleProperty(BlockCauldron.LEVEL), Constants.BlockFlags.SEND_TO_CLIENTS);
-                            return true;
-                        }else return false;
-                    }
-                }
         };
 
-        @Nonnull
-        public final EnumActionResult 尝试渗出(@Nonnull final World world,
-                                               @Nonnull final BlockPos $土壤下方位置,
-                                               @Nonnull final IBlockState $土壤下方方块状态,
-                                               @Nonnull final IBlockSoil $土壤){
-            if(满足条件($土壤下方方块状态)) return 进行渗出(world, $土壤下方位置, $土壤下方方块状态, $土壤)?EnumActionResult.SUCCESS:EnumActionResult.FAIL;
-            return EnumActionResult.PASS;
+        public final int 尝试流动(@Nonnull final World world,
+                                  @Nonnull final EnumFacing facing,
+                                  @Nonnull final BlockPos $土壤面对位置,
+                                  @Nonnull final IBlockState $土壤面对方块状态,
+                                  @Nonnull final Soil $土壤,
+                                  final long pulse,
+                                  final long amount){
+            if(满足条件(facing,$土壤面对方块状态)) return 进行流动(world, facing, $土壤面对位置, $土壤面对方块状态, $土壤, pulse, amount);
+            return 114514;
         }
 
-        protected abstract boolean 满足条件(final @Nonnull IBlockState $土壤下方方块状态);
+        protected abstract boolean 满足条件(final @Nonnull EnumFacing facing,final @Nonnull IBlockState $土壤面对方块状态);
 
-        protected abstract boolean 进行渗出(@Nonnull final World world,
-                                            @Nonnull final BlockPos $土壤下方位置,
-                                            @Nonnull final IBlockState $土壤下方方块状态,
-                                            @Nonnull final IBlockSoil $土壤);
+        protected abstract int 进行流动(@Nonnull final World world,
+                                        @Nonnull final EnumFacing facing,
+                                        @Nonnull final BlockPos $土壤面对位置,
+                                        @Nonnull final IBlockState $土壤面对方块状态,
+                                        @Nonnull final Soil $土壤,
+                                        final long pulse,
+                                        final long amount);
     }
 
-    /**
-     * 土壤水向四周流动的能力
-     * @param humidity 当前湿度
-     */
-    static void 壤中流平均流动(final @Nonnull IBlockSoil $土壤,
-                               final @Nonnull World world,
-                               final @Nonnull BlockPos pos,
-                               final @Nonnull IBlockState state,
-                               final int humidity){
-        if (!world.isAreaLoaded(pos, 1)) return;
-        //可流动方向检查
-        averageFlow:
-        try (final AverageFlow $平均流动 = _平均流动_){
-            $平均流动.at(world, pos).fluid(FluidRegistry.WATER).source($土壤);
-            $平均流动.centralModel.currentLayers = $土壤.getLayers(state,FluidRegistry.WATER,null);
-            $平均流动.centralModel.heightPerLayer = $土壤.getHeightPerLayer(state,FluidRegistry.WATER,null);
-            for(final @Nonnull EnumFacing facing:EnumFacing.HORIZONTALS){
-                mutablePos.setPos(pos).offsetM(facing);
-                final IBlockState facingState = world.getBlockState(mutablePos);
-                if(facingState.getMaterial() == Material.AIR) $平均流动.addAirChoice(facing);
-                else if(Laminarifers.isLaminarifer(facingState)){
-                    $平均流动.addChoice(facing,facingState);
-                    if(!$平均流动.isLastChoiceAvailable()) $平均流动.removeLastChoice();
-                }
-            }
-            if(!$平均流动.hasNext()) break averageFlow;
-            if(!$平均流动.minLayers($土壤.getMaxStableHumidity(state)).resolve()) break averageFlow;
-            long left = $平均流动.extraAmountInQB;
-            while ($平均流动.hasNext()) {
-                final @Nonnull FlowChoice choice = $平均流动.next();
-                mutablePos.setPos(pos).offsetM(choice.direction);
-                if(choice.isAir()){
-                    if(getCurrentMode().design != FluidPhysicsDesign.FINITE) continue;
-                    choice.sampleExtraAmount(world.rand);
-                    if(choice.getNewLayers() <= 0L) continue;
-                    world.setBlockState(mutablePos,Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-(int) choice.getNewLayers()));
-                }else left += $平均流动.applyCurrentChoice();
-            }
-            $土壤.setLayer(world,pos,state,FluidRegistry.WATER, null, $平均流动.finalLayers + QBUnit.sampleQuantaAsInt(world.rand, left), BlockFlagModifiers.KEEP);
-        }
-    }
+    static int 壤中流(final @Nonnull Soil soil,final int humidity,final @Nonnull World world, final @Nonnull BlockPos pos){
+        final EnumFacing facing = EnumFacing.VALUES[world.rand.nextInt(6)];
+        final long para = soil.土壤交互参数函数(humidity, facing);
+        if(para == 0L) return 0;
+        mutablePos.setPos(pos).offsetM(facing);
+        final IBlockState facingState = world.getBlockState(mutablePos);
 
-    static int 壤中流毛细流动(final @Nonnull IBlockSoil $土壤, final @Nonnull World world, final @Nonnull BlockPos pos){ // todo: 之后要实现六个方向的
-        mutablePos.setPos(pos).upM();
-        final IBlockState upState = world.getBlockState(mutablePos);
-        if(upState.getBlock() instanceof ILaminarifer){
-            try (final ExtractLaminariferRequest request = getExtractRequest().open()){
-                return request.target((ILaminarifer) upState.getBlock())
-                        .to(world,mutablePos,upState).side(EnumFacing.DOWN)
-                        .specific(FluidRegistry.WATER)
-                        .amount(QBUnit.QUANTA_VOLUME)
-                        .drainer($土壤)
-                        .extractAs(true,QBUnit.QUANTA_VOLUME) > 0L? 1: 0;
-            }
+        final float pressure = Float.intBitsToFloat((int)(para>>>32));
+        final int amount = (int)(para & 0xFFFF_FFFFL);
+        final long pulse = ImpetusPulse.of(pressure, (float) Soil._抽签刻期望间隔_);
+
+        for(final @Nonnull 壤中流情况 $情况: 壤中流情况._所有情况_) {
+            final int res;
+            if ((res = $情况.尝试流动(world, facing, mutablePos, facingState, soil, pulse, amount)) == 114514) continue;
+            return res;
         }
         return 0;
     }
 
-    static int 蒸发(final @Nonnull IBlockSoil $土壤,
+    static int 蒸发(final int humidity,
                     final @Nonnull World world,
                     final @Nonnull BlockPos pos,
-                    final @Nonnull IBlockState state,
                     final @Nonnull Random random){
         final @Nonnull BlockPos up = pos.up();
         if(!world.isAirBlock(up)) return 0;
-        final long humidity = $土壤.getLayers(world,pos,state,FluidRegistry.WATER,null);
         if(humidity == 0) return 0;
         try(@Nullable final IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true)) {
             if (accessor == null) return 0;
@@ -311,25 +260,10 @@ public final class BlockSoils { //unfinished todo
         if(worldIn.isRemote) return;
         final int humidity = (int) $土壤.getLayers(worldIn,pos,state,FluidRegistry.WATER,null);
         int newHumidity = humidity;
-        final int rnd = random.nextInt(3);
-        switch (rnd){
-            case 0: //吸收上面的水
-                if(humidity < 4) {
-                    newHumidity += 壤中流毛细流动($土壤,worldIn,pos);
-                }
-                break;
-            case 1: //向下掉水
-                if(humidity >$土壤.getMaxStableHumidity(state)){
-                    newHumidity += 壤中流重力流动($土壤,worldIn, pos);
-                }
-                break;
-            default: //水平平衡
-                壤中流平均流动($土壤,worldIn,pos,state,humidity);
-                return;
-        }
+        newHumidity += 壤中流($土壤.getSoil(state), humidity, worldIn, pos);
         if(humidity == newHumidity){
             if(humidity == 0) return;
-            newHumidity += 蒸发($土壤,worldIn, pos, state, random);
+            newHumidity += 蒸发(humidity,worldIn, pos, random);
         }
         if(humidity == newHumidity) return;
         $土壤.setLayer(worldIn,pos,state,FluidRegistry.WATER,null,newHumidity,BlockFlagModifiers.KEEP);
@@ -366,7 +300,7 @@ public final class BlockSoils { //unfinished todo
             }
 
             worldIn.playSound(null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            Laminarifers.addAmountInQB($土壤,worldIn,pos,state,FluidRegistry.WATER,null,QBUnit.BOTTLE_VOLUME,true,0L,$土壤,BlockFlagModifiers.KEEP);
+            Laminarifers.addAmountInQB($土壤,worldIn,pos,state,FluidRegistry.WATER,null,QBUnit.BOTTLE_VOLUME,true,0L,$土壤.getSoil(state),BlockFlagModifiers.KEEP);
             return true;
         }
         return false;
